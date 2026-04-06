@@ -1,7 +1,7 @@
 # Project Overview
 
 ## Purpose
-Secure nonprofit operations platform for Lighthouse Sanctuary — an organization operating safehouses for girls who are survivors of sexual abuse or sex trafficking in the Philippines. Supports donor operations, case management, reporting, outreach analysis, and decision support over highly sensitive data.
+Secure nonprofit operations platform for Luz De Vida — an organization operating safehouses for girls who are survivors of sexual abuse or sex trafficking in the Philippines. Supports donor operations, case management, reporting, outreach analysis, and decision support over highly sensitive data.
 
 ## Reading Order
 Read in this order before making structural changes:
