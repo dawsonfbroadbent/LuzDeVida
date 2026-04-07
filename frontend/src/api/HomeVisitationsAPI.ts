@@ -15,7 +15,7 @@ export interface home_visitation {
   visit_outcome: string
 }
 
-const API_URL = 'https://localhost:5289/api/homevisitations'
+const API_URL = 'http://localhost:5289/api/homevisitations'
 
 export const fetchHomeVisitations = async (
   residentId: number
