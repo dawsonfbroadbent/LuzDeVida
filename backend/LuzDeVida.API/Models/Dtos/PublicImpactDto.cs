@@ -17,29 +17,23 @@ public record PublicImpactOkrDto(
 public record PublicImpactHighlightsDto(
     int SafehousesInNetwork,
     int SupportersAllTime,
-    int CareTouchpointsLast12Months
+    int CareTouchpointsAllTime
 );
 
-public record PublicImpactTrendWindowDto(
-    DateOnly From,
-    DateOnly To,
-    int Months
-);
-
-public record PublicImpactMonthlyTrendItemDto(
-    string Month,
+public record PublicImpactQuarterlyTrendItemDto(
+    string Quarter,
     int ActiveResidents,
     decimal? AvgEducationProgress,
     decimal? AvgHealthScore,
     int CounselingSessions,
-    int HomeVisits
+    int HomeVisits,
+    int ProgressReportingCount
 );
 
 public record PublicImpactDto(
     PublicImpactStoryDto Story,
     PublicImpactOkrDto Okr,
     PublicImpactHighlightsDto Highlights,
-    PublicImpactTrendWindowDto TrendWindow,
-    IReadOnlyList<PublicImpactMonthlyTrendItemDto> MonthlyTrend,
+    IReadOnlyList<PublicImpactQuarterlyTrendItemDto> QuarterlyTrend,
     DateOnly MetricsAsOf
 );
