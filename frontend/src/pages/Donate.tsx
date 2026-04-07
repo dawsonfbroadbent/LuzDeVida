@@ -192,12 +192,12 @@ export default function Donate() {
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M12 21C12 21 3 15 3 8.5C3 6.01 5.01 4 7.5 4C9.09 4 10.48 4.84 11.25 6.1L12 7.2L12.75 6.1C13.52 4.84 14.91 4 16.5 4C18.99 4 21 6.01 21 8.5C21 15 12 21 12 21Z"
-                      fill="var(--jungle)"
+                      fill="var(--blue)"
                       opacity="0.18"
                     />
                     <path
                       d="M12 21C12 21 3 15 3 8.5C3 6.01 5.01 4 7.5 4C9.09 4 10.48 4.84 11.25 6.1L12 7.2L12.75 6.1C13.52 4.84 14.91 4 16.5 4C18.99 4 21 6.01 21 8.5C21 15 12 21 12 21Z"
-                      stroke="var(--jungle)"
+                      stroke="var(--blue)"
                       strokeWidth="1.5"
                       strokeLinejoin="round"
                     />
@@ -225,7 +225,7 @@ export default function Donate() {
                       <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
                         <path
                           d="M5 13L9 17L19 7"
-                          stroke="var(--jungle)"
+                          stroke="var(--blue)"
                           strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -356,8 +356,8 @@ export default function Donate() {
             <div className="trust-item reveal delay-1">
               <div className="trust-item__icon" aria-hidden="true">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 3L4 7V13C4 17.42 7.5 21.56 12 23C16.5 21.56 20 17.42 20 13V7L12 3Z" stroke="var(--jungle)" strokeWidth="1.5" strokeLinejoin="round"/>
-                  <path d="M9 12L11.5 14.5L16 10" stroke="var(--jungle)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 3L4 7V13C4 17.42 7.5 21.56 12 23C16.5 21.56 20 17.42 20 13V7L12 3Z" stroke="var(--blue)" strokeWidth="1.5" strokeLinejoin="round"/>
+                  <path d="M9 12L11.5 14.5L16 10" stroke="var(--blue)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
               <h4>Registered Nonprofit</h4>
@@ -367,8 +367,8 @@ export default function Donate() {
             <div className="trust-item reveal delay-2">
               <div className="trust-item__icon" aria-hidden="true">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <rect x="3" y="11" width="18" height="11" rx="2" stroke="var(--jungle)" strokeWidth="1.5"/>
-                  <path d="M7 11V7C7 4.24 9.24 2 12 2C14.76 2 17 4.24 17 7V11" stroke="var(--jungle)" strokeWidth="1.5" strokeLinecap="round"/>
+                  <rect x="3" y="11" width="18" height="11" rx="2" stroke="var(--blue)" strokeWidth="1.5"/>
+                  <path d="M7 11V7C7 4.24 9.24 2 12 2C14.76 2 17 4.24 17 7V11" stroke="var(--blue)" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </div>
               <h4>Secure Payments</h4>
@@ -378,7 +378,7 @@ export default function Donate() {
             <div className="trust-item reveal delay-3">
               <div className="trust-item__icon" aria-hidden="true">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 21C12 21 3 15 3 8.5C3 6.01 5.01 4 7.5 4C9.09 4 10.48 4.84 11.25 6.1L12 7.2L12.75 6.1C13.52 4.84 14.91 4 16.5 4C18.99 4 21 6.01 21 8.5C21 15 12 21 12 21Z" stroke="var(--jungle)" strokeWidth="1.5" strokeLinejoin="round"/>
+                  <path d="M12 21C12 21 3 15 3 8.5C3 6.01 5.01 4 7.5 4C9.09 4 10.48 4.84 11.25 6.1L12 7.2L12.75 6.1C13.52 4.84 14.91 4 16.5 4C18.99 4 21 6.01 21 8.5C21 15 12 21 12 21Z" stroke="var(--blue)" strokeWidth="1.5" strokeLinejoin="round"/>
                 </svg>
               </div>
               <h4>Direct Impact</h4>

@@ -85,7 +85,7 @@ export default function About() {
             <div className="value-card reveal delay-1">
               <div
                 className="value-card__accent"
-                style={{ background: 'var(--jungle)' }}
+                style={{ background: 'var(--blue)' }}
                 aria-hidden="true"
               />
               <h3>Safety First</h3>
@@ -100,7 +100,7 @@ export default function About() {
             <div className="value-card reveal delay-2">
               <div
                 className="value-card__accent"
-                style={{ background: 'var(--ocean)' }}
+                style={{ background: 'var(--teal)' }}
                 aria-hidden="true"
               />
               <h3>Holistic Healing</h3>

@@ -148,7 +148,7 @@ export default function Landing() {
                 <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
                   <path
                     d="M17 3L3 14V31H13V21H21V31H31V14L17 3Z"
-                    stroke="var(--jungle)"
+                    stroke="var(--blue)"
                     strokeWidth="1.6"
                     strokeLinejoin="round"
                     fill="none"
@@ -167,7 +167,7 @@ export default function Landing() {
                 <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
                   <path
                     d="M17 30C17 30 4 22 4 12.5C4 8.36 7.36 5 11.5 5C13.83 5 15.9 6.08 17 7.77C18.1 6.08 20.17 5 22.5 5C26.64 5 30 8.36 30 12.5C30 22 17 30 17 30Z"
-                    stroke="var(--ocean)"
+                    stroke="var(--teal)"
                     strokeWidth="1.6"
                     strokeLinejoin="round"
                     fill="none"
@@ -234,7 +234,7 @@ export default function Landing() {
             workers, therapists, and an unwavering commitment to each girl's
             future.
           </p>
-          <Link to="/about" className="btn btn-outline-jungle reveal delay-3">
+          <Link to="/about" className="btn btn-outline-blue reveal delay-3">
             Read Our Story
           </Link>
         </div>
