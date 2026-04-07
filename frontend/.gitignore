@@ -33,3 +33,5 @@ packages/
 .vs/
 *.nupkg
 *.snupkg
+
+appsettings.json

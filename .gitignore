@@ -35,3 +35,4 @@ packages/
 *.snupkg
 
 obj
+appsettings.json

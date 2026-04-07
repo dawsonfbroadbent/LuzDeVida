@@ -17,6 +17,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     })
 );
 
+// Operational app DB context
+builder.Services.AddDbContext<LuzDeVidaDbContext>(options =>
+    options.UseSqlServer(connectionString)
+);
+
 // Add Identity with strong password policy
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {
