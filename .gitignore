@@ -1,0 +1,28 @@
+# .NET
+bin/
+obj/
+publish/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Logs
+*.log
+
+# OS stuff
+.DS_Store
+Thumbs.db
+
+# Node (frontend)
+node_modules/
+dist/
+build/
+
+# Env files
+.env
+.env.*
+
+# App settings (IMPORTANT)
+appsettings.Development.json
