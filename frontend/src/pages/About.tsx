@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import handsTogether from '../assets/handstogether.png'
+import handsTogether from '../assets/LightBeach.webp'
 import { useScrollReveal } from '../hooks/useScrollReveal'
 
 export default function About() {
@@ -65,6 +65,28 @@ export default function About() {
                 and worth fighting for.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Location ──────────────────────────────────── */}
+      <section className="location-section">
+        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+          <div className="reveal" style={{ textAlign: 'center' }}>
+            <span className="section-label" style={{ justifyContent: 'center' }}>
+              Where We Are
+            </span>
+            <h2>Rooted in Costa Rica</h2>
+            <p>
+              Our safehouses are situated in Costa Rica — a nation known for
+              its commitment to environmental stewardship and human dignity.
+              Within this context, we create homes that reflect the beauty and
+              resilience of the land itself: spaces of peace where healing can
+              take root.
+            </p>
+            <Link to="/donate" className="btn btn-sand reveal delay-2">
+              Support Our Work
+            </Link>
           </div>
         </div>
       </section>
@@ -190,28 +212,6 @@ export default function About() {
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Location ──────────────────────────────────── */}
-      <section className="location-section">
-        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <div className="reveal" style={{ textAlign: 'center' }}>
-            <span className="section-label" style={{ justifyContent: 'center' }}>
-              Where We Are
-            </span>
-            <h2>Rooted in Costa Rica</h2>
-            <p>
-              Our safehouses are situated in Costa Rica — a nation known for
-              its commitment to environmental stewardship and human dignity.
-              Within this context, we create homes that reflect the beauty and
-              resilience of the land itself: spaces of peace where healing can
-              take root.
-            </p>
-            <Link to="/donate" className="btn btn-sand reveal delay-2">
-              Support Our Work
-            </Link>
           </div>
         </div>
       </section>

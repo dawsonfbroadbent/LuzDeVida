@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import lightbeach from '../assets/lightbeach.png'
-import handsTogether from '../assets/handstogether.png'
+import lightbeach from '../assets/beachhearts.webp'
+import handsTogether from '../assets/savingabuse.png'
 import { useScrollReveal } from '../hooks/useScrollReveal'
 
 /* ── Animated counter ─────────────────────────────────── */
@@ -9,9 +9,10 @@ interface StatProps {
   target: number
   suffix?: string
   label: string
+  className?: string
 }
 
-function AnimatedStat({ target, suffix = '', label }: StatProps) {
+function AnimatedStat({ target, suffix = '', label, className = '' }: StatProps) {
   const [count, setCount] = useState(0)
   const [started, setStarted] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -48,7 +49,7 @@ function AnimatedStat({ target, suffix = '', label }: StatProps) {
   }, [started, target])
 
   return (
-    <div className="stat" ref={ref}>
+    <div className={`stat ${className}`.trim()} ref={ref}>
       <div className="stat__number">
         {count}
         {suffix}
@@ -78,19 +79,19 @@ export default function Landing() {
         <div className="hero__content">
           <p className="hero__eyebrow">
             <span aria-hidden="true" />
-            Safehouses in Costa Rica
+            Costa Rica Safehouses
             <span aria-hidden="true" />
           </p>
           <h1 className="hero__title">Luz De Vida</h1>
           <p className="hero__subtitle">
-            Restoring light to girls who need it most
+            Providing Safe Shelter for Girls Escaping Abuse
           </p>
           <div className="hero__actions">
             <Link to="/donate" className="btn btn-sand">
               Give Today
             </Link>
             <Link to="/about" className="btn btn-outline-white">
-              Our Story
+              How We Help
             </Link>
           </div>
         </div>
@@ -113,8 +114,9 @@ export default function Landing() {
       <section className="mission-strip">
         <div className="container">
           <p className="mission-strip__text reveal">
-            "Every girl deserves to grow up in safety — surrounded by care,
-            with a future as bright as the light she carries within."
+            Luz De Vida exists to protect girls from abuse, exploitation, and
+            trafficking by providing safe shelter, holistic care, and a future
+            they can rebuild with dignity.
           </p>
         </div>
       </section>
@@ -125,7 +127,11 @@ export default function Landing() {
           <div className="stats-grid">
             <AnimatedStat target={50} suffix="+" label="Girls Supported" />
             <AnimatedStat target={8} label="Years of Service" />
-            <AnimatedStat target={2} label="Safehouses in Costa Rica" />
+            <AnimatedStat
+              target={2}
+              label="Safehouses in Costa Rica"
+              className="stat--featured"
+            />
           </div>
         </div>
       </section>
@@ -243,13 +249,15 @@ export default function Landing() {
       {/* ── Donation CTA ──────────────────────────────── */}
       <section className="cta-section">
         <div className="container">
-          <div className="cta-section__inner reveal">
-            <span className="section-label">Make a Difference</span>
-            <h2>Your Gift Changes Everything</h2>
-            <p style={{ color: 'rgba(255,255,255,0.72)', maxWidth: 520, margin: '0 auto 44px', fontSize: 16 }}>
-              Every donation goes directly to supporting girls in our care.
-              Give today and help us keep the light on for those who need it most.
-            </p>
+          <div className="cta-section__inner">
+            <div className="section-header reveal">
+              <span className="section-label">Make a Difference</span>
+              <h2>Your Gift Changes Everything</h2>
+              <p>
+                Every donation goes directly to supporting girls in our care.
+                Give today and help us keep the light on for those who need it most.
+              </p>
+            </div>
             <div className="cta-amounts">
               <Link to="/donate" className="cta-amount-btn">$25</Link>
               <Link to="/donate" className="cta-amount-btn">$50</Link>
@@ -257,7 +265,7 @@ export default function Landing() {
               <Link to="/donate" className="cta-amount-btn">$250</Link>
               <Link to="/donate" className="cta-amount-btn">Other</Link>
             </div>
-            <Link to="/donate" className="btn btn-sand">
+            <Link to="/donate" className="btn btn-primary nav__cta">
               Give Today
             </Link>
           </div>
