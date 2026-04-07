@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ':*)",
+      "Bash(python -u -c ':*)",
+      "Bash(python fix_leakage.py)",
+      "Bash(python drop_referral_platforms.py)",
+      "Bash(rm drop_referral_platforms.py)",
+      "Bash(python test_modeling.py)",
+      "Bash(python add_step4.py)",
+      "Bash(rm add_step4.py)",
+      "Bash(python fix_warnings.py)",
+      "Bash(rm fix_warnings.py)",
+      "Bash(python test_eval.py)",
+      "Bash(python add_step5.py)",
+      "Bash(rm add_step5.py)",
+      "Bash(python test_step6.py)",
+      "Bash(python add_step6_7.py)",
+      "Bash(rm add_step6_7.py)"
+    ]
+  }
+}
