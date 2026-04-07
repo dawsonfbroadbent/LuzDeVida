@@ -24,9 +24,9 @@
   --cream-dark:    #EDE8DF;
   --cream-darker:  #DDD5C5;
 
-  --text-dark:     #1C2B1E;
-  --text-mid:      #4A5C4D;
-  --text-light:    #7A8C7D;
+  --text-dark:     #1A2640;
+  --text-mid:      #465A78;
+  --text-light:    #6B80A0;
   --white:         #FFFFFF;
 
   --font-display:  'Fraunces', Georgia, serif;
@@ -120,7 +120,7 @@ button { cursor: pointer; font-family: var(--font-body); }
 .btn-primary:hover {
   background: var(--blue-dark);
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(59, 110, 74, 0.35);
+  box-shadow: 0 10px 30px rgba(46, 118, 190, 0.35);
 }
 
 .btn-outline-white {
@@ -237,7 +237,7 @@ button { cursor: pointer; font-family: var(--font-body); }
 .nav--solid {
   background: rgba(249, 246, 240, 0.92);
   backdrop-filter: blur(12px);
-  box-shadow: 0 1px 0 rgba(28,43,30,0.08);
+  box-shadow: 0 1px 0 rgba(20, 55, 100, 0.08);
 }
 
 .nav__container {
@@ -492,9 +492,9 @@ button { cursor: pointer; font-family: var(--font-body); }
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(28, 53, 38, 0.52) 0%,
-    rgba(28, 43, 30, 0.32) 45%,
-    rgba(20, 35, 25, 0.72) 100%
+    rgba(18, 42, 80, 0.52) 0%,
+    rgba(15, 36, 70, 0.32) 45%,
+    rgba(10, 28, 60, 0.72) 100%
   );
 }
 
@@ -662,7 +662,7 @@ button { cursor: pointer; font-family: var(--font-body); }
 }
 .help-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 24px 48px rgba(28, 43, 30, 0.08);
+  box-shadow: 0 24px 48px rgba(20, 55, 100, 0.08);
 }
 .help-card__icon {
   margin-bottom: 24px;
@@ -959,7 +959,7 @@ button { cursor: pointer; font-family: var(--font-body); }
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 60% at 50% 100%, rgba(90,148,112,0.2) 0%, transparent 70%);
+  background: radial-gradient(ellipse 60% 60% at 50% 100%, rgba(78, 150, 216, 0.2) 0%, transparent 70%);
 }
 .location-section .section-label { color: rgba(220,192,144,0.85); }
 .location-section .section-label::before { background: rgba(220,192,144,0.85); }
@@ -1087,7 +1087,7 @@ button { cursor: pointer; font-family: var(--font-body); }
 .amount-label.is-selected .amount-card {
   border-color: var(--blue);
   background: var(--blue-pale);
-  box-shadow: 0 0 0 3px rgba(59,110,74,0.12);
+  box-shadow: 0 0 0 3px rgba(46, 118, 190, 0.12);
 }
 
 .amount-card__value {
@@ -1305,7 +1305,7 @@ button { cursor: pointer; font-family: var(--font-body); }
 .donate-submit-btn:hover {
   background: var(--blue-dark);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(59,110,74,0.35);
+  box-shadow: 0 8px 24px rgba(46, 118, 190, 0.35);
 }
 
 .security-note {
@@ -1372,7 +1372,7 @@ button { cursor: pointer; font-family: var(--font-body); }
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(28,43,30,0.08);
+  box-shadow: 0 2px 8px rgba(20, 55, 100, 0.08);
   color: var(--blue);
 }
 
