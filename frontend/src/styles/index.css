@@ -1726,6 +1726,14 @@ button { cursor: pointer; font-family: var(--font-body); }
   padding: 48px 0;
 }
 
+.impact-charts-note {
+  margin-top: 16px;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--text-light);
+  text-align: center;
+}
+
 /* Stewardship */
 .impact-stewardship {
   background: linear-gradient(160deg, var(--blue-darker) 0%, #163E46 60%, #0F2E34 100%);

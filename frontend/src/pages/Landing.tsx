@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom'
 import lightbeach from '../assets/beachhearts.webp'
 import handsTogether from '../assets/savingabuse.png'
 import { useScrollReveal } from '../hooks/useScrollReveal'
+import { fetchPublicImpact } from '../api/publicImpact'
+
+const FOUNDED_YEAR = 2018
 
 /* ── Animated counter ─────────────────────────────────── */
 interface StatProps {
@@ -62,6 +65,19 @@ function AnimatedStat({ target, suffix = '', label, className = '' }: StatProps)
 /* ── Landing Page ─────────────────────────────────────── */
 export default function Landing() {
   useScrollReveal()
+
+  const [girlsSupported, setGirlsSupported] = useState(50)
+  const [safehouses, setSafehouses] = useState(2)
+  const yearsOfService = new Date().getFullYear() - FOUNDED_YEAR
+
+  useEffect(() => {
+    fetchPublicImpact()
+      .then(d => {
+        setGirlsSupported(d.okr.value)
+        setSafehouses(d.highlights.safehousesInNetwork)
+      })
+      .catch(() => { /* keep fallback values */ })
+  }, [])
 
   return (
     <>
@@ -125,10 +141,10 @@ export default function Landing() {
       <section className="stats-section" aria-label="Our impact">
         <div className="container">
           <div className="stats-grid">
-            <AnimatedStat target={50} suffix="+" label="Girls Supported" />
-            <AnimatedStat target={8} label="Years of Service" />
+            <AnimatedStat target={girlsSupported} label="Girls Supported" />
+            <AnimatedStat target={yearsOfService} label="Years of Service" />
             <AnimatedStat
-              target={2}
+              target={safehouses}
               label="Safehouses in Costa Rica"
               className="stat--featured"
             />

@@ -15,30 +15,24 @@ export interface PublicImpactOkr {
 export interface PublicImpactHighlights {
   safehousesInNetwork: number
   supportersAllTime: number
-  careTouchpointsLast12Months: number
+  careTouchpointsAllTime: number
 }
 
-export interface PublicImpactTrendWindow {
-  from: string
-  to: string
-  months: number
-}
-
-export interface PublicImpactMonthlyTrendItem {
-  month: string
+export interface PublicImpactQuarterlyTrendItem {
+  quarter: string
   activeResidents: number
   avgEducationProgress: number | null
   avgHealthScore: number | null
   counselingSessions: number
   homeVisits: number
+  progressReportingCount: number
 }
 
 export interface PublicImpactData {
   story: PublicImpactStory
   okr: PublicImpactOkr
   highlights: PublicImpactHighlights
-  trendWindow: PublicImpactTrendWindow
-  monthlyTrend: PublicImpactMonthlyTrendItem[]
+  quarterlyTrend: PublicImpactQuarterlyTrendItem[]
   metricsAsOf: string
 }
 

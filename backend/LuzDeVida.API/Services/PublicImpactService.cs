@@ -15,7 +15,7 @@ public class PublicImpactService
 
     public async Task<PublicImpactDto> GetAsync()
     {
-        // Latest published snapshot — editorial copy only; metric_payload_json unused in v1
+        // Latest published snapshot — editorial copy only
         var snapshot = await _context.public_impact_snapshots
             .Where(s => s.is_published == true)
             .OrderByDescending(s => s.published_at)
@@ -29,48 +29,57 @@ public class PublicImpactService
             StoryPublishedAt: snapshot?.published_at
         );
 
-        // All-time counts (no identifiers exposed)
+        // All-time counts
         var girlsSupported = await _context.residents.CountAsync();
         var safehousesInNetwork = await _context.safehouses.CountAsync();
         var supportersAllTime = await _context.supporters.CountAsync();
 
-        // Trailing 12-month window anchored to the latest available metric month
-        var latestMonth = await _context.safehouse_monthly_metrics
-            .MaxAsync(m => m.month_start);
-
-        DateOnly windowEnd;
-        DateOnly windowStart;
-
-        if (latestMonth.HasValue)
-        {
-            windowEnd = latestMonth.Value;
-            windowStart = windowEnd.AddMonths(-11);
-        }
-        else
-        {
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
-            windowEnd = new DateOnly(today.Year, today.Month, 1);
-            windowStart = windowEnd.AddMonths(-11);
-        }
-
-        var rawMetrics = await _context.safehouse_monthly_metrics
-            .Where(m => m.month_start >= windowStart && m.month_start <= windowEnd)
+        // Pull all metric rows in one query
+        var allMetrics = await _context.safehouse_monthly_metrics
+            .Where(m => m.month_start != null)
             .ToListAsync();
 
-        var monthlyTrend = new List<PublicImpactMonthlyTrendItemDto>(12);
-        var careTouchpoints = 0;
-
-        for (var i = 0; i < 12; i++)
+        if (allMetrics.Count == 0)
         {
-            var monthDate = windowStart.AddMonths(i);
-            var rows = rawMetrics.Where(m => m.month_start == monthDate).ToList();
+            return new PublicImpactDto(
+                Story: story,
+                Okr: new PublicImpactOkrDto("girls_supported_all_time", "Girls supported", girlsSupported,
+                    "Total girls who have received care and shelter in our safehouses since founding."),
+                Highlights: new PublicImpactHighlightsDto(safehousesInNetwork, supportersAllTime, 0),
+                QuarterlyTrend: [],
+                MetricsAsOf: DateOnly.FromDateTime(DateTime.UtcNow)
+            );
+        }
 
-            var activeResidents = rows.Sum(r => r.active_residents ?? 0);
+        var careTouchpointsAllTime = allMetrics.Sum(m => (m.process_recording_count ?? 0) + (m.home_visitation_count ?? 0));
+        var metricsAsOf = allMetrics.Max(m => m.month_start!.Value);
+
+        // Build all-time quarterly trend
+        var firstMonth = allMetrics.Min(m => m.month_start!.Value);
+        var qStart = QuarterStart(firstMonth);
+        var lastQStart = QuarterStart(metricsAsOf);
+
+        var quarterlyTrend = new List<PublicImpactQuarterlyTrendItemDto>();
+
+        while (qStart <= lastQStart)
+        {
+            var qNext = qStart.AddMonths(3);
+            var rows = allMetrics.Where(m => m.month_start >= qStart && m.month_start < qNext).ToList();
+
+            // Active residents: average of monthly org-wide totals (it's a snapshot, not a cumulative)
+            var monthlyResidentTotals = rows
+                .GroupBy(r => r.month_start)
+                .Select(g => g.Sum(r => r.active_residents ?? 0))
+                .ToList();
+            var activeResidents = monthlyResidentTotals.Count > 0
+                ? (int)Math.Round(monthlyResidentTotals.Average())
+                : 0;
+
+            // Care counts: sum across all months and safehouses in the quarter
             var counseling = rows.Sum(r => r.process_recording_count ?? 0);
             var homeVisits = rows.Sum(r => r.home_visitation_count ?? 0);
-            careTouchpoints += counseling + homeVisits;
 
-            // Weighted average by active_residents; fallback to simple average when weight is zero
+            // Education progress: weighted average across all rows with data
             decimal? avgEdu = null;
             var eduRows = rows.Where(r => r.avg_education_progress.HasValue).ToList();
             if (eduRows.Count > 0)
@@ -82,6 +91,7 @@ public class PublicImpactService
                 avgEdu = Math.Round(avgEdu.Value, 1);
             }
 
+            // Health score: weighted average across all rows with data
             decimal? avgHealth = null;
             var healthRows = rows.Where(r => r.avg_health_score.HasValue).ToList();
             if (healthRows.Count > 0)
@@ -93,17 +103,25 @@ public class PublicImpactService
                 avgHealth = Math.Round(avgHealth.Value, 1);
             }
 
-            monthlyTrend.Add(new PublicImpactMonthlyTrendItemDto(
-                Month: monthDate.ToString("MMM yyyy"),
+            var progressReportingCount = rows
+                .Where(r => r.avg_education_progress.HasValue || r.avg_health_score.HasValue)
+                .Select(r => r.safehouse_id)
+                .Distinct()
+                .Count();
+
+            int quarter = (qStart.Month - 1) / 3 + 1;
+            quarterlyTrend.Add(new PublicImpactQuarterlyTrendItemDto(
+                Quarter: $"Q{quarter} {qStart.Year}",
                 ActiveResidents: activeResidents,
                 AvgEducationProgress: avgEdu,
                 AvgHealthScore: avgHealth,
                 CounselingSessions: counseling,
-                HomeVisits: homeVisits
+                HomeVisits: homeVisits,
+                ProgressReportingCount: progressReportingCount
             ));
-        }
 
-        var metricsAsOf = latestMonth ?? DateOnly.FromDateTime(DateTime.UtcNow);
+            qStart = qNext;
+        }
 
         return new PublicImpactDto(
             Story: story,
@@ -116,15 +134,16 @@ public class PublicImpactService
             Highlights: new PublicImpactHighlightsDto(
                 SafehousesInNetwork: safehousesInNetwork,
                 SupportersAllTime: supportersAllTime,
-                CareTouchpointsLast12Months: careTouchpoints
+                CareTouchpointsAllTime: careTouchpointsAllTime
             ),
-            TrendWindow: new PublicImpactTrendWindowDto(
-                From: windowStart,
-                To: windowEnd,
-                Months: 12
-            ),
-            MonthlyTrend: monthlyTrend,
+            QuarterlyTrend: quarterlyTrend,
             MetricsAsOf: metricsAsOf
         );
+    }
+
+    private static DateOnly QuarterStart(DateOnly d)
+    {
+        int firstMonthOfQuarter = ((d.Month - 1) / 3) * 3 + 1;
+        return new DateOnly(d.Year, firstMonthOfQuarter, 1);
     }
 }
