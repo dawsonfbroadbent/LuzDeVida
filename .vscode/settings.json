@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/f9ea5d00-f85a-4cf3-858c-110d8a5e9b69/resourceGroups/appsvc_windows_francecentral/providers/Microsoft.Web/sites/LuzDeVidaBackend",
+    "appService.deploySubpath": "backend\\LuzDeVida.API\\publish"
+}

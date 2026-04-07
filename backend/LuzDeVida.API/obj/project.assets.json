@@ -3154,24 +3154,31 @@
     ]
   },
   "packageFolders": {
-    "/Users/dawsonb/.nuget/packages/": {}
+    "C:\\Users\\joaqu\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/dawsonb/Documents/LuzDeVida/backend/LuzDeVida.API/LuzDeVida.API.csproj",
+      "projectUniqueName": "C:\\Users\\joaqu\\Documents\\IS Junior Core\\Current\\INTEX 2\\LuzDeVida\\backend\\LuzDeVida.API\\LuzDeVida.API.csproj",
       "projectName": "LuzDeVida.API",
-      "projectPath": "/Users/dawsonb/Documents/LuzDeVida/backend/LuzDeVida.API/LuzDeVida.API.csproj",
-      "packagesPath": "/Users/dawsonb/.nuget/packages/",
-      "outputPath": "/Users/dawsonb/Documents/LuzDeVida/backend/LuzDeVida.API/obj/",
+      "projectPath": "C:\\Users\\joaqu\\Documents\\IS Junior Core\\Current\\INTEX 2\\LuzDeVida\\backend\\LuzDeVida.API\\LuzDeVida.API.csproj",
+      "packagesPath": "C:\\Users\\joaqu\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\joaqu\\Documents\\IS Junior Core\\Current\\INTEX 2\\LuzDeVida\\backend\\LuzDeVida.API\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "/Users/dawsonb/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\joaqu\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -3190,7 +3197,7 @@
         "auditLevel": "low",
         "auditMode": "all"
       },
-      "SdkAnalysisLevel": "10.0.100"
+      "SdkAnalysisLevel": "10.0.200"
     },
     "frameworks": {
       "net10.0": {
@@ -3240,7 +3247,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.101/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
