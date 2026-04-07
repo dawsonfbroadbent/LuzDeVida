@@ -1,0 +1,24 @@
+# OS-generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Workspace and editor settings
+.claude/
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.vs/
+
+# User-specific IDE files
+*.suo
+*.user
+*.userosscache
+*.rsuser
+*.sw?
+*.tmp
+
+# Test and coverage output
+TestResults/
+*.coverage
+*.coveragexml

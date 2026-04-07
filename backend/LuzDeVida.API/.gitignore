@@ -1,2 +1,7 @@
-obj/
-bin/
+# .NET build output
+/bin/
+/obj/
+/publish/
+
+# IDE and tooling cache files that can appear under the project
+*.cache
