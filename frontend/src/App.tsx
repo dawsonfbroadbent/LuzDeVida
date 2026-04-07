@@ -5,6 +5,7 @@ import Landing from './pages/Landing'
 import About from './pages/About'
 import Donate from './pages/Donate'
 import Impact from './pages/Impact'
+import HomeVisitations from './pages/HomeVisitations'
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/donate" element={<Donate />} />
           <Route path="/impact" element={<Impact />} />
+          <Route path="/admin/home-visitations" element={<HomeVisitations />} />
         </Routes>
       </main>
       <Footer />
