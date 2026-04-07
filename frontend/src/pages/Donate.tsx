@@ -40,10 +40,6 @@ const FAQ_ITEMS = [
     q: 'Is my payment information secure?',
     a: 'Yes. All payments are processed with 256-bit SSL encryption via Stripe, the same payment infrastructure used by leading nonprofits and Fortune 500 companies worldwide.',
   },
-  {
-    q: 'Can I dedicate my gift in someone\'s honor?',
-    a: 'Yes. You can include a dedication message with your gift. We will acknowledge your dedication in the email receipt and, if you choose, send a notification to the honoree.',
-  },
 ]
 
 /* ── Donate Page ─────────────────────────────────────────── */

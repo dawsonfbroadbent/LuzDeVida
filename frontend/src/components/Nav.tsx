@@ -68,6 +68,14 @@ export default function Nav() {
               </Link>
             </li>
             <li>
+              <Link
+                to="/impact"
+                className={location.pathname === '/impact' ? 'active' : ''}
+              >
+                Impact
+              </Link>
+            </li>
+            <li>
               <Link to="/donate" className="btn btn-primary nav__cta">
                 Donate
               </Link>
@@ -90,6 +98,7 @@ export default function Nav() {
       <nav className={`nav__mobile${menuOpen ? ' is-open' : ''}`} aria-hidden={!menuOpen}>
         <Link to="/">Home</Link>
         <Link to="/about">About</Link>
+        <Link to="/impact">Impact</Link>
         <Link to="/donate" className="btn btn-primary">
           Donate Now
         </Link>
