@@ -154,6 +154,21 @@ button { cursor: pointer; font-family: var(--font-body); }
   transform: translateY(-2px);
 }
 
+/* === ALERTS === */
+.alert {
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.alert-error {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef5350;
+}
+
 /* === ANIMATIONS === */
 @keyframes glow-pulse {
   0%, 100% {

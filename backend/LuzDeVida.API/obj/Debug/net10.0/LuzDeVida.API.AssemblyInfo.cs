@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LuzDeVida.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b13dd6eb45123dfcf0256e9b0da415d0261fc77b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+250131f6f8dacb41b90a7ace77428794b208fa38")]
 [assembly: System.Reflection.AssemblyProductAttribute("LuzDeVida.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LuzDeVida.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
