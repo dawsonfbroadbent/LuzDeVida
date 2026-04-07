@@ -10,10 +10,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute("Bootstrap5")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("LuzDeVida.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f1be981c0051e5d93740e0328383ae5dab318898")]
 [assembly: System.Reflection.AssemblyProductAttribute("LuzDeVida.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LuzDeVida.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
