@@ -133,6 +133,11 @@ export default function Landing() {
               className="stat--featured"
             />
           </div>
+          <div style={{ textAlign: 'center', marginTop: '40px' }}>
+            <Link to="/impact" className="btn btn-outline-blue">
+              See Our Impact
+            </Link>
+          </div>
         </div>
       </section>
 
