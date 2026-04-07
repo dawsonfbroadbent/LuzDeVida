@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react'
-import { fetchHomeVisitations, type home_visitation } from '../api1/HomeVisitationsAPI'
-
-type resident = {
-  resident_id: number
-  case_control_no: string
-  internal_code: string
-}
+import { fetchHomeVisitations, type home_visitation } from '../api/HomeVisitationsAPI'
+import { fetchResidents, type resident } from '../api/ResidentsAPI'
 
 export default function HomeVisitations() {
   const [residents, setResidents] = useState<resident[]>([])
@@ -14,15 +9,14 @@ export default function HomeVisitations() {
 
   // 🔹 Load residents
   useEffect(() => {
-    fetch('https://localhost:5289/api/residents') // CHANGE PORT IF NEEDED
-      .then(res => res.json())
-      .then(data => {
-        setResidents(data)
-        if (data.length > 0) {
-          setSelectedResidentId(data[0].resident_id)
-        }
-      })
-      .catch(err => console.error(err))
+    fetchResidents()
+    .then((data: resident[]) => {
+      setResidents(data)
+      if (data.length > 0) {
+        setSelectedResidentId(data[0].resident_id)
+      }
+    })
+    .catch((err: unknown) => console.error(err))
   }, [])
 
   // 🔹 Load visits when resident changes
