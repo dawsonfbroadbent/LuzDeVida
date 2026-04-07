@@ -1,6 +1,6 @@
 # Luz De Vida
 
-A secure nonprofit operations platform for **Luz De Vida** — an organization operating safehouses for girls who are survivors of sexual abuse or sex trafficking in the Philippines.
+A secure nonprofit operations platform for **Luz De Vida** — an organization operating safehouses for girls who are survivors of sexual abuse or sex trafficking in Costa Rica.
 
 ## Purpose
 
@@ -17,10 +17,10 @@ Luz De Vida gives staff the tools to manage donor relationships, document reside
 ### Staff & Admin (Authenticated)
 - **Admin dashboard** — at-a-glance view of active residents, recent donations, upcoming case conferences, and progress summaries
 - **Donors & Contributions** — manage supporter profiles, track monetary and in-kind contributions, view donation allocations across safehouses
-- **Caseload Inventory** — full resident case management following Philippine social welfare agency structure: demographics, case categories, family profiles, admission details, assigned social workers, and reintegration tracking
+- **Caseload Inventory** — full resident case management following Costa Rica social welfare agency structures: demographics, case categories, family profiles, admission details, assigned social workers, and reintegration tracking
 - **Process Recording** — document counseling sessions per resident, including emotional state, narrative, interventions, and follow-up actions
 - **Home Visitation & Case Conferences** — log field visits and conferences with environment observations, safety concerns, and follow-up actions
-- **Reports & Analytics** — donation trends, resident outcome metrics, safehouse comparisons, reintegration success rates, aligned with the Philippine Annual Accomplishment Report format
+- **Reports & Analytics** — donation trends, resident outcome metrics, safehouse comparisons, reintegration success rates, aligned with the Costa Rica Annual Accomplishment Report format
 
 ### Machine Learning (Integrated into Workflows)
 ML outputs surface directly in dashboards and staff workflows — not as standalone reports:
