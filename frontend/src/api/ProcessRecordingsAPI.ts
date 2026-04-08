@@ -16,49 +16,71 @@ export interface processRecording {
   notes_restricted: string | null
 }
 
-const API_BASE_URL = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api/admin/process-recording'
+const API_ROOT = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api'
+
+const PROCESS_RECORDINGS_URL = `${API_ROOT}/processrecordings`
+const RESIDENTS_URL = `${API_ROOT}/residents`
 
 export async function fetchResidentsForRecording(): Promise<any[]> {
-  const response = await fetch(`${API_BASE_URL}/residents`)
-  if (!response.ok) throw new Error('Failed to fetch residents')
+  const response = await fetch(RESIDENTS_URL)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch residents: ${response.status}`)
+  }
   return response.json()
 }
 
-export async function fetchProcessRecordings(residentId?: number): Promise<processRecording[]> {
-  const url = residentId 
-    ? `${API_BASE_URL}/processrecordings?residentId=${residentId}`
-    : `${API_BASE_URL}/processrecordings`
-  
+export async function fetchProcessRecordings(
+  residentId?: number
+): Promise<processRecording[]> {
+  const url = residentId
+    ? `${PROCESS_RECORDINGS_URL}?residentId=${residentId}`
+    : PROCESS_RECORDINGS_URL
+
   const response = await fetch(url)
-  if (!response.ok) throw new Error('Failed to fetch process recordings')
+  if (!response.ok) {
+    throw new Error(`Failed to fetch process recordings: ${response.status}`)
+  }
   return response.json()
 }
 
-export async function fetchProcessRecordingsByResident(residentId: number): Promise<processRecording[]> {
-  const response = await fetch(`${API_BASE_URL}/processrecordings?residentId=${residentId}`)
-  if (!response.ok) throw new Error('Failed to fetch process recordings for resident')
+export async function fetchProcessRecordingsByResident(
+  residentId: number
+): Promise<processRecording[]> {
+  const response = await fetch(
+    `${PROCESS_RECORDINGS_URL}?residentId=${residentId}`
+  )
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch process recordings for resident: ${response.status}`
+    )
+  }
   return response.json()
 }
 
 export async function createProcessRecording(
   recording: Omit<processRecording, 'recording_id'>
 ): Promise<processRecording> {
-  const response = await fetch(`${API_BASE_URL}/processrecordings`, {
+  const response = await fetch(PROCESS_RECORDINGS_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(recording),
   })
-  if (!response.ok) throw new Error('Failed to create process recording')
+
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(`Failed to create process recording: ${response.status} ${text}`)
+  }
+
   return response.json()
 }
 
 export async function updateProcessRecording(
   recordingId: number,
-  recording: Omit<processRecording, 'recording_id' | 'resident_id'>
+  recording: Omit<processRecording, 'recording_id'>
 ): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/processrecordings/${recordingId}`, {
+  const response = await fetch(`${PROCESS_RECORDINGS_URL}/${recordingId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -68,12 +90,20 @@ export async function updateProcessRecording(
       recording_id: recordingId,
     }),
   })
-  if (!response.ok) throw new Error('Failed to update process recording')
+
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(`Failed to update process recording: ${response.status} ${text}`)
+  }
 }
 
 export async function deleteProcessRecording(recordingId: number): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/processrecordings/${recordingId}`, {
+  const response = await fetch(`${PROCESS_RECORDINGS_URL}/${recordingId}`, {
     method: 'DELETE',
   })
-  if (!response.ok) throw new Error('Failed to delete process recording')
+
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(`Failed to delete process recording: ${response.status} ${text}`)
+  }
 }
