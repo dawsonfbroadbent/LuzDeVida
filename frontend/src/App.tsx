@@ -26,7 +26,7 @@ export default function App() {
             <Route path="/impact" element={<Impact />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/admin/home-visitations" element={<HomeVisitations />} />
+            <Route path="/homevisitations" element={<HomeVisitations />} />
           <Route path="/admin/caseload-inventory" element={<CaseloadInventory />} />
           <Route path="/admin/process-recording" element={<ProcessRecording />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
