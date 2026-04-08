@@ -30,7 +30,7 @@ const EMPTY_FORM: CreateSupporterPayload = {
   acquisitionChannel: '',
 }
 
-const CONTRIBUTION_TYPES = ['monetary', 'in-kind', 'time', 'skills', 'social_media']
+// const CONTRIBUTION_TYPES = ['monetary', 'in-kind', 'time', 'skills', 'social_media']
 
 const PILL_LABELS: Record<string, string> = {
   monetary: 'Monetary',
