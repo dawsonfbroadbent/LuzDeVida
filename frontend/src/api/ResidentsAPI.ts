@@ -9,7 +9,7 @@ export interface resident {
   reintegration_status: string | null
 }
 
-const API_URL = 'http://localhost:5289/api/residents'
+const API_URL = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api/Residents'
 // change the port if your HTTPS backend uses a different one
 
 export const fetchResidents = async (): Promise<resident[]> => {

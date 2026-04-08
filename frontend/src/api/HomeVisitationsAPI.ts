@@ -1,6 +1,7 @@
 export interface home_visitation {
   visitation_id: number
   resident_id: number
+  resident?: any
   visit_date: string
   social_worker: string
   visit_type: string
@@ -15,7 +16,7 @@ export interface home_visitation {
   visit_outcome: string
 }
 
-const API_URL = 'http://localhost:5289/api/homevisitations'
+const API_URL = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api/homevisitations'
 
 export const fetchHomeVisitations = async (
   residentId: number
@@ -47,12 +48,14 @@ export const addHomeVisitation = async (
     })
 
     if (!response.ok) {
-      throw new Error(`FAILED TO ADD HOME VISITATION: ${response.statusText}`)
+      const errorText = await response.text()
+      throw new Error(errorText || `FAILED TO ADD HOME VISITATION: ${response.status}`)
     }
 
     return await response.json()
   } catch (error) {
     console.error('Error adding home visitation:', error)
+    console.error('Backend URL:', API_URL)
     throw error
   }
 }

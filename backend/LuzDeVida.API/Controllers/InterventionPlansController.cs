@@ -51,12 +51,12 @@ namespace LuzDeVida.API.Controllers
 
         // POST: api/interventionplans
         [HttpPost]
-        public async Task<ActionResult<intervention_plan>> PostInterventionPlan(intervention_plan plan)
+        public IActionResult PostInterventionPlan([FromBody] intervention_plan plan)
         {
             _context.intervention_plans.Add(plan);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
-            return CreatedAtAction(nameof(GetInterventionPlan), new { id = plan.plan_id }, plan);
+            return Ok(plan);
         }
 
         // PUT: api/interventionplans/5
