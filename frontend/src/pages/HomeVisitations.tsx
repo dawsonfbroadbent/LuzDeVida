@@ -351,38 +351,31 @@ export default function HomeVisitations() {
   }
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A'
-    return new Date(dateString).toLocaleDateString()
+  if (!dateString) return 'N/A'
+  return dateString.split('T')[0]
   }
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+  .toISOString()
+  .split('T')[0]
 
-  const upcomingPlans = [...plans]
-    .filter((p) => {
-      if (!p.case_conference_date) return false
-      const conferenceDate = new Date(p.case_conference_date)
-      conferenceDate.setHours(0, 0, 0, 0)
-      return conferenceDate >= today
-    })
-    .sort(
-      (a, b) =>
-        new Date(a.case_conference_date ?? '').getTime() -
-        new Date(b.case_conference_date ?? '').getTime()
-    )
+const upcomingPlans = [...plans]
+  .filter((p) => {
+    if (!p.case_conference_date) return false
+    return p.case_conference_date.split('T')[0] >= today
+  })
+  .sort((a, b) =>
+    (a.case_conference_date ?? '').localeCompare(b.case_conference_date ?? '')
+  )
 
-  const pastPlans = [...plans]
-    .filter((p) => {
-      if (!p.case_conference_date) return true
-      const conferenceDate = new Date(p.case_conference_date)
-      conferenceDate.setHours(0, 0, 0, 0)
-      return conferenceDate < today
-    })
-    .sort(
-      (a, b) =>
-        new Date(b.case_conference_date ?? '').getTime() -
-        new Date(a.case_conference_date ?? '').getTime()
-    )
+const pastPlans = [...plans]
+  .filter((p) => {
+    if (!p.case_conference_date) return true
+    return p.case_conference_date.split('T')[0] < today
+  })
+  .sort((a, b) =>
+    (b.case_conference_date ?? '').localeCompare(a.case_conference_date ?? '')
+  )
 
   const blueButtonStyle = {
     backgroundColor: '#63c7d8',
