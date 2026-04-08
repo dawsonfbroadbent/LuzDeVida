@@ -92,6 +92,11 @@ export default function Nav() {
               </Link>
             </li>
             <li>
+              <Link to="/homevisitations" className={location.pathname === '/homevisitations' ? 'active' : ''}>
+                Home Visitations
+              </Link>
+            </li>
+            <li>
               <Link to="/donate" className="btn btn-primary nav__cta">
                 Donate
               </Link>
