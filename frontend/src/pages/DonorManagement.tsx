@@ -60,10 +60,10 @@ const EMPTY_FORM: CreateSupporterPayload = {
 
 const PILL_LABELS: Record<string, string> = {
   monetary: 'Monetary',
-  'in-kind': 'In-Kind',
+  InKind: 'In-Kind',
   time: 'Time',
   skills: 'Skills',
-  social_media: 'Social',
+  SocialMedia: 'Social',
 }
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100, 9999]
@@ -432,10 +432,10 @@ export default function DonorManagement() {
           >
             <option value="All">All Contributions</option>
             <option value="monetary">Monetary</option>
-            <option value="in-kind">In-Kind</option>
+            <option value="InKind">In-Kind</option>
             <option value="time">Time</option>
             <option value="skills">Skills</option>
-            <option value="social_media">Social Media</option>
+            <option value="SocialMedia">Social Media</option>
           </select>
           <select
             className="dm-filter-select"

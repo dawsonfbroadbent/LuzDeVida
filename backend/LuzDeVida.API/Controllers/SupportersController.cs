@@ -43,12 +43,9 @@ public class SupportersController : ControllerBase
                 .Distinct()
                 .CountAsync();
 
-            var inKindDonors = await _context.donations
+            var inKindDonors = await _context.supporters
                 .AsNoTracking()
-                .Where(d => d.donation_type == "in-kind")
-                .Select(d => d.supporter_id)
-                .Distinct()
-                .CountAsync();
+                .CountAsync(s => s.supporter_type == "InKindDonor");
 
             var avgDonation = await _context.donations
                 .AsNoTracking()
