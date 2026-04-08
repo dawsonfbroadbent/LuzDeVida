@@ -462,6 +462,104 @@ button { cursor: pointer; font-family: var(--font-body); }
   color: rgba(255,255,255,0.3);
   font-size: 13px;
 }
+.footer__legal-link {
+  color: rgba(255,255,255,0.45);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s;
+}
+.footer__legal-link:hover { color: rgba(255,255,255,0.75); }
+
+/* ============================================================
+   PRIVACY POLICY
+   ============================================================ */
+.privacy-policy {
+  padding: calc(var(--nav-height) + 64px) 0 96px;
+  background: var(--cream);
+}
+.privacy-policy__header {
+  max-width: 680px;
+  margin-bottom: 56px;
+}
+.privacy-policy__eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal-dark);
+  margin-bottom: 12px;
+}
+.privacy-policy__header h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: var(--text-dark);
+  margin-bottom: 12px;
+}
+.privacy-policy__meta {
+  font-size: 14px;
+  color: var(--text-light);
+}
+.privacy-policy__body {
+  max-width: 740px;
+}
+.privacy-policy__body section {
+  margin-bottom: 48px;
+}
+.privacy-policy__body h2 {
+  font-size: 1.25rem;
+  color: var(--text-dark);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--cream-darker);
+}
+.privacy-policy__body p {
+  margin-bottom: 12px;
+}
+.privacy-policy__body ul {
+  margin: 8px 0 12px 20px;
+}
+.privacy-policy__body ul li {
+  color: var(--text-mid);
+  line-height: 1.75;
+  margin-bottom: 6px;
+}
+.privacy-policy__body address {
+  font-style: normal;
+  line-height: 1.9;
+  color: var(--text-mid);
+}
+.privacy-policy__body a {
+  color: var(--teal-dark);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.privacy-policy__body a:hover { color: var(--blue-darker); }
+.privacy-policy__table-wrap {
+  overflow-x: auto;
+  margin: 16px 0;
+  border-radius: 8px;
+  border: 1px solid var(--cream-darker);
+}
+.privacy-policy__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.privacy-policy__table th {
+  background: var(--cream-dark);
+  color: var(--text-dark);
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 14px;
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+.privacy-policy__table td {
+  padding: 10px 14px;
+  color: var(--text-mid);
+  vertical-align: top;
+  border-top: 1px solid var(--cream-darker);
+}
+.privacy-policy__table tr:nth-child(even) td { background: var(--sand-pale); }
 
 /* ============================================================
    LANDING PAGE — Hero

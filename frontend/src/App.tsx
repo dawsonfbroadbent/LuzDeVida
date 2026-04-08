@@ -11,6 +11,7 @@ import CaseloadInventory from './pages/CaseloadInventory'
 import ProcessRecording from './pages/ProcessRecording'
 import AdminDashboard from './pages/AdminDashboard'
 import Login from './pages/Login'
+import PrivacyPolicy from './pages/PrivacyPolicy'
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/admin/home-visitations" element={<HomeVisitations />} />
           <Route path="/admin/caseload-inventory" element={<CaseloadInventory />} />
           <Route path="/admin/process-recording" element={<ProcessRecording />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
           </Routes>
         </main>
         <Footer />
