@@ -65,17 +65,43 @@ namespace LuzDeVida.API.Controllers
         [HttpPost]
         public async Task<ActionResult<process_recording>> PostProcessRecording(process_recording recording)
         {
-            // Verify resident exists
-            var resident = await _context.residents.FindAsync(recording.resident_id);
-            if (resident == null)
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+
+            try
             {
-                return BadRequest("Resident not found");
+                // Verify resident exists
+                var resident = await _context.residents.FindAsync(recording.resident_id);
+
+                if (resident == null)
+                {
+                    return BadRequest("Resident not found");
+                }
+
+                // Generate next recording ID
+                var maxId = await _context.process_recordings
+                    .AsNoTracking()
+                    .Select(pr => (int?)pr.recording_id)
+                    .MaxAsync() ?? 0;
+
+                recording.recording_id = maxId + 1;
+
+                _context.process_recordings.Add(recording);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return CreatedAtAction(
+                    nameof(GetProcessRecording),
+                    new { id = recording.recording_id },
+                    recording
+                );
             }
-
-            _context.process_recordings.Add(recording);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetProcessRecording), new { id = recording.recording_id }, recording);
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, $"Failed to create process recording: {ex.Message}");
+            }
         }
 
         // PUT: api/process-recordings/5
