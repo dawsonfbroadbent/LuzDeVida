@@ -58,7 +58,10 @@ export default function Footer() {
 
         <div className="footer__bottom">
           <p>© {new Date().getFullYear()} Luz De Vida. All rights reserved.</p>
-          <p>A registered 501(c)(3) nonprofit organization.</p>
+          <p>
+            A nonprofit organization.{' '}
+            <Link to="/privacy" className="footer__legal-link">Privacy Policy</Link>
+          </p>
         </div>
       </div>
     </footer>
