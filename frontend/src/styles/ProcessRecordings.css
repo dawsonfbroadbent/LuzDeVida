@@ -1,0 +1,594 @@
+/* Process Recordings Page */
+.process-recordings {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.process-recordings-header {
+  margin-bottom: 2rem;
+}
+
+.process-recordings-header h1 {
+  font-size: 2rem;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+}
+
+.process-recordings-header .subtitle {
+  font-size: 1rem;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Alerts */
+.error-alert,
+.success-alert {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-alert {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+}
+
+.success-alert {
+  background-color: #efe;
+  border: 1px solid #cfc;
+  color: #3c3;
+}
+
+.alert-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 1rem;
+}
+
+.alert-close:hover {
+  opacity: 0.7;
+}
+
+/* Resident Selector */
+.resident-selector {
+  background: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border: 1px solid #ddd;
+}
+
+.resident-selector h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.selector-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.selector-group {
+  flex: 1;
+  min-width: 250px;
+}
+
+.selector-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.selector-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.selector-group select:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
+}
+
+/* Action Buttons */
+.action-bar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background-color: #666;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #555;
+}
+
+/* Recordings Timeline */
+.recordings-timeline {
+  margin-top: 2rem;
+}
+
+.timeline-empty {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  color: #999;
+  border: 1px dashed #ddd;
+}
+
+.timeline-empty p {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.timeline-entry {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.timeline-entry:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-entry.expanded {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  cursor: pointer;
+  user-select: none;
+}
+
+.timeline-header:hover {
+  background: #fafafa;
+  margin: -1.5rem;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.timeline-meta {
+  flex: 1;
+}
+
+.timeline-date {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+}
+
+.timeline-info {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0 0 0;
+  font-size: 0.95rem;
+}
+
+.timeline-info-item {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.timeline-info-label {
+  font-weight: 500;
+  color: #666;
+  min-width: 100px;
+}
+
+.timeline-info-value {
+  color: #333;
+}
+
+.timeline-expand-icon {
+  font-size: 1.2rem;
+  color: #999;
+  margin-left: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.timeline-entry.expanded .timeline-expand-icon {
+  transform: rotate(180deg);
+}
+
+.timeline-details {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+}
+
+.detail-section {
+  margin-bottom: 1.5rem;
+}
+
+.detail-section h4 {
+  margin: 0 0 0.75rem 0;
+  color: #555;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-section p {
+  margin: 0;
+  color: #333;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.timeline-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+}
+
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.btn-edit {
+  background-color: #2196F3;
+  color: white;
+}
+
+.btn-edit:hover {
+  background-color: #1976D2;
+  transform: translateY(-1px);
+}
+
+.btn-delete {
+  background-color: #f44336;
+  color: white;
+}
+
+.btn-delete:hover {
+  background-color: #da190b;
+  transform: translateY(-1px);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 700px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
+  background: #f9f9f9;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+}
+
+.modal-close:hover {
+  color: #333;
+}
+
+/* Form */
+.recording-form {
+  padding: 1.5rem;
+}
+
+.form-section {
+  margin-bottom: 1.5rem;
+}
+
+.form-section h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-row.full {
+  grid-template-columns: 1fr;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid #eee;
+  background: #f9f9f9;
+  justify-content: flex-end;
+}
+
+.modal-footer button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-footer .btn-primary {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.modal-footer .btn-primary:hover {
+  background-color: #45a049;
+}
+
+.modal-footer .btn-secondary {
+  background-color: #999;
+  color: white;
+}
+
+.modal-footer .btn-secondary:hover {
+  background-color: #777;
+}
+
+/* Delete Confirmation */
+.delete-confirm-box {
+  background: #fee;
+  border: 2px solid #fcc;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.delete-confirm-box p {
+  margin: 0 0 0.5rem 0;
+  color: #c33;
+  font-weight: 500;
+}
+
+.delete-confirm-box p:last-child {
+  margin: 0;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.btn-confirm-delete,
+.btn-confirm-cancel {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-confirm-delete {
+  background-color: #f44336;
+  color: white;
+}
+
+.btn-confirm-delete:hover {
+  background-color: #da190b;
+}
+
+.btn-confirm-cancel {
+  background-color: #ddd;
+  color: #333;
+}
+
+.btn-confirm-cancel:hover {
+  background-color: #ccc;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .process-recordings {
+    padding: 1rem;
+  }
+
+  .process-recordings-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .selector-row {
+    flex-direction: column;
+  }
+
+  .selector-group {
+    min-width: auto;
+  }
+
+  .timeline-info {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .modal-content {
+    width: 95%;
+  }
+
+  .action-bar {
+    flex-direction: column;
+  }
+
+  .action-bar button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .timeline-meta {
+    min-width: 0;
+  }
+
+  .timeline-expand-icon {
+    margin-left: auto;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .modal-footer button {
+    width: 100%;
+  }
+}
