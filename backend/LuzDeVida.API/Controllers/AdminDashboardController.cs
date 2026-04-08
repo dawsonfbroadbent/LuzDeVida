@@ -150,7 +150,8 @@ public class AdminDashboardMetrics
     public ProgressDataDto progress_data { get; set; } = new();
     public int safehouses_total { get; set; }
     public decimal? healing_index { get; set; }
-    public 
+    public DateTime timestamp { get; set; }
+}
 
 public class ResidentBySafehouseDto
 {
