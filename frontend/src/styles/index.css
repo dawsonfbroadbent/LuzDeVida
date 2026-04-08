@@ -1441,6 +1441,126 @@ button { cursor: pointer; font-family: var(--font-body); }
   margin: 0 auto;
 }
 
+/* DONATE — Auth gate */
+.donate-auth-gate {
+  padding: 40px 36px 36px;
+  animation: fade-up 0.5s var(--ease);
+}
+.donate-auth-gate__icon {
+  width: 60px;
+  height: 60px;
+  background: var(--blue-pale);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 20px;
+}
+.donate-auth-gate h3 {
+  font-size: 1.45rem;
+  margin-bottom: 12px;
+}
+.donate-auth-gate__reason {
+  font-size: 14px;
+  color: var(--text-light);
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+.donate-auth-gate__benefits {
+  list-style: none;
+  margin: 0 0 28px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.donate-auth-gate__benefits li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.donate-auth-gate__benefits li svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.donate-auth-gate__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+}
+.donate-auth-gate__register-link {
+  font-size: 14px;
+  color: var(--blue);
+  text-decoration: none;
+  font-weight: 500;
+}
+.donate-auth-gate__register-link:hover {
+  text-decoration: underline;
+}
+
+/* DONATE — Error message */
+.donate-error-msg {
+  font-size: 13px;
+  color: #c0392b;
+  background: #fdf2f2;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+
+/* IN-KIND SECTION */
+.inkind-section {
+  padding: 64px 0 0;
+}
+.inkind-card {
+  background: var(--jungle);
+  border-radius: 20px;
+  overflow: hidden;
+  padding: 48px 52px;
+  display: flex;
+  align-items: center;
+}
+.inkind-card__body {
+  max-width: 600px;
+}
+.inkind-card__body h3 {
+  color: var(--cream);
+  font-size: 1.6rem;
+  margin-bottom: 12px;
+}
+.inkind-card__body p {
+  color: rgba(249, 246, 240, 0.8);
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+.inkind-card__body .section-label {
+  color: var(--sand);
+  opacity: 1;
+  display: flex;
+}
+.inkind-email-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--sand);
+  color: var(--cream);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 22px;
+  border-radius: 10px;
+  transition: opacity 0.2s;
+}
+.inkind-email-btn:hover {
+  opacity: 0.88;
+}
+
 /* DONATE — Trust signals */
 .trust-section {
   background: var(--cream-dark);

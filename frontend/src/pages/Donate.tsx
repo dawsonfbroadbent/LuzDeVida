@@ -1,5 +1,8 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useScrollReveal } from '../hooks/useScrollReveal'
+import { useAuth } from '../context/AuthContext'
+import { createDonation } from '../api/DonationAPI'
 
 /* ── Types ──────────────────────────────────────────────── */
 type Frequency = 'once' | 'monthly'
@@ -46,18 +49,24 @@ const FAQ_ITEMS = [
 export default function Donate() {
   useScrollReveal()
 
+  const { isAuthenticated, token } = useAuth()
+
   const [frequency, setFrequency] = useState<Frequency>('once')
   const [selectedAmount, setSelectedAmount] = useState<number | null>(50)
   const [isCustom, setIsCustom] = useState(false)
   const [customValue, setCustomValue] = useState('')
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const amounts = frequency === 'once' ? ONCE_AMOUNTS : MONTHLY_AMOUNTS
   const impactText =
     selectedAmount && IMPACT[frequency][selectedAmount]
       ? IMPACT[frequency][selectedAmount]
       : 'Every dollar you give goes directly to supporting girls in our care.'
+
+  const finalAmount = isCustom ? parseFloat(customValue) : (selectedAmount ?? 0)
 
   const handleFrequency = (f: Frequency) => {
     setFrequency(f)
@@ -77,9 +86,30 @@ export default function Donate() {
     setSelectedAmount(null)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: { preventDefault(): void }) => {
     e.preventDefault()
-    setSubmitted(true)
+    setSubmitError(null)
+
+    if (!finalAmount || finalAmount <= 0) {
+      setSubmitError('Please enter a valid donation amount.')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      await createDonation(
+        {
+          amount: finalAmount,
+          isRecurring: frequency === 'monthly',
+        },
+        token!,
+      )
+      setSubmitted(true)
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -212,7 +242,7 @@ export default function Donate() {
               </p>
             </div>
 
-            {/* Right — Form */}
+            {/* Right — Form or Auth Gate */}
             <div>
               <div className="donate-form-card">
                 {submitted ? (
@@ -230,116 +260,128 @@ export default function Donate() {
                     </div>
                     <h3>Thank You!</h3>
                     <p>
-                      Your generosity means the world to us — and to the girls
-                      whose lives you're helping to change.
+                      Your donation has been recorded. You'll receive an update by email
+                      once we've allocated your gift and can share its impact.
                     </p>
                   </div>
-                ) : (
-                  <form onSubmit={handleSubmit} noValidate>
-                    <h3>Your Information</h3>
-
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label htmlFor="first-name">First Name</label>
-                        <input
-                          id="first-name"
-                          type="text"
-                          placeholder="Jane"
-                          required
+                ) : !isAuthenticated ? (
+                  /* ── Auth Gate ── */
+                  <div className="donate-auth-gate">
+                    <div className="donate-auth-gate__icon" aria-hidden="true">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12Z"
+                          stroke="var(--blue)"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="last-name">Last Name</label>
-                        <input
-                          id="last-name"
-                          type="text"
-                          placeholder="Smith"
-                          required
+                        <path
+                          d="M4 20C4 17.33 7.58 15 12 15C13.12 15 14.18 15.17 15.14 15.47"
+                          stroke="var(--blue)"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
                         />
-                      </div>
-                    </div>
-
-                    <div className="form-group">
-                      <label htmlFor="email">Email Address</label>
-                      <input
-                        id="email"
-                        type="email"
-                        placeholder="jane@example.com"
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label htmlFor="dedication">
-                        Dedication{' '}
-                        <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, fontSize: '12px' }}>
-                          (optional)
-                        </span>
-                      </label>
-                      <input
-                        id="dedication"
-                        type="text"
-                        placeholder="In honor of / In memory of..."
-                      />
-                    </div>
-
-                    {/* Card info */}
-                    <div style={{ marginBottom: '18px' }}>
-                      <span className="card-field-label">Card Information</span>
-                      <div className="card-field-group">
-                        <input
-                          type="text"
-                          className="card-field-input"
-                          placeholder="Card number"
-                          maxLength={19}
-                          inputMode="numeric"
-                          autoComplete="cc-number"
-                        />
-                        <div className="card-field-row">
-                          <input
-                            type="text"
-                            className="card-field-input"
-                            placeholder="MM / YY"
-                            maxLength={7}
-                            autoComplete="cc-exp"
-                          />
-                          <input
-                            type="text"
-                            className="card-field-input"
-                            placeholder="CVV"
-                            maxLength={4}
-                            autoComplete="cc-csc"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <label className="form-checkbox">
-                      <input type="checkbox" defaultChecked />
-                      <span>
-                        Keep me updated on how my gift is making a difference.
-                      </span>
-                    </label>
-
-                    <button type="submit" className="donate-submit-btn">
-                      Complete Donation{' '}
-                      {selectedAmount && !isCustom
-                        ? `— $${selectedAmount}${frequency === 'monthly' ? '/mo' : ''}`
-                        : customValue
-                        ? `— $${customValue}`
-                        : ''}
-                    </button>
-
-                    <div className="security-note">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                        <path d="M7 11V7C7 4.24 9.24 2 12 2C14.76 2 17 4.24 17 7V11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                        <rect x="14" y="15" width="7" height="6" rx="1.5" stroke="var(--blue)" strokeWidth="1.5"/>
+                        <path d="M16 15V13.5C16 12.67 16.67 12 17.5 12C18.33 12 19 12.67 19 13.5V15" stroke="var(--blue)" strokeWidth="1.5" strokeLinecap="round"/>
                       </svg>
-                      256-bit SSL encrypted · Powered by Stripe
                     </div>
+
+                    <h3>Sign in to complete your gift</h3>
+
+                    <p className="donate-auth-gate__reason">
+                      To donate, please log in or create a free supporter account. This
+                      allows us to:
+                    </p>
+
+                    <ul className="donate-auth-gate__benefits">
+                      <li>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M5 13L9 17L19 7" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        Track your donation and link it to real outcomes
+                      </li>
+                      <li>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M5 13L9 17L19 7" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        Inform you of how your gift was allocated
+                      </li>
+                      <li>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M5 13L9 17L19 7" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        Share impact updates on the girls your generosity supports
+                      </li>
+                      <li>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M5 13L9 17L19 7" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        Send your tax-deductible donation receipt
+                      </li>
+                    </ul>
+
+                    <div className="donate-auth-gate__actions">
+                      <Link to="/login?tab=login&redirect=/donate" className="donate-submit-btn" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
+                        Log In
+                      </Link>
+                      <Link to="/login?tab=register&redirect=/donate" className="donate-auth-gate__register-link">
+                        Create a free supporter account
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  /* ── Donation Form ── */
+                  <form onSubmit={handleSubmit} noValidate>
+                    <h3>Complete Your Gift</h3>
+
+                    {submitError && (
+                      <p className="donate-error-msg" role="alert">{submitError}</p>
+                    )}
+
+                    <button
+                      type="submit"
+                      className="donate-submit-btn"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting
+                        ? 'Processing…'
+                        : `Complete Donation${
+                            finalAmount > 0
+                              ? ` — $${finalAmount}${frequency === 'monthly' ? '/mo' : ''}`
+                              : ''
+                          }`}
+                    </button>
                   </form>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── In-Kind Donation ──────────────────────────── */}
+      <section className="inkind-section">
+        <div className="container">
+          <div className="inkind-card reveal">
+            <div className="inkind-card__body">
+              <span className="section-label" style={{ marginBottom: '8px' }}>Another Way to Help</span>
+              <h3>Giving Goods or Services?</h3>
+              <p>
+                We gratefully accept in-kind donations — clothing, school supplies,
+                hygiene products, professional services, and more. Reach out and
+                we'll coordinate the details together.
+              </p>
+              <a
+                href="mailto:info@luzdevida.org?subject=In-Kind%20Donation%20Inquiry"
+                className="inkind-email-btn"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                  <path d="M22 6L12 13L2 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                Email us at info@luzdevida.org
+              </a>
             </div>
           </div>
         </div>

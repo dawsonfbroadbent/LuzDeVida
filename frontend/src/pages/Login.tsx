@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import * as AuthAPI from '../api/AuthAPI'
 
@@ -41,9 +41,12 @@ function validate(form: LoginForm | RegisterForm, tab: Tab): string | null {
 
 export default function Login() {
   const { login } = useAuth()
-  const navigate   = useNavigate()
+  const navigate        = useNavigate()
+  const [searchParams]  = useSearchParams()
+  const redirectTo      = searchParams.get('redirect') ?? '/'
+  const tabParam        = searchParams.get('tab')
 
-  const [tab, setTab]           = useState<Tab>('login')
+  const [tab, setTab]           = useState<Tab>(tabParam === 'register' ? 'register' : 'login')
   const [error, setError]       = useState<string | null>(null)
   const [success, setSuccess]   = useState<string | null>(null)
   const [loading, setLoading]   = useState(false)
@@ -76,7 +79,7 @@ export default function Login() {
         displayName: res.displayName,
         role:        res.role,
       })
-      navigate('/')
+      navigate(redirectTo)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.')
     } finally {
@@ -107,7 +110,7 @@ export default function Login() {
         role:        res.role,
       })
       setSuccess(`Welcome, ${res.displayName}! Your account has been created.`)
-      setTimeout(() => navigate('/'), 1500)
+      setTimeout(() => navigate(redirectTo), 1500)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Registration failed. Please try again.')
     } finally {
