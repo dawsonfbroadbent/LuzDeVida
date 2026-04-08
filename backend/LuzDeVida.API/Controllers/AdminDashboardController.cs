@@ -24,37 +24,80 @@ public class AdminDashboardController : ControllerBase
     {
         try
         {
-            // Count active residents by safehouse
-            var residentsByShell = await _context.residents
-                .Where(r => r.case_status == "Active")
-                .GroupBy(r => r.safehouse_id)
-                .Select(g => new ResidentBySafehouseDto
+            var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+            var thisMonth = new DateOnly(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+            var lastMonthStart = thisMonth.AddMonths(-1);
+            var lastMonthEnd = thisMonth.AddDays(-1);
+
+            // ========== CRITICAL OPTIMIZATION: Load only required data once ==========
+            
+            // Single query: all residents (only needed fields)
+            var allResidentsData = await _context.residents
+                .Select(r => new
                 {
-                    safehouse_id = g.Key,
-                    count = g.Count()
+                    r.resident_id,
+                    r.safehouse_id,
+                    r.case_status,
+                    r.date_of_admission,
+                    r.date_of_birth,
+                    r.reintegration_status
                 })
                 .ToListAsync();
 
-            // Get safehouse info for resident counts
-            var safehouses = await _context.safehouses.ToListAsync();
-            var residentsWithSafehouse = new List<ResidentBySafehouseWithNameDto>();
-            
-            foreach (var shell in residentsByShell)
-            {
-                var safehouse = safehouses.FirstOrDefault(s => s.safehouse_id == shell.safehouse_id);
-                residentsWithSafehouse.Add(new ResidentBySafehouseWithNameDto
+            // Single query: all intervention plans (only needed fields)
+            var allPlansData = await _context.intervention_plans
+                .Select(ip => new
                 {
-                    safehouse_id = shell.safehouse_id,
-                    safehouse_name = safehouse?.name ?? "Unknown",
-                    active_resident_count = shell.count
-                });
-            }
+                    ip.plan_id,
+                    ip.resident_id,
+                    ip.plan_category,
+                    ip.created_at,
+                    ip.updated_at,
+                    ip.target_date,
+                    ip.status
+                })
+                .ToListAsync();
 
-            // Total active residents
-            var totalActiveResidents = residentsWithSafehouse.Sum(r => r.active_resident_count);
+            // Single query: partner assignments (only needed fields)
+            var partnerAssignmentsData = await _context.partner_assignments
+                .Select(pa => new
+                {
+                    pa.partner_id,
+                    pa.assignment_start,
+                    pa.assignment_end
+                })
+                .ToListAsync();
 
-            // Recent donations (last 30 days)
-            var thirtyDaysAgo = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30));
+            // Single query: safehouse names
+            var safehousesMap = await _context.safehouses
+                .Select(s => new { s.safehouse_id, s.name })
+                .ToDictionaryAsync(s => s.safehouse_id);
+
+            // ========== RESIDENTS OVERVIEW ==========
+            
+            var activeResidentsData = allResidentsData.Where(r => r.case_status == "Active").ToList();
+            var totalActiveResidents = activeResidentsData.Count;
+
+            // Residents by safehouse
+            var residentsWithSafehouse = activeResidentsData
+                .GroupBy(r => r.safehouse_id)
+                .Select(g =>
+                {
+                    var safehouseName = g.Key.HasValue && safehousesMap.ContainsKey(g.Key.Value) 
+                        ? safehousesMap[g.Key.Value].name 
+                        : "Unknown";
+                    return new ResidentBySafehouseWithNameDto
+                    {
+                        safehouse_id = g.Key ?? 0,
+                        safehouse_name = safehouseName,
+                        active_resident_count = g.Count()
+                    };
+                })
+                .ToList();
+
+            // ========== DONATIONS ==========
+            
+            var thirtyDaysAgo = today.AddDays(-30);
             var recentDonations = await _context.donations
                 .Where(d => d.donation_date.HasValue && d.donation_date >= thirtyDaysAgo)
                 .OrderByDescending(d => d.donation_date)
@@ -69,12 +112,11 @@ public class AdminDashboardController : ControllerBase
                 })
                 .ToListAsync();
 
-            // Calculate total recent donations
             var totalRecentDonations = recentDonations.Sum(d => d.amount ?? 0);
             var recentDonationCount = recentDonations.Count;
 
-            // Upcoming case conferences (next 14 days)
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            // ========== CASE CONFERENCES ==========
+            
             var twoWeeksFromNow = today.AddDays(14);
             var upcomingConferences = await _context.intervention_plans
                 .Where(ip => ip.case_conference_date.HasValue && 
@@ -91,7 +133,8 @@ public class AdminDashboardController : ControllerBase
                 })
                 .ToListAsync();
 
-            // Active intervention plans
+            // ========== INTERVENTION PLANS ==========
+            
             var activeInterventionPlans = await _context.intervention_plans
                 .Where(ip => ip.status != "Completed" && ip.status != "Closed")
                 .OrderBy(ip => ip.target_date)
@@ -106,7 +149,8 @@ public class AdminDashboardController : ControllerBase
                 })
                 .ToListAsync();
 
-            // Home visitations this week (7 days)
+            // ========== HOME VISITATIONS ==========
+            
             var weekFromNow = today.AddDays(7);
             var homeVisitationsThisWeek = await _context.home_visitations
                 .Where(hv => hv.visit_date.HasValue && 
@@ -125,11 +169,11 @@ public class AdminDashboardController : ControllerBase
 
             // ========== CASE MANAGEMENT PROGRESS METRICS ==========
             
-            // Get all residents (active and closed) for calculations
-            var allResidents = await _context.residents.ToListAsync();
-            var activeResidents = allResidents.Where(r => r.case_status == "Active").ToList();
+            var activeResidents = activeResidentsData.ToList();
+            var allResidents = allResidentsData.ToList();
+            var allPlans = allPlansData.ToList();
             
-            // Average length of stay (days)
+            // Average length of stay
             var avgLengthOfStay = 0m;
             if (activeResidents.Count > 0)
             {
@@ -142,7 +186,7 @@ public class AdminDashboardController : ControllerBase
                     avgLengthOfStay = (decimal)totalDays / residentsWithAdmission;
             }
 
-            // Resident transition rate (% aging out - residents 18+)
+            // Resident transition rate
             var residentsAging18Plus = activeResidents.Count(r => 
                 r.date_of_birth.HasValue && 
                 r.date_of_birth.Value.ToDateTime(TimeOnly.MinValue).AddYears(18) <= DateTime.UtcNow);
@@ -150,15 +194,14 @@ public class AdminDashboardController : ControllerBase
                 ? (decimal)residentsAging18Plus / activeResidents.Count 
                 : 0;
 
-            // Family reunification rate (residents with "Family Reunified" status)
+            // Family reunification rate
             var reunifiedCount = allResidents.Count(r => r.reintegration_status == "Family Reunified");
             var closedResidentsCount = allResidents.Count(r => r.case_status == "Closed");
             var familyReunificationRate = closedResidentsCount > 0 
                 ? (decimal)reunifiedCount / closedResidentsCount 
                 : 0;
 
-            // Case closure rate (% of intervention plans completed/closed)
-            var allPlans = await _context.intervention_plans.ToListAsync();
+            // Case closure rate
             var completedPlans = allPlans.Count(p => p.status == "Completed" || p.status == "Closed");
             var caseClosureRate = allPlans.Count > 0 
                 ? (decimal)completedPlans / allPlans.Count 
@@ -178,7 +221,6 @@ public class AdminDashboardController : ControllerBase
                 .Where(p => p.status == "Completed" || p.status == "Closed")
                 .ToList();
 
-            // Average days to complete
             var avgDaysToComplete = 0m;
             if (completedPlansList.Count > 0)
             {
@@ -191,19 +233,16 @@ public class AdminDashboardController : ControllerBase
                     avgDaysToComplete = (decimal)totalCompletionDays / plansWithDates;
             }
 
-            // Completion rate
             var planCompletionRate = allPlans.Count > 0 
                 ? (decimal)completedPlans / allPlans.Count 
                 : 0;
 
-            // Most common category
             var mostCommonCategory = allPlans
                 .GroupBy(p => p.plan_category)
                 .OrderByDescending(g => g.Count())
                 .FirstOrDefault()
                 ?.Key ?? "N/A";
 
-            // Success rate by type (category)
             var successRateByType = allPlans
                 .GroupBy(p => p.plan_category)
                 .Select(g => new PlanTypeSuccessDto
@@ -225,9 +264,7 @@ public class AdminDashboardController : ControllerBase
 
             // ========== ENGAGEMENT & SUPPORT METRICS ==========
 
-            // Partner engagement frequency (active assignments per month)
-            var allPartnerAssignments = await _context.partner_assignments.ToListAsync();
-            var activeAssignments = allPartnerAssignments
+            var activeAssignments = partnerAssignmentsData
                 .Where(pa => pa.assignment_start.HasValue && 
                        (pa.assignment_end == null || pa.assignment_end >= today))
                 .ToList();
@@ -236,48 +273,53 @@ public class AdminDashboardController : ControllerBase
                 ? (decimal)activeAssignments.Count / (DateTime.UtcNow.Month == 1 ? 1 : DateTime.UtcNow.Month) 
                 : 0;
 
-            // In-kind donation trend (this month vs last month %)
-            var thisMonth = new DateOnly(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
-            var lastMonthStart = thisMonth.AddMonths(-1);
-            var lastMonthEnd = thisMonth.AddDays(-1);
+            // Single query: all donations (only needed fields)
+            var allDonationsData = await _context.donations
+                .Select(d => new
+                {
+                    d.donation_date,
+                    d.donation_type,
+                    d.supporter_id
+                })
+                .ToListAsync();
 
-            var thisMonthInKind = await _context.donations
-                .Where(d => d.donation_date >= thisMonth && 
+            var thisMonthInKind = allDonationsData
+                .Count(d => d.donation_date >= thisMonth && 
                        d.donation_type == "In-Kind" &&
-                       d.donation_date.HasValue)
-                .CountAsync();
+                       d.donation_date.HasValue);
 
-            var lastMonthInKind = await _context.donations
-                .Where(d => d.donation_date >= lastMonthStart && 
+            var lastMonthInKind = allDonationsData
+                .Count(d => d.donation_date >= lastMonthStart && 
                        d.donation_date <= lastMonthEnd && 
                        d.donation_type == "In-Kind" &&
-                       d.donation_date.HasValue)
-                .CountAsync();
+                       d.donation_date.HasValue);
 
             var inKindTrend = lastMonthInKind > 0 
                 ? ((decimal)(thisMonthInKind - lastMonthInKind) / lastMonthInKind) * 100 
                 : (thisMonthInKind > 0 ? 100 : 0);
 
-            // Donor retention rate (supporters with multiple donations)
-            var allDonors = await _context.supporters
-                .Include(s => s.donations)
+            // Donor retention via aggregation query
+            var donorRetentionData = await _context.supporters
+                .GroupBy(s => s.supporter_id)
+                .Select(g => new
+                {
+                    supporter_id = g.Key,
+                    donation_count = g.SelectMany(s => s.donations).Count()
+                })
                 .ToListAsync();
 
-            var repeatDonors = allDonors.Count(s => s.donations.Count > 1);
-            var donorRetentionRate = allDonors.Count > 0 
-                ? (decimal)repeatDonors / allDonors.Count 
+            var totalSupporters = donorRetentionData.Count;
+            var repeatDonors = donorRetentionData.Count(d => d.donation_count > 1);
+            var donorRetentionRate = totalSupporters > 0 
+                ? (decimal)repeatDonors / totalSupporters 
                 : 0;
 
-            // Average volunteer hours per month (estimated from home visitations)
-            // Assuming ~2 hours per visit for now
-            var thisMonthVisitations = homeVisitationsThisWeek.Count;
-            // Get all visitations for this month for a better estimate
+            // Average volunteer hours per month
             var monthlyVisitations = await _context.home_visitations
-                .Where(hv => hv.visit_date >= thisMonth && hv.visit_date.HasValue)
-                .CountAsync();
+                .CountAsync(hv => hv.visit_date >= thisMonth && hv.visit_date.HasValue);
             
             var avgVolunteerHours = monthlyVisitations > 0 
-                ? (decimal)monthlyVisitations * 2  // 2 hours per visit estimate
+                ? (decimal)monthlyVisitations * 2
                 : 0;
 
             var engagementSupport = new EngagementSupportDto
@@ -301,7 +343,7 @@ public class AdminDashboardController : ControllerBase
                 active_intervention_plans = activeInterventionPlans,
                 home_visitations_this_week_count = homeVisitationsThisWeek.Count,
                 home_visitations_this_week = homeVisitationsThisWeek,
-                safehouses_total = safehouses.Count,
+                safehouses_total = safehousesMap.Count,
                 case_management_progress = caseManagementProgress,
                 intervention_plan_metrics = interventionPlanMetrics,
                 engagement_support = engagementSupport,
