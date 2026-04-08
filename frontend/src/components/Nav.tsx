@@ -117,6 +117,11 @@ export default function Nav() {
               </Link>
             </li>
             <li>
+              <Link to="/admin/donor-management" className={location.pathname === '/admin/donor-management' ? 'active' : ''}>
+                Donor Management
+              </Link>
+            </li>
+            <li>
               <Link to="/donate" className="btn btn-primary nav__cta">
                 Donate
               </Link>
@@ -186,6 +191,7 @@ export default function Nav() {
         <Link to="/homevisitations">Home Visitations</Link>
         <Link to="/admin/caseload-inventory">Caseload Inventory</Link>
         <Link to="/admin/process-recording">Process Recording</Link>
+        <Link to="/admin/donor-management">Donor Management</Link>
         <Link to="/donate" className="btn btn-primary">
           Donate Now
         </Link>
