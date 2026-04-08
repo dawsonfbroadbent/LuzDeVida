@@ -1,6 +1,7 @@
 export type intervention_plan = {
   plan_id: number
   resident_id: number
+  resident?: any
   plan_category: string
   plan_description: string
   services_provided: string
@@ -12,7 +13,7 @@ export type intervention_plan = {
   updated_at: string
 }
 
-const API_BASE = 'http://localhost:5289/api/InterventionPlans'
+const API_BASE = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api/InterventionPlans'
 // change this if your backend uses a different port
 
 export async function fetchInterventionPlans(
