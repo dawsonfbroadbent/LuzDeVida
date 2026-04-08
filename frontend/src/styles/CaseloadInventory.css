@@ -569,6 +569,7 @@
   z-index: 1000;
   justify-content: center;
   align-items: center;
+  padding: 1rem;
 }
 
 .modal-overlay.active {
@@ -578,29 +579,32 @@
 .modal-content {
   background: white;
   border-radius: 8px;
-  width: 90%;
-  max-width: 700px;
+  width: 100%;
+  max-width: 1000px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
+  padding: 0;
 }
 
 .modal-dialog {
   background: white;
   border-radius: 8px;
   width: 90%;
-  max-width: 700px;
+  max-width: 900px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   margin: auto;
   padding: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
-  padding: 1.5rem;
+  padding: 2rem 2.5rem;
   border-bottom: 1px solid var(--cream-darker);
   display: flex;
   justify-content: space-between;
@@ -636,13 +640,15 @@
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: 2.5rem 2.5rem;
   overflow-y: auto;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-footer {
-  padding: 1.5rem;
+  padding: 1.5rem 2.5rem;
   border-top: 1px solid var(--cream-darker);
   display: flex;
   justify-content: flex-end;
@@ -654,7 +660,9 @@
 .resident-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
+  width: 100%;
+  padding: 2.5rem;
 }
 
 .form-section {
@@ -675,7 +683,8 @@
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  gap: 2rem;
+  width: 100%;
 }
 
 .form-row.full {
@@ -696,23 +705,26 @@
 
 .form-group label {
   display: block;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
   color: var(--text-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   border: 1px solid var(--cream-darker);
   border-radius: 4px;
   font-size: 0.95rem;
   font-family: inherit;
   transition: all 0.3s var(--ease);
   box-sizing: border-box;
+  background: white;
 }
 
 .form-group input:focus,
