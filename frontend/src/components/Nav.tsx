@@ -1,11 +1,16 @@
-import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 export default function Nav() {
-  const [scrolled, setScrolled] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
-  const location = useLocation()
-  const isHome = location.pathname === '/'
+  const [scrolled, setScrolled]       = useState(false)
+  const [menuOpen, setMenuOpen]       = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const location                      = useLocation()
+  const navigate                      = useNavigate()
+  const isHome                        = location.pathname === '/'
+  const { isAuthenticated, user, logout } = useAuth()
+  const userMenuRef                   = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60)
@@ -16,6 +21,7 @@ export default function Nav() {
 
   useEffect(() => {
     setMenuOpen(false)
+    setUserMenuOpen(false)
     window.scrollTo(0, 0)
   }, [location.pathname])
 
@@ -23,6 +29,25 @@ export default function Nav() {
     document.body.style.overflow = menuOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [menuOpen])
+
+  // Close user dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false)
+      }
+    }
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClick)
+    }
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [userMenuOpen])
+
+  function handleLogout() {
+    logout()
+    setUserMenuOpen(false)
+    navigate('/')
+  }
 
   const isSolid = scrolled || !isHome
 
@@ -52,26 +77,17 @@ export default function Nav() {
 
           <ul className="nav__links">
             <li>
-              <Link
-                to="/"
-                className={location.pathname === '/' ? 'active' : ''}
-              >
+              <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
                 Home
               </Link>
             </li>
             <li>
-              <Link
-                to="/about"
-                className={location.pathname === '/about' ? 'active' : ''}
-              >
+              <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>
                 About
               </Link>
             </li>
             <li>
-              <Link
-                to="/impact"
-                className={location.pathname === '/impact' ? 'active' : ''}
-              >
+              <Link to="/impact" className={location.pathname === '/impact' ? 'active' : ''}>
                 Impact
               </Link>
             </li>
@@ -79,6 +95,47 @@ export default function Nav() {
               <Link to="/donate" className="btn btn-primary nav__cta">
                 Donate
               </Link>
+            </li>
+            <li className="nav__auth">
+              {isAuthenticated && user ? (
+                <div className="nav__user-menu" ref={userMenuRef}>
+                  <button
+                    className="nav__user-btn"
+                    onClick={() => setUserMenuOpen(o => !o)}
+                    aria-expanded={userMenuOpen}
+                    aria-haspopup="true"
+                  >
+                    <span className="nav__user-avatar">
+                      {user.displayName.charAt(0).toUpperCase()}
+                    </span>
+                    <span className="nav__user-name">{user.displayName.split(' ')[0]}</span>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                  {userMenuOpen && (
+                    <div className="nav__dropdown">
+                      <div className="nav__dropdown-header">
+                        <span className="nav__dropdown-name">{user.displayName}</span>
+                        <span className="nav__dropdown-role">{user.role}</span>
+                      </div>
+                      <button className="nav__dropdown-item nav__dropdown-item--danger" onClick={handleLogout}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Log Out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className={`nav__login-link${location.pathname === '/login' ? ' active' : ''}`}
+                >
+                  Log In
+                </Link>
+              )}
             </li>
           </ul>
 
@@ -102,6 +159,18 @@ export default function Nav() {
         <Link to="/donate" className="btn btn-primary">
           Donate Now
         </Link>
+        {isAuthenticated && user ? (
+          <button
+            className="nav__mobile-logout"
+            onClick={() => { logout(); navigate('/') }}
+          >
+            Log Out ({user.displayName.split(' ')[0]})
+          </button>
+        ) : (
+          <Link to="/login" className="nav__mobile-login">
+            Log In
+          </Link>
+        )}
       </nav>
     </>
   )
