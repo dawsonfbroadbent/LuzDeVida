@@ -59,10 +59,13 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+else
+{
+    // Force HTTPS in production environments
+    app.UseHttpsRedirection();
+}
 
 app.UseCors("PublicFrontend");
-
-app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
