@@ -1,4 +1,4 @@
-const BASE = 'http://localhost:5289/api/auth'
+const BASE = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api/auth'
 
 export interface RegisterPayload {
   firstName: string
