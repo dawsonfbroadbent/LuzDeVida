@@ -19,7 +19,7 @@ public class SupportersController : ControllerBase
         _context = context;
     }
 
-    // Must be declared before {id} to avoid routing conflict
+    // Declared before {id:int} routes to avoid routing conflicts
     [HttpGet("stats")]
     public async Task<IActionResult> GetStats()
     {
@@ -71,15 +71,37 @@ public class SupportersController : ControllerBase
         }
     }
 
+    [HttpGet("types")]
+    public async Task<IActionResult> GetSupporterTypes()
+    {
+        try
+        {
+            var types = await _context.supporters
+                .AsNoTracking()
+                .Where(s => s.supporter_type != null)
+                .Select(s => s.supporter_type!)
+                .Distinct()
+                .OrderBy(t => t)
+                .ToListAsync();
+            return Ok(types);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = $"Failed to load types: {ex.Message}" });
+        }
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetSupporters(
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
+        [FromQuery] int pageSize = 25,
         [FromQuery] string? search = null,
         [FromQuery] string? status = null,
         [FromQuery] string? supporter_type = null,
         [FromQuery] string? contribution_type = null,
-        [FromQuery] string? region = null)
+        [FromQuery] string? region = null,
+        [FromQuery] string? sortBy = "total_given",
+        [FromQuery] string? sortDir = "desc")
     {
         try
         {
@@ -96,10 +118,10 @@ public class SupportersController : ControllerBase
             }
 
             if (!string.IsNullOrWhiteSpace(status) && status != "All")
-                query = query.Where(x => x.status == status);
+                query = query.Where(x => x.status != null && x.status.ToLower() == status.ToLower());
 
             if (!string.IsNullOrWhiteSpace(supporter_type) && supporter_type != "All")
-                query = query.Where(x => x.supporter_type == supporter_type);
+                query = query.Where(x => x.supporter_type != null && x.supporter_type.ToLower() == supporter_type.ToLower());
 
             if (!string.IsNullOrWhiteSpace(region) && region != "All")
                 query = query.Where(x => x.region == region);
@@ -109,10 +131,42 @@ public class SupportersController : ControllerBase
 
             var totalCount = await query.CountAsync();
 
-            var items = await query
-                .OrderByDescending(s => s.created_at)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+            bool desc = !string.Equals(sortDir, "asc", StringComparison.OrdinalIgnoreCase);
+
+            IQueryable<supporter> sorted = (sortBy?.ToLower()) switch
+            {
+                "name" => desc
+                    ? query.OrderByDescending(s => s.display_name).ThenByDescending(s => s.last_name)
+                    : query.OrderBy(s => s.display_name).ThenBy(s => s.last_name),
+                "type" => desc
+                    ? query.OrderByDescending(s => s.supporter_type)
+                    : query.OrderBy(s => s.supporter_type),
+                "status" => desc
+                    ? query.OrderByDescending(s => s.status)
+                    : query.OrderBy(s => s.status),
+                "total_given" => desc
+                    ? query.OrderByDescending(s => s.donations
+                        .Where(d => d.donation_type == "monetary")
+                        .Sum(d => (decimal?)d.amount))
+                    : query.OrderBy(s => s.donations
+                        .Where(d => d.donation_type == "monetary")
+                        .Sum(d => (decimal?)d.amount)),
+                "last_donation" => desc
+                    ? query.OrderByDescending(s => s.donations.Max(d => (DateOnly?)d.donation_date))
+                    : query.OrderBy(s => s.donations.Max(d => (DateOnly?)d.donation_date)),
+                "region" => desc
+                    ? query.OrderByDescending(s => s.region)
+                    : query.OrderBy(s => s.region),
+                _ => desc
+                    ? query.OrderByDescending(s => s.created_at)
+                    : query.OrderBy(s => s.created_at),
+            };
+
+            var safePageSize = Math.Min(Math.Max(pageSize, 1), 9999);
+
+            var items = await sorted
+                .Skip((page - 1) * safePageSize)
+                .Take(safePageSize)
                 .Select(s => new SupporterListItemDto
                 {
                     SupporterId = s.supporter_id,
@@ -138,7 +192,7 @@ public class SupportersController : ControllerBase
                 Items = items,
                 TotalCount = totalCount,
                 Page = page,
-                PageSize = pageSize,
+                PageSize = safePageSize,
             });
         }
         catch (Exception ex)

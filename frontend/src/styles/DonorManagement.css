@@ -255,6 +255,34 @@
   white-space: nowrap;
 }
 
+.dm-th-sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s, color 0.12s;
+}
+
+.dm-th-sortable:hover {
+  background: var(--cream-darker);
+  color: var(--text-dark);
+}
+
+.dm-sort-icon {
+  display: inline-block;
+  margin-left: 5px;
+  font-size: 10px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.dm-sort-icon--off {
+  color: var(--cream-darker);
+  filter: brightness(0.8);
+}
+
+.dm-sort-icon--on {
+  color: var(--blue-dark);
+}
+
 .dm-table tbody tr {
   border-bottom: 1px solid var(--cream-dark);
   transition: background 0.12s;
@@ -300,17 +328,22 @@
   line-height: 1.4;
 }
 
-.dm-badge--status.dm-badge--active {
+.dm-badge--status {
+  background: var(--cream-dark);
+  color: var(--text-mid);
+}
+
+.dm-badge--status-active {
   background: var(--teal-pale);
   color: var(--teal-dark);
 }
 
-.dm-badge--status.dm-badge--inactive {
+.dm-badge--status-inactive {
   background: var(--sand-pale);
   color: var(--sand-dark);
 }
 
-.dm-badge--status.dm-badge--unknown {
+.dm-badge--status-unknown {
   background: var(--cream-dark);
   color: var(--text-light);
 }
@@ -390,23 +423,59 @@
 .dm-pagination {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 16px;
-  padding: 20px 24px;
+  padding: 16px 20px;
   border-top: 1px solid var(--cream-darker);
+  flex-wrap: wrap;
+}
+
+.dm-page-size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--text-light);
+  white-space: nowrap;
+}
+
+.dm-page-size select {
+  padding: 5px 8px;
+  border: 1.5px solid var(--cream-darker);
+  border-radius: 6px;
+  background: var(--white);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--text-dark);
+  cursor: pointer;
+}
+
+.dm-page-size select:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+.dm-page-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .dm-page-btn {
   background: var(--white);
   border: 1.5px solid var(--cream-darker);
   border-radius: 6px;
-  padding: 7px 16px;
+  padding: 5px 10px;
   font-family: var(--font-body);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 500;
   cursor: pointer;
   color: var(--text-dark);
-  transition: border-color 0.15s, color 0.15s;
+  line-height: 1.4;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  min-width: 32px;
+  text-align: center;
 }
 
 .dm-page-btn:hover:not(:disabled) {
@@ -415,14 +484,42 @@
 }
 
 .dm-page-btn:disabled {
-  opacity: 0.35;
+  opacity: 0.3;
   cursor: not-allowed;
+}
+
+.dm-page-btn--arrow {
+  font-size: 1rem;
+  padding: 4px 9px;
+  color: var(--text-mid);
+}
+
+.dm-page-num--active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--white);
+  font-weight: 700;
+}
+
+.dm-page-num--active:hover:not(:disabled) {
+  background: var(--blue-dark);
+  border-color: var(--blue-dark);
+  color: var(--white);
+}
+
+.dm-page-ellipsis {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--text-light);
+  padding: 0 4px;
+  line-height: 1;
 }
 
 .dm-page-info {
   font-family: var(--font-body);
-  font-size: 0.875rem;
-  color: var(--text-mid);
+  font-size: 0.82rem;
+  color: var(--text-light);
+  white-space: nowrap;
 }
 
 /* ── Modal overlay ──────────────────────────────────────── */

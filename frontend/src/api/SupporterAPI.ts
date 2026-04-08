@@ -108,6 +108,15 @@ export async function fetchSupporterStats(token: string): Promise<SupporterStats
   return data as SupporterStats
 }
 
+export async function fetchSupporterTypes(token: string): Promise<string[]> {
+  const res = await fetch(`${BASE}/types`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error((data as { message?: string }).message ?? 'Failed to load types.')
+  return data as string[]
+}
+
 export async function fetchSupporters(
   params: {
     page?: number
@@ -117,6 +126,8 @@ export async function fetchSupporters(
     supporter_type?: string
     contribution_type?: string
     region?: string
+    sortBy?: string
+    sortDir?: 'asc' | 'desc'
   },
   token: string,
 ): Promise<SupporterPagedResult> {
@@ -128,6 +139,8 @@ export async function fetchSupporters(
   if (params.supporter_type && params.supporter_type !== 'All') query.set('supporter_type', params.supporter_type)
   if (params.contribution_type && params.contribution_type !== 'All') query.set('contribution_type', params.contribution_type)
   if (params.region && params.region !== 'All') query.set('region', params.region)
+  if (params.sortBy) query.set('sortBy', params.sortBy)
+  if (params.sortDir) query.set('sortDir', params.sortDir)
 
   const res = await fetch(`${BASE}?${query.toString()}`, {
     headers: { Authorization: `Bearer ${token}` },
