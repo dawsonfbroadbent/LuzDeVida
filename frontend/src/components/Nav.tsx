@@ -92,8 +92,28 @@ export default function Nav() {
               </Link>
             </li>
             <li>
+              <Link to="/privacy" className={location.pathname === '/privacy' ? 'active' : ''}>
+                Privacy
+              </Link>
+            </li>
+            <li>
+              <Link to="/admin/dashboard" className={location.pathname === '/admin/dashboard' ? 'active' : ''}>
+                Admin Dashboard
+              </Link>
+            </li>
+            <li>
               <Link to="/homevisitations" className={location.pathname === '/homevisitations' ? 'active' : ''}>
                 Home Visitations
+              </Link>
+            </li>
+            <li>
+              <Link to="/admin/caseload-inventory" className={location.pathname === '/admin/caseload-inventory' ? 'active' : ''}>
+                Caseload Inventory
+              </Link>
+            </li>
+            <li>
+              <Link to="/admin/process-recording" className={location.pathname === '/admin/process-recording' ? 'active' : ''}>
+                Process Recording
               </Link>
             </li>
             <li>
@@ -161,6 +181,11 @@ export default function Nav() {
         <Link to="/">Home</Link>
         <Link to="/about">About</Link>
         <Link to="/impact">Impact</Link>
+        <Link to="/privacy">Privacy</Link>
+        <Link to="/admin/dashboard">Admin Dashboard</Link>
+        <Link to="/homevisitations">Home Visitations</Link>
+        <Link to="/admin/caseload-inventory">Caseload Inventory</Link>
+        <Link to="/admin/process-recording">Process Recording</Link>
         <Link to="/donate" className="btn btn-primary">
           Donate Now
         </Link>
