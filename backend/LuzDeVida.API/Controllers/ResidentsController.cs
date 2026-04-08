@@ -45,10 +45,28 @@ namespace LuzDeVida.API.Controllers
         [HttpPost]
         public async Task<ActionResult<resident>> PostResident(resident resident)
         {
-            _context.residents.Add(resident);
-            await _context.SaveChangesAsync();
+            await using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
 
-            return CreatedAtAction(nameof(GetResident), new { id = resident.resident_id }, resident);
+            try
+            {
+                var maxId = await _context.residents
+                    .AsNoTracking()
+                    .Select(r => (int?)r.resident_id)
+                    .MaxAsync() ?? 0;
+
+                resident.resident_id = maxId + 1;
+
+                _context.residents.Add(resident);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return CreatedAtAction(nameof(GetResident), new { id = resident.resident_id }, resident);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, $"Failed to create resident: {ex.Message}");
+            }
         }
 
         // PUT: api/residents/5

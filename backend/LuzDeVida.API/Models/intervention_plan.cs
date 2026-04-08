@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace LuzDeVida.API.Models;
 
@@ -27,5 +28,6 @@ public partial class intervention_plan
 
     public DateTime? updated_at { get; set; }
 
-    public virtual resident resident { get; set; } = null!;
+    [JsonIgnore]
+    public virtual resident? resident { get; set; }
 }

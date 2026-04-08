@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace LuzDeVida.API.Models;
 
@@ -33,5 +34,6 @@ public partial class home_visitation
 
     public string? visit_outcome { get; set; }
 
-    public virtual resident resident { get; set; } = null!;
+    [JsonIgnore]
+    public virtual resident? resident { get; set; }
 }

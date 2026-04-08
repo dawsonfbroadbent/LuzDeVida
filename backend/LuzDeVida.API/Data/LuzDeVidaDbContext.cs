@@ -146,6 +146,7 @@ public partial class LuzDeVidaDbContext : DbContext
             entity.HasOne(d => d.resident).WithMany(p => p.home_visitations)
                 .HasForeignKey(d => d.resident_id)
                 .OnDelete(DeleteBehavior.ClientSetNull)
+                .IsRequired(false)
                 .HasConstraintName("FK_home_visitations_residents");
         });
 
@@ -202,6 +203,7 @@ public partial class LuzDeVidaDbContext : DbContext
             entity.HasOne(d => d.resident).WithMany(p => p.intervention_plans)
                 .HasForeignKey(d => d.resident_id)
                 .OnDelete(DeleteBehavior.ClientSetNull)
+                .IsRequired(false)
                 .HasConstraintName("FK_intervention_plans_residents");
         });
 
