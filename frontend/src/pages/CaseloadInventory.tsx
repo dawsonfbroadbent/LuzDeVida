@@ -402,7 +402,7 @@ export default function CaseloadInventory() {
               className="filter-select"
             >
               {uniqueCaseStatuses.map((status) => (
-                <option key={status} value={status}>
+                <option key={status} value={status ?? ''}>
                   {status}
                 </option>
               ))}
@@ -434,7 +434,7 @@ export default function CaseloadInventory() {
               className="filter-select"
             >
               {uniqueCaseCategories.map((cat) => (
-                <option key={cat} value={cat}>
+                <option key={cat} value={cat ?? ''}>
                   {cat}
                 </option>
               ))}
