@@ -16,7 +16,7 @@ export interface processRecording {
   notes_restricted: string | null
 }
 
-const API_BASE_URL = 'http://localhost:5289/api'
+const API_BASE_URL = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api/process-recording'
 
 export async function fetchResidentsForRecording(): Promise<any[]> {
   const response = await fetch(`${API_BASE_URL}/residents`)
