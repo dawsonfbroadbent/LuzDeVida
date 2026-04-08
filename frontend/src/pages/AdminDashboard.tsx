@@ -38,7 +38,7 @@ interface AdminDashboardMetrics {
   timestamp: string;
 }
 
-const API_BASE_URL = 'http://localhost:5289/api';
+const API_BASE_URL = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api';
 
 const fetchAdminDashboardMetrics = async (): Promise<AdminDashboardMetrics> => {
   try {
