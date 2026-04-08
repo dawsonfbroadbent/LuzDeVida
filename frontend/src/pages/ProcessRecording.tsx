@@ -81,11 +81,9 @@ const ProcessRecording: React.FC = () => {
       setLoading(true);
       const data = await fetchProcessRecordingsByResident(residentId);
       // Sort by session_date descending (most recent first)
-      const sorted = [...data].sort((a, b) => {
-        const dateA = new Date(a.session_date || '').getTime();
-        const dateB = new Date(b.session_date || '').getTime();
-        return dateB - dateA;
-      });
+      const sorted = [...data].sort((a, b) =>
+        (b.session_date || '').localeCompare(a.session_date || '')
+      );
       setRecordings(sorted);
     } catch (error) {
       showAlert('error', 'Failed to load process recordings');
@@ -107,7 +105,7 @@ const ProcessRecording: React.FC = () => {
   const openCreateModal = () => {
     setFormData({
       resident_id: selectedResident || 0,
-      session_date: new Date().toISOString().split('T')[0],
+      session_date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
       social_worker: '',
       session_type: '',
       emotional_state_observed: '',
@@ -233,12 +231,7 @@ const ProcessRecording: React.FC = () => {
 
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    return dateString.split('T')[0];
   };
 
   const getResidentName = (id: number): string => {
