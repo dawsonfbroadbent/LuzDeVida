@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   fetchHomeVisitations,
   addHomeVisitation,
@@ -14,18 +14,17 @@ import {
   deleteInterventionPlan,
   type intervention_plan,
 } from '../api/InterventionPlansAPI'
+import '../styles/HomeVisitations.css'
 
 type ActiveView = 'homeVisits' | 'caseConferences'
 
 export default function HomeVisitations() {
   const [residents, setResidents] = useState<resident[]>([])
   const [selectedResidentId, setSelectedResidentId] = useState<number | null>(null)
+
   const [visits, setVisits] = useState<home_visitation[]>([])
   const [plans, setPlans] = useState<intervention_plan[]>([])
   const [activeView, setActiveView] = useState<ActiveView>('homeVisits')
-
-  const [showVisitForm, setShowVisitForm] = useState(false)
-  const [showPlanForm, setShowPlanForm] = useState(false)
 
   const [loading, setLoading] = useState(true)
   const [contentLoading, setContentLoading] = useState(false)
@@ -33,8 +32,22 @@ export default function HomeVisitations() {
   const [submittingPlan, setSubmittingPlan] = useState(false)
   const [deletingVisitId, setDeletingVisitId] = useState<number | null>(null)
   const [deletingPlanId, setDeletingPlanId] = useState<number | null>(null)
+
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  const [showVisitModal, setShowVisitModal] = useState(false)
+  const [showPlanModal, setShowPlanModal] = useState(false)
+
+  const [editingVisitId, setEditingVisitId] = useState<number | null>(null)
+  const [editingPlanId, setEditingPlanId] = useState<number | null>(null)
+
+  const [expandedVisitId, setExpandedVisitId] = useState<number | null>(null)
+  const [expandedUpcomingPlanId, setExpandedUpcomingPlanId] = useState<number | null>(null)
+  const [expandedPastPlanId, setExpandedPastPlanId] = useState<number | null>(null)
+
+  const [showDeleteVisitConfirm, setShowDeleteVisitConfirm] = useState<number | null>(null)
+  const [showDeletePlanConfirm, setShowDeletePlanConfirm] = useState<number | null>(null)
 
   const emptyVisitForm: home_visitation = {
     visitation_id: 0,
@@ -68,25 +81,48 @@ export default function HomeVisitations() {
   }
 
   const [visitForm, setVisitForm] = useState<home_visitation>(emptyVisitForm)
-  const [editingVisitId, setEditingVisitId] = useState<number | null>(null)
-
   const [planForm, setPlanForm] = useState<intervention_plan>(emptyPlanForm)
-  const [editingPlanId, setEditingPlanId] = useState<number | null>(null)
 
   const showTemporarySuccess = (message: string) => {
     setSuccessMessage(message)
     setTimeout(() => setSuccessMessage(null), 3000)
   }
 
-  const loadVisits = async (residentId: number) => {
-    const data = await fetchHomeVisitations(residentId)
-    setVisits(data)
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return 'N/A'
+    return dateString.split('T')[0]
   }
 
-  const loadPlans = async (residentId: number) => {
-    const data = await fetchInterventionPlans(residentId)
-    setPlans(data)
-  }
+  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+    .toISOString()
+    .split('T')[0]
+
+  const selectedResident = useMemo(
+    () => residents.find((r) => r.resident_id === selectedResidentId) ?? null,
+    [residents, selectedResidentId]
+  )
+
+  const upcomingPlans = useMemo(() => {
+    return [...plans]
+      .filter((p) => {
+        if (!p.case_conference_date) return false
+        return p.case_conference_date.split('T')[0] >= today
+      })
+      .sort((a, b) =>
+        (a.case_conference_date ?? '').localeCompare(b.case_conference_date ?? '')
+      )
+  }, [plans, today])
+
+  const pastPlans = useMemo(() => {
+    return [...plans]
+      .filter((p) => {
+        if (!p.case_conference_date) return true
+        return p.case_conference_date.split('T')[0] < today
+      })
+      .sort((a, b) =>
+        (b.case_conference_date ?? '').localeCompare(a.case_conference_date ?? '')
+      )
+  }, [plans, today])
 
   const loadResidents = async () => {
     setLoading(true)
@@ -111,6 +147,19 @@ export default function HomeVisitations() {
     }
   }
 
+  const loadVisits = async (residentId: number) => {
+    const data = await fetchHomeVisitations(residentId)
+    const sorted = [...data].sort((a, b) =>
+      (b.visit_date || '').localeCompare(a.visit_date || '')
+    )
+    setVisits(sorted)
+  }
+
+  const loadPlans = async (residentId: number) => {
+    const data = await fetchInterventionPlans(residentId)
+    setPlans(data)
+  }
+
   const loadResidentContent = async (residentId: number) => {
     setContentLoading(true)
     setError(null)
@@ -133,7 +182,6 @@ export default function HomeVisitations() {
     if (selectedResidentId == null) return
 
     loadResidentContent(selectedResidentId)
-
     setVisitForm((prev) => ({ ...prev, resident_id: selectedResidentId }))
     setPlanForm((prev) => ({ ...prev, resident_id: selectedResidentId }))
   }, [selectedResidentId])
@@ -142,42 +190,63 @@ export default function HomeVisitations() {
     setVisitForm({
       ...emptyVisitForm,
       resident_id: selectedResidentId ?? 0,
+      visit_date: today,
     })
     setEditingVisitId(null)
-    setShowVisitForm(false)
+    setShowVisitModal(false)
   }
 
   const resetPlanForm = () => {
     setPlanForm({
       ...emptyPlanForm,
       resident_id: selectedResidentId ?? 0,
+      case_conference_date: today,
     })
     setEditingPlanId(null)
-    setShowPlanForm(false)
+    setShowPlanModal(false)
   }
 
-  const handleAddVisitClick = () => {
+  const openCreateVisitModal = () => {
     setError(null)
     setVisitForm({
       ...emptyVisitForm,
       resident_id: selectedResidentId ?? 0,
+      visit_date: today,
     })
     setEditingVisitId(null)
-    setShowVisitForm(true)
+    setShowVisitModal(true)
   }
 
-  const handleAddPlanClick = () => {
+  const openEditVisitModal = (visit: home_visitation) => {
+    setError(null)
+    setVisitForm({ ...visit })
+    setEditingVisitId(visit.visitation_id)
+    setShowVisitModal(true)
+    setActiveView('homeVisits')
+  }
+
+  const openCreatePlanModal = () => {
     setError(null)
     setPlanForm({
       ...emptyPlanForm,
       resident_id: selectedResidentId ?? 0,
+      case_conference_date: today,
     })
     setEditingPlanId(null)
-    setShowPlanForm(true)
+    setShowPlanModal(true)
+  }
+
+  const openEditPlanModal = (plan: intervention_plan) => {
+    setError(null)
+    setPlanForm({ ...plan })
+    setEditingPlanId(plan.plan_id)
+    setShowPlanModal(true)
+    setActiveView('caseConferences')
   }
 
   const handleVisitSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     if (selectedResidentId == null) {
       setError('Please select a resident before saving.')
       return
@@ -203,17 +272,11 @@ export default function HomeVisitations() {
     setError(null)
 
     try {
-      const selectedResident = residents.find(
-        (r) => r.resident_id === selectedResidentId
-      )
-
       const payload = {
         ...visitForm,
         resident_id: selectedResidentId,
-        resident: selectedResident,
-        follow_up_notes: visitForm.follow_up_needed
-          ? visitForm.follow_up_notes
-          : '',
+        resident: selectedResident ?? undefined,
+        follow_up_notes: visitForm.follow_up_needed ? visitForm.follow_up_notes : '',
       }
 
       if (editingVisitId !== null) {
@@ -236,6 +299,7 @@ export default function HomeVisitations() {
 
   const handlePlanSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     if (selectedResidentId == null) {
       setError('Please select a resident before saving.')
       return
@@ -294,25 +358,8 @@ export default function HomeVisitations() {
     }
   }
 
-  const handleEditVisit = (visit: home_visitation) => {
-    setError(null)
-    setVisitForm(visit)
-    setEditingVisitId(visit.visitation_id)
-    setShowVisitForm(true)
-    setActiveView('homeVisits')
-  }
-
-  const handleEditPlan = (plan: intervention_plan) => {
-    setError(null)
-    setPlanForm(plan)
-    setEditingPlanId(plan.plan_id)
-    setShowPlanForm(true)
-    setActiveView('caseConferences')
-  }
-
   const handleDeleteVisit = async (visitationId: number) => {
     if (selectedResidentId == null) return
-    if (!window.confirm('Delete this home visitation?')) return
 
     setDeletingVisitId(visitationId)
     setError(null)
@@ -321,6 +368,7 @@ export default function HomeVisitations() {
       await deleteHomeVisitation(visitationId)
       await loadVisits(selectedResidentId)
       if (editingVisitId === visitationId) resetVisitForm()
+      setShowDeleteVisitConfirm(null)
       showTemporarySuccess('Home visitation deleted successfully!')
     } catch (err) {
       console.error(err)
@@ -332,7 +380,6 @@ export default function HomeVisitations() {
 
   const handleDeletePlan = async (planId: number) => {
     if (selectedResidentId == null) return
-    if (!window.confirm('Delete this case conference record?')) return
 
     setDeletingPlanId(planId)
     setError(null)
@@ -341,6 +388,7 @@ export default function HomeVisitations() {
       await deleteInterventionPlan(planId)
       await loadPlans(selectedResidentId)
       if (editingPlanId === planId) resetPlanForm()
+      setShowDeletePlanConfirm(null)
       showTemporarySuccess('Case conference record deleted successfully!')
     } catch (err) {
       console.error(err)
@@ -350,907 +398,1079 @@ export default function HomeVisitations() {
     }
   }
 
-  const formatDate = (dateString: string | null) => {
-  if (!dateString) return 'N/A'
-  return dateString.split('T')[0]
-  }
-
-const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
-  .toISOString()
-  .split('T')[0]
-
-const upcomingPlans = [...plans]
-  .filter((p) => {
-    if (!p.case_conference_date) return false
-    return p.case_conference_date.split('T')[0] >= today
-  })
-  .sort((a, b) =>
-    (a.case_conference_date ?? '').localeCompare(b.case_conference_date ?? '')
-  )
-
-const pastPlans = [...plans]
-  .filter((p) => {
-    if (!p.case_conference_date) return true
-    return p.case_conference_date.split('T')[0] < today
-  })
-  .sort((a, b) =>
-    (b.case_conference_date ?? '').localeCompare(a.case_conference_date ?? '')
-  )
-
-  const blueButtonStyle = {
-    backgroundColor: '#63c7d8',
-    color: 'white',
-    border: 'none',
-    padding: '10px 16px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontWeight: 'bold' as const,
-  }
-
-  const editButtonStyle = {
-    backgroundColor: 'white',
-    color: '#1f3b4d',
-    border: '1px solid #cfd8df',
-    padding: '8px 14px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontWeight: 'bold' as const,
-  }
-
-  const deleteButtonStyle = {
-    backgroundColor: '#e74c3c',
-    color: 'white',
-    border: 'none',
-    padding: '8px 14px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontWeight: 'bold' as const,
-  }
-
-  const alertStyle = {
-    padding: '12px 16px',
-    borderRadius: '8px',
-    marginBottom: '20px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: '12px',
+  const statusClass = (status: string | null | undefined) => {
+    switch ((status || '').toLowerCase()) {
+      case 'open':
+        return 'status-open'
+      case 'in progress':
+        return 'status-in-progress'
+      case 'achieved':
+        return 'status-achieved'
+      case 'on hold':
+        return 'status-on-hold'
+      case 'closed':
+        return 'status-closed'
+      default:
+        return 'status-default'
+    }
   }
 
   if (loading) {
     return (
-      <div style={{ padding: '40px', marginTop: '60px' }}>
-        <h1 style={{ marginTop: '0', marginBottom: '20px' }}>
-          Home Visitations & Case Conferences
-        </h1>
-        <div
-          style={{
-            padding: '20px',
-            borderRadius: '12px',
-            backgroundColor: '#f9fbfc',
-            border: '1px solid #d0d7de',
-          }}
-        >
-          Loading home visitations and case conferences...
+      <div className="home-visitations-page">
+        <div className="home-visitations-header">
+          <h1>Home Visitations & Case Conferences</h1>
+          <p className="subtitle">
+            Manage home and field visits, family observations, and case conference planning
+            for each resident.
+          </p>
         </div>
+
+        <div className="loading">Loading home visitations and case conferences...</div>
       </div>
     )
   }
 
   return (
-    <div style={{ padding: '40px', marginTop: '60px' }}>
-      <h1 style={{ marginTop: '0', marginBottom: '20px' }}>
-        Home Visitations & Case Conferences
-      </h1>
+    <div className="home-visitations-page">
+      <div className="home-visitations-header">
+        <h1>Home Visitations & Case Conferences</h1>
+        <p className="subtitle">
+          Manage home and field visits, family observations, and case conference planning
+          for each resident.
+        </p>
+      </div>
 
       {error && (
-        <div
-          style={{
-            ...alertStyle,
-            backgroundColor: '#fdecea',
-            color: '#b42318',
-            border: '1px solid #f5c2c7',
-          }}
-        >
+        <div className="error-alert">
           <span>{error}</span>
-          <button
-            onClick={() => setError(null)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontSize: '18px',
-              cursor: 'pointer',
-              color: '#b42318',
-            }}
-          >
+          <button onClick={() => setError(null)} className="alert-close">
             ×
           </button>
         </div>
       )}
 
       {successMessage && (
-        <div
-          style={{
-            ...alertStyle,
-            backgroundColor: '#ecfdf3',
-            color: '#067647',
-            border: '1px solid #abefc6',
-          }}
-        >
+        <div className="success-alert">
           <span>{successMessage}</span>
-          <button
-            onClick={() => setSuccessMessage(null)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontSize: '18px',
-              cursor: 'pointer',
-              color: '#067647',
-            }}
-          >
+          <button onClick={() => setSuccessMessage(null)} className="alert-close">
             ×
           </button>
         </div>
       )}
 
       {residents.length === 0 ? (
-        <div
-          style={{
-            padding: '20px',
-            borderRadius: '12px',
-            backgroundColor: '#f9fbfc',
-            border: '1px solid #d0d7de',
-          }}
-        >
-          <p style={{ marginTop: 0 }}>No residents found.</p>
-          <p style={{ marginBottom: '12px' }}>
-            Add residents first before managing home visitations or case conferences.
-          </p>
-          <button type="button" onClick={loadResidents} style={blueButtonStyle}>
+        <div className="no-data">
+          <p>No residents found.</p>
+          <p>Add residents first before managing home visitations or case conferences.</p>
+          <button type="button" onClick={loadResidents} className="btn-primary">
             Retry
           </button>
         </div>
       ) : (
         <>
-          <div style={{ marginTop: '20px', marginBottom: '20px' }}>
-            <label>Select Resident: </label>
-            <select
-              value={selectedResidentId ?? ''}
-              onChange={(e) =>
-                setSelectedResidentId(
-                  e.target.value ? Number(e.target.value) : null
-                )
-              }
-            >
-              {residents.map((r) => (
-                <option key={r.resident_id} value={r.resident_id}>
-                  {r.case_control_no} ({r.internal_code})
-                </option>
-              ))}
-            </select>
+          <div className="resident-selector">
+            <h2>Select Resident</h2>
+            <div className="selector-row">
+              <div className="selector-group">
+                <label htmlFor="resident-select">Resident</label>
+                <select
+                  id="resident-select"
+                  value={selectedResidentId ?? ''}
+                  onChange={(e) =>
+                    setSelectedResidentId(e.target.value ? Number(e.target.value) : null)
+                  }
+                >
+                  {residents.map((r) => (
+                    <option key={r.resident_id} value={r.resident_id}>
+                      {r.case_control_no || `Resident #${r.resident_id}`}
+                      {r.internal_code ? ` (${r.internal_code})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
-          <div
-            style={{
-              display: 'inline-flex',
-              backgroundColor: '#e9eef1',
-              borderRadius: '12px',
-              padding: '6px',
-              marginBottom: '24px',
-              gap: '6px',
-            }}
-          >
+          <div className="hv-tabs">
             <button
+              type="button"
+              className={activeView === 'homeVisits' ? 'hv-tab active' : 'hv-tab'}
               onClick={() => setActiveView('homeVisits')}
-              style={{
-                padding: '10px 18px',
-                border: 'none',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                backgroundColor:
-                  activeView === 'homeVisits' ? '#63c7d8' : 'transparent',
-                color: activeView === 'homeVisits' ? '#ffffff' : '#1f3b4d',
-                fontWeight: 600,
-              }}
             >
               Home Visits
             </button>
-
             <button
+              type="button"
+              className={activeView === 'caseConferences' ? 'hv-tab active' : 'hv-tab'}
               onClick={() => setActiveView('caseConferences')}
-              style={{
-                padding: '10px 18px',
-                border: 'none',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                backgroundColor:
-                  activeView === 'caseConferences' ? '#63c7d8' : 'transparent',
-                color: activeView === 'caseConferences' ? '#ffffff' : '#1f3b4d',
-                fontWeight: 600,
-              }}
             >
               Case Conference History
             </button>
           </div>
 
-          {contentLoading && (
-            <div
-              style={{
-                padding: '16px',
-                marginBottom: '20px',
-                borderRadius: '12px',
-                backgroundColor: '#f9fbfc',
-                border: '1px solid #d0d7de',
-              }}
-            >
-              Loading resident records...
-            </div>
-          )}
-
-          {activeView === 'homeVisits' ? (
-            <>
-              <div style={{ marginBottom: '20px' }}>
-                {!showVisitForm && (
-                  <button
-                    type="button"
-                    onClick={handleAddVisitClick}
-                    style={blueButtonStyle}
-                    disabled={contentLoading}
-                  >
-                    Add Home Visit
-                  </button>
-                )}
-              </div>
-
-              {showVisitForm && (
-                <form
-                  onSubmit={handleVisitSubmit}
-                  style={{
-                    border: '1px solid #d0d7de',
-                    borderRadius: '12px',
-                    padding: '20px',
-                    marginBottom: '24px',
-                    backgroundColor: '#f9fbfc',
-                  }}
-                >
-                  <h2 style={{ marginTop: 0 }}>
-                    {editingVisitId !== null ? 'Edit Home Visit' : 'Add Home Visit'}
-                  </h2>
-
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(2, minmax(220px, 1fr))',
-                      gap: '12px',
-                    }}
-                  >
-                    <div>
-                      <label>Date</label>
-                      <input
-                        type="date"
-                        value={visitForm.visit_date}
-                        onChange={(e) =>
-                          setVisitForm({ ...visitForm, visit_date: e.target.value })
-                        }
-                        style={{ width: '100%' }}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label>Social Worker</label>
-                      <input
-                        type="text"
-                        value={visitForm.social_worker}
-                        onChange={(e) =>
-                          setVisitForm({
-                            ...visitForm,
-                            social_worker: e.target.value,
-                          })
-                        }
-                        style={{ width: '100%' }}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label>Visit Type</label>
-                      <select
-                        value={visitForm.visit_type}
-                        onChange={(e) =>
-                          setVisitForm({ ...visitForm, visit_type: e.target.value })
-                        }
-                        style={{ width: '100%' }}
-                        required
-                      >
-                        <option value="">Select type</option>
-                        <option value="Initial Assessment">Initial Assessment</option>
-                        <option value="Routine Follow-Up">Routine Follow-Up</option>
-                        <option value="Reintegration Assessment">
-                          Reintegration Assessment
-                        </option>
-                        <option value="Post-Placement Monitoring">
-                          Post-Placement Monitoring
-                        </option>
-                        <option value="Emergency">Emergency</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label>Family Cooperation</label>
-                      <select
-                        value={visitForm.family_cooperation_level}
-                        onChange={(e) =>
-                          setVisitForm({
-                            ...visitForm,
-                            family_cooperation_level: e.target.value,
-                          })
-                        }
-                        style={{ width: '100%' }}
-                        required
-                      >
-                        <option value="">Select level</option>
-                        <option value="Highly Cooperative">Highly Cooperative</option>
-                        <option value="Cooperative">Cooperative</option>
-                        <option value="Neutral">Neutral</option>
-                        <option value="Uncooperative">Uncooperative</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label>Location Visited</label>
-                      <input
-                        type="text"
-                        value={visitForm.location_visited}
-                        onChange={(e) =>
-                          setVisitForm({
-                            ...visitForm,
-                            location_visited: e.target.value,
-                          })
-                        }
-                        style={{ width: '100%' }}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label>Family Members Present</label>
-                      <input
-                        type="text"
-                        value={visitForm.family_members_present}
-                        onChange={(e) =>
-                          setVisitForm({
-                            ...visitForm,
-                            family_members_present: e.target.value,
-                          })
-                        }
-                        style={{ width: '100%' }}
-                        required
-                      />
-                    </div>
-
-                    <div style={{ gridColumn: '1 / -1' }}>
-                      <label>Purpose</label>
-                      <input
-                        type="text"
-                        value={visitForm.purpose}
-                        onChange={(e) =>
-                          setVisitForm({ ...visitForm, purpose: e.target.value })
-                        }
-                        style={{ width: '100%' }}
-                        required
-                      />
-                    </div>
-
-                    <div style={{ gridColumn: '1 / -1' }}>
-                      <label>Observations</label>
-                      <textarea
-                        value={visitForm.observations}
-                        onChange={(e) =>
-                          setVisitForm({
-                            ...visitForm,
-                            observations: e.target.value,
-                          })
-                        }
-                        style={{ width: '100%', minHeight: '90px' }}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label>Visit Outcome</label>
-                      <select
-                        value={visitForm.visit_outcome}
-                        onChange={(e) =>
-                          setVisitForm({
-                            ...visitForm,
-                            visit_outcome: e.target.value,
-                          })
-                        }
-                        style={{ width: '100%' }}
-                        required
-                      >
-                        <option value="">Select outcome</option>
-                        <option value="Favorable">Favorable</option>
-                        <option value="Needs Improvement">Needs Improvement</option>
-                        <option value="Unfavorable">Unfavorable</option>
-                        <option value="Inconclusive">Inconclusive</option>
-                      </select>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'end', gap: '20px' }}>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={visitForm.safety_concerns_noted}
-                          onChange={(e) =>
-                            setVisitForm({
-                              ...visitForm,
-                              safety_concerns_noted: e.target.checked,
-                            })
-                          }
-                        />{' '}
-                        Safety Concerns Noted
-                      </label>
-
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={visitForm.follow_up_needed}
-                          onChange={(e) =>
-                            setVisitForm({
-                              ...visitForm,
-                              follow_up_needed: e.target.checked,
-                              follow_up_notes: e.target.checked
-                                ? visitForm.follow_up_notes
-                                : '',
-                            })
-                          }
-                        />{' '}
-                        Follow-Up Needed
-                      </label>
-                    </div>
-
-                    <div style={{ gridColumn: '1 / -1' }}>
-                      <label>Follow-Up Notes</label>
-                      <textarea
-                        value={visitForm.follow_up_notes}
-                        onChange={(e) =>
-                          setVisitForm({
-                            ...visitForm,
-                            follow_up_notes: e.target.value,
-                          })
-                        }
-                        style={{ width: '100%', minHeight: '70px' }}
-                        required={visitForm.follow_up_needed}
-                        disabled={!visitForm.follow_up_needed}
-                        placeholder={
-                          visitForm.follow_up_needed
-                            ? 'Enter required follow-up notes'
-                            : 'Check "Follow-Up Needed" to add notes'
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: '16px', display: 'flex', gap: '12px' }}>
-                    <button
-                      type="submit"
-                      style={blueButtonStyle}
-                      disabled={submittingVisit}
-                    >
-                      {submittingVisit
-                        ? 'Saving...'
-                        : editingVisitId !== null
-                        ? 'Update Home Visit'
-                        : 'Add Home Visit'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={resetVisitForm}
-                      style={blueButtonStyle}
-                      disabled={submittingVisit}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              <table
-                border={1}
-                cellPadding={10}
-                style={{ width: '100%', textAlign: 'center' }}
+          <div className="action-bar">
+            {activeView === 'homeVisits' ? (
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={openCreateVisitModal}
+                disabled={contentLoading}
               >
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Observations</th>
-                    <th>Family Cooperation</th>
-                    <th>Safety Concerns</th>
-                    <th>Follow-Up Needed</th>
-                    <th>Outcome</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {contentLoading ? (
-                    <tr>
-                      <td colSpan={8}>Loading home visits...</td>
-                    </tr>
-                  ) : visits.length === 0 ? (
-                    <tr>
-                      <td colSpan={8}>No visits found</td>
-                    </tr>
-                  ) : (
-                    visits.map((v) => (
-                      <tr key={v.visitation_id}>
-                        <td>{formatDate(v.visit_date)}</td>
-                        <td>{v.visit_type}</td>
-                        <td>{v.observations}</td>
-                        <td>{v.family_cooperation_level}</td>
-                        <td>{v.safety_concerns_noted ? 'Yes' : 'No'}</td>
-                        <td>{v.follow_up_needed ? 'Yes' : 'No'}</td>
-                        <td>{v.visit_outcome}</td>
-                        <td>
-                          <div
-                            style={{
-                              display: 'flex',
-                              gap: '8px',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <button
-                              onClick={() => handleEditVisit(v)}
-                              style={editButtonStyle}
-                              disabled={deletingVisitId === v.visitation_id}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteVisit(v.visitation_id)}
-                              style={deleteButtonStyle}
-                              disabled={deletingVisitId === v.visitation_id}
-                            >
-                              {deletingVisitId === v.visitation_id
-                                ? 'Deleting...'
-                                : 'Delete'}
-                            </button>
-                          </div>
-                        </td>
+                + Add Home Visit
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={openCreatePlanModal}
+                disabled={contentLoading}
+              >
+                + Add Case Conference Record
+              </button>
+            )}
+          </div>
+
+          {contentLoading ? (
+            <div className="loading">Loading resident records...</div>
+          ) : activeView === 'homeVisits' ? (
+            <div className="table-section">
+              {visits.length === 0 ? (
+                <div className="no-data">
+                  No home visitations found for this resident. Create one to get started.
+                </div>
+              ) : (
+                <div className="table-wrapper">
+                  <table className="home-visits-table home-visits-layout">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <th>Visit Date</th>
+                        <th>Visit Type</th>
+                        <th>Social Worker</th>
+                        <th>Family Cooperation</th>
+                        <th>Outcome</th>
+                        <th>Actions</th>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </>
+                    </thead>
+                    <tbody>
+                      {visits.map((visit) => (
+                        <tr key={`visit-block-${visit.visitation_id}`}>
+                          <td colSpan={7} className="row-block-cell">
+                            <table className="embedded-row-table home-visits-layout">
+                              <tbody>
+                                <tr
+                                  className="visit-row"
+                                  onClick={() =>
+                                    setExpandedVisitId(
+                                      expandedVisitId === visit.visitation_id
+                                        ? null
+                                        : visit.visitation_id
+                                    )
+                                  }
+                                >
+                                  <td className="expand-icon">
+                                    {expandedVisitId === visit.visitation_id ? '▼' : '▶'}
+                                  </td>
+                                  <td>{formatDate(visit.visit_date)}</td>
+                                  <td>{visit.visit_type || 'N/A'}</td>
+                                  <td>{visit.social_worker || 'N/A'}</td>
+                                  <td>{visit.family_cooperation_level || 'N/A'}</td>
+                                  <td>{visit.visit_outcome || 'N/A'}</td>
+                                  <td
+                                    className="action-cell"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <button
+                                      type="button"
+                                      className="btn-small btn-edit-lite"
+                                      onClick={() => openEditVisitModal(visit)}
+                                      disabled={deletingVisitId === visit.visitation_id}
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="btn-small btn-delete"
+                                      onClick={() =>
+                                        setShowDeleteVisitConfirm(visit.visitation_id)
+                                      }
+                                      disabled={deletingVisitId === visit.visitation_id}
+                                    >
+                                      Delete
+                                    </button>
+                                  </td>
+                                </tr>
+
+                                {expandedVisitId === visit.visitation_id && (
+                                  <tr className="expanded-details">
+                                    <td colSpan={7}>
+                                      <div className="details-grid">
+                                        <div className="detail-section">
+                                          <h4>Visit Details</h4>
+                                          <div className="detail-item">
+                                            <span className="label">Location Visited</span>
+                                            <span className="value">
+                                              {visit.location_visited || 'N/A'}
+                                            </span>
+                                          </div>
+                                          <div className="detail-item">
+                                            <span className="label">
+                                              Family Members Present
+                                            </span>
+                                            <span className="value">
+                                              {visit.family_members_present || 'N/A'}
+                                            </span>
+                                          </div>
+                                          <div className="detail-item">
+                                            <span className="label">Purpose</span>
+                                            <span className="value">
+                                              {visit.purpose || 'N/A'}
+                                            </span>
+                                          </div>
+                                        </div>
+
+                                        <div className="detail-section">
+                                          <h4>Safety & Follow-Up</h4>
+                                          <div className="detail-item">
+                                            <span className="label">
+                                              Safety Concerns Noted
+                                            </span>
+                                            <span className="value">
+                                              {visit.safety_concerns_noted ? 'Yes' : 'No'}
+                                            </span>
+                                          </div>
+                                          <div className="detail-item">
+                                            <span className="label">Follow-Up Needed</span>
+                                            <span className="value">
+                                              {visit.follow_up_needed ? 'Yes' : 'No'}
+                                            </span>
+                                          </div>
+                                          <div className="detail-item">
+                                            <span className="label">Follow-Up Notes</span>
+                                            <span className="value">
+                                              {visit.follow_up_notes || 'None recorded'}
+                                            </span>
+                                          </div>
+                                        </div>
+
+                                        <div className="detail-section detail-section-wide">
+                                          <h4>Observations</h4>
+                                          <p className="detail-paragraph">
+                                            {visit.observations || 'No observations recorded.'}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+
+                                {showDeleteVisitConfirm === visit.visitation_id && (
+                                  <tr className="delete-confirm-row">
+                                    <td colSpan={7}>
+                                      <div className="delete-confirm-box">
+                                        <p>
+                                          Are you sure you want to delete this home visitation?
+                                        </p>
+                                        <p className="delete-subtext">
+                                          This action cannot be undone.
+                                        </p>
+                                        <div className="confirm-actions">
+                                          <button
+                                            type="button"
+                                            className="btn-confirm-delete"
+                                            onClick={() =>
+                                              handleDeleteVisit(visit.visitation_id)
+                                            }
+                                            disabled={deletingVisitId === visit.visitation_id}
+                                          >
+                                            {deletingVisitId === visit.visitation_id
+                                              ? 'Deleting...'
+                                              : 'Yes, Delete'}
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="btn-confirm-cancel"
+                                            onClick={() => setShowDeleteVisitConfirm(null)}
+                                            disabled={deletingVisitId === visit.visitation_id}
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           ) : (
             <>
-              <div style={{ marginBottom: '20px' }}>
-                {!showPlanForm && (
-                  <button
-                    type="button"
-                    onClick={handleAddPlanClick}
-                    style={blueButtonStyle}
-                    disabled={contentLoading}
-                  >
-                    Add Case Conference Record
-                  </button>
+              <div className="conference-section-label">Upcoming Case Conferences</div>
+              <div className="table-section">
+                {upcomingPlans.length === 0 ? (
+                  <div className="no-data">No upcoming case conferences found.</div>
+                ) : (
+                  <div className="table-wrapper">
+                    <table className="home-visits-table conference-layout">
+                      <thead>
+                        <tr>
+                          <th></th>
+                          <th>Conference Date</th>
+                          <th>Category</th>
+                          <th>Services Provided</th>
+                          <th>Status</th>
+                          <th>Target Date</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {upcomingPlans.map((plan) => (
+                          <tr key={`upcoming-block-${plan.plan_id}`}>
+                            <td colSpan={7} className="row-block-cell">
+                              <table className="embedded-row-table conference-layout">
+                                <tbody>
+                                  <tr
+                                    className="visit-row"
+                                    onClick={() =>
+                                      setExpandedUpcomingPlanId(
+                                        expandedUpcomingPlanId === plan.plan_id
+                                          ? null
+                                          : plan.plan_id
+                                      )
+                                    }
+                                  >
+                                    <td className="expand-icon">
+                                      {expandedUpcomingPlanId === plan.plan_id ? '▼' : '▶'}
+                                    </td>
+                                    <td>{formatDate(plan.case_conference_date)}</td>
+                                    <td>{plan.plan_category || 'N/A'}</td>
+                                    <td>{plan.services_provided || 'N/A'}</td>
+                                    <td>
+                                      <span
+                                        className={`status-pill ${statusClass(plan.status)}`}
+                                      >
+                                        {plan.status || 'Unknown'}
+                                      </span>
+                                    </td>
+                                    <td>{formatDate(plan.target_date)}</td>
+                                    <td
+                                      className="action-cell"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <button
+                                        type="button"
+                                        className="btn-small btn-edit-lite"
+                                        onClick={() => openEditPlanModal(plan)}
+                                        disabled={deletingPlanId === plan.plan_id}
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="btn-small btn-delete"
+                                        onClick={() =>
+                                          setShowDeletePlanConfirm(plan.plan_id)
+                                        }
+                                        disabled={deletingPlanId === plan.plan_id}
+                                      >
+                                        Delete
+                                      </button>
+                                    </td>
+                                  </tr>
+
+                                  {expandedUpcomingPlanId === plan.plan_id && (
+                                    <tr className="expanded-details">
+                                      <td colSpan={7}>
+                                        <div className="details-grid">
+                                          <div className="detail-section">
+                                            <h4>Conference Details</h4>
+                                            <div className="detail-item">
+                                              <span className="label">Category</span>
+                                              <span className="value">
+                                                {plan.plan_category || 'N/A'}
+                                              </span>
+                                            </div>
+                                            <div className="detail-item">
+                                              <span className="label">Status</span>
+                                              <span className="value">
+                                                {plan.status || 'N/A'}
+                                              </span>
+                                            </div>
+                                            <div className="detail-item">
+                                              <span className="label">Target Value</span>
+                                              <span className="value">
+                                                {plan.target_value ?? 'N/A'}
+                                              </span>
+                                            </div>
+                                          </div>
+
+                                          <div className="detail-section">
+                                            <h4>Timeline</h4>
+                                            <div className="detail-item">
+                                              <span className="label">Conference Date</span>
+                                              <span className="value">
+                                                {formatDate(plan.case_conference_date)}
+                                              </span>
+                                            </div>
+                                            <div className="detail-item">
+                                              <span className="label">Target Date</span>
+                                              <span className="value">
+                                                {formatDate(plan.target_date)}
+                                              </span>
+                                            </div>
+                                            <div className="detail-item">
+                                              <span className="label">Last Updated</span>
+                                              <span className="value">
+                                                {formatDate(plan.updated_at)}
+                                              </span>
+                                            </div>
+                                          </div>
+
+                                          <div className="detail-section detail-section-wide">
+                                            <h4>Plan Description</h4>
+                                            <p className="detail-paragraph">
+                                              {plan.plan_description ||
+                                                'No description recorded.'}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )}
+
+                                  {showDeletePlanConfirm === plan.plan_id && (
+                                    <tr className="delete-confirm-row">
+                                      <td colSpan={7}>
+                                        <div className="delete-confirm-box">
+                                          <p>
+                                            Are you sure you want to delete this case
+                                            conference record?
+                                          </p>
+                                          <p className="delete-subtext">
+                                            This action cannot be undone.
+                                          </p>
+                                          <div className="confirm-actions">
+                                            <button
+                                              type="button"
+                                              className="btn-confirm-delete"
+                                              onClick={() => handleDeletePlan(plan.plan_id)}
+                                              disabled={deletingPlanId === plan.plan_id}
+                                            >
+                                              {deletingPlanId === plan.plan_id
+                                                ? 'Deleting...'
+                                                : 'Yes, Delete'}
+                                            </button>
+                                            <button
+                                              type="button"
+                                              className="btn-confirm-cancel"
+                                              onClick={() => setShowDeletePlanConfirm(null)}
+                                              disabled={deletingPlanId === plan.plan_id}
+                                            >
+                                              Cancel
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </div>
 
-              {showPlanForm && (
-                <form
-                  onSubmit={handlePlanSubmit}
-                  style={{
-                    border: '1px solid #d0d7de',
-                    borderRadius: '12px',
-                    padding: '20px',
-                    marginBottom: '24px',
-                    backgroundColor: '#f9fbfc',
-                  }}
-                >
-                  <h2 style={{ marginTop: 0 }}>
-                    {editingPlanId !== null
-                      ? 'Edit Case Conference Record'
-                      : 'Add Case Conference Record'}
-                  </h2>
+              <div className="conference-section-label">Past Case Conferences</div>
+              <div className="table-section">
+                {pastPlans.length === 0 ? (
+                  <div className="no-data">No past case conferences found.</div>
+                ) : (
+                  <div className="table-wrapper">
+                    <table className="home-visits-table conference-layout">
+                      <thead>
+                        <tr>
+                          <th></th>
+                          <th>Conference Date</th>
+                          <th>Category</th>
+                          <th>Services Provided</th>
+                          <th>Status</th>
+                          <th>Target Date</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pastPlans.map((plan) => (
+                          <tr key={`past-block-${plan.plan_id}`}>
+                            <td colSpan={7} className="row-block-cell">
+                              <table className="embedded-row-table conference-layout">
+                                <tbody>
+                                  <tr
+                                    className="visit-row"
+                                    onClick={() =>
+                                      setExpandedPastPlanId(
+                                        expandedPastPlanId === plan.plan_id
+                                          ? null
+                                          : plan.plan_id
+                                      )
+                                    }
+                                  >
+                                    <td className="expand-icon">
+                                      {expandedPastPlanId === plan.plan_id ? '▼' : '▶'}
+                                    </td>
+                                    <td>{formatDate(plan.case_conference_date)}</td>
+                                    <td>{plan.plan_category || 'N/A'}</td>
+                                    <td>{plan.services_provided || 'N/A'}</td>
+                                    <td>
+                                      <span
+                                        className={`status-pill ${statusClass(plan.status)}`}
+                                      >
+                                        {plan.status || 'Unknown'}
+                                      </span>
+                                    </td>
+                                    <td>{formatDate(plan.target_date)}</td>
+                                    <td
+                                      className="action-cell"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <button
+                                        type="button"
+                                        className="btn-small btn-edit-lite"
+                                        onClick={() => openEditPlanModal(plan)}
+                                        disabled={deletingPlanId === plan.plan_id}
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="btn-small btn-delete"
+                                        onClick={() =>
+                                          setShowDeletePlanConfirm(plan.plan_id)
+                                        }
+                                        disabled={deletingPlanId === plan.plan_id}
+                                      >
+                                        Delete
+                                      </button>
+                                    </td>
+                                  </tr>
 
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(2, minmax(220px, 1fr))',
-                      gap: '12px',
-                    }}
-                  >
-                    <div>
-                      <label>Conference Date</label>
-                      <input
-                        type="date"
-                        value={planForm.case_conference_date ?? ''}
-                        onChange={(e) =>
-                          setPlanForm({
-                            ...planForm,
-                            case_conference_date: e.target.value,
-                          })
-                        }
-                        style={{ width: '100%' }}
-                      />
-                    </div>
+                                  {expandedPastPlanId === plan.plan_id && (
+                                    <tr className="expanded-details">
+                                      <td colSpan={7}>
+                                        <div className="details-grid">
+                                          <div className="detail-section">
+                                            <h4>Conference Details</h4>
+                                            <div className="detail-item">
+                                              <span className="label">Category</span>
+                                              <span className="value">
+                                                {plan.plan_category || 'N/A'}
+                                              </span>
+                                            </div>
+                                            <div className="detail-item">
+                                              <span className="label">Status</span>
+                                              <span className="value">
+                                                {plan.status || 'N/A'}
+                                              </span>
+                                            </div>
+                                            <div className="detail-item">
+                                              <span className="label">Target Value</span>
+                                              <span className="value">
+                                                {plan.target_value ?? 'N/A'}
+                                              </span>
+                                            </div>
+                                          </div>
 
-                    <div>
-                      <label>Category</label>
-                      <select
-                        value={planForm.plan_category}
-                        onChange={(e) =>
-                          setPlanForm({
-                            ...planForm,
-                            plan_category: e.target.value,
-                          })
-                        }
-                        style={{ width: '100%' }}
-                        required
-                      >
-                        <option value="">Select category</option>
-                        <option value="Safety">Safety</option>
-                        <option value="Psychosocial">Psychosocial</option>
-                        <option value="Education">Education</option>
-                        <option value="Physical Health">Physical Health</option>
-                        <option value="Legal">Legal</option>
-                        <option value="Reintegration">Reintegration</option>
-                      </select>
-                    </div>
+                                          <div className="detail-section">
+                                            <h4>Timeline</h4>
+                                            <div className="detail-item">
+                                              <span className="label">Conference Date</span>
+                                              <span className="value">
+                                                {formatDate(plan.case_conference_date)}
+                                              </span>
+                                            </div>
+                                            <div className="detail-item">
+                                              <span className="label">Target Date</span>
+                                              <span className="value">
+                                                {formatDate(plan.target_date)}
+                                              </span>
+                                            </div>
+                                            <div className="detail-item">
+                                              <span className="label">Last Updated</span>
+                                              <span className="value">
+                                                {formatDate(plan.updated_at)}
+                                              </span>
+                                            </div>
+                                          </div>
 
-                    <div>
-                      <label>Services Provided</label>
-                      <input
-                        type="text"
-                        value={planForm.services_provided}
-                        onChange={(e) =>
-                          setPlanForm({
-                            ...planForm,
-                            services_provided: e.target.value,
-                          })
-                        }
-                        style={{ width: '100%' }}
-                        required
-                      />
-                    </div>
+                                          <div className="detail-section detail-section-wide">
+                                            <h4>Plan Description</h4>
+                                            <p className="detail-paragraph">
+                                              {plan.plan_description ||
+                                                'No description recorded.'}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )}
 
-                    <div>
-                      <label>Status</label>
-                      <select
-                        value={planForm.status}
-                        onChange={(e) =>
-                          setPlanForm({
-                            ...planForm,
-                            status: e.target.value,
-                          })
-                        }
-                        style={{ width: '100%' }}
-                        required
-                      >
-                        <option value="">Select status</option>
-                        <option value="Open">Open</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Achieved">Achieved</option>
-                        <option value="On Hold">On Hold</option>
-                        <option value="Closed">Closed</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label>Target Date</label>
-                      <input
-                        type="date"
-                        value={planForm.target_date ?? ''}
-                        onChange={(e) =>
-                          setPlanForm({
-                            ...planForm,
-                            target_date: e.target.value,
-                          })
-                        }
-                        style={{ width: '100%' }}
-                      />
-                    </div>
-
-                    <div>
-                      <label>Target Value</label>
-                      <input
-                        type="number"
-                        value={planForm.target_value ?? ''}
-                        onChange={(e) =>
-                          setPlanForm({
-                            ...planForm,
-                            target_value:
-                              e.target.value === '' ? null : Number(e.target.value),
-                          })
-                        }
-                        style={{ width: '100%' }}
-                      />
-                    </div>
-
-                    <div style={{ gridColumn: '1 / -1' }}>
-                      <label>Plan Description</label>
-                      <textarea
-                        value={planForm.plan_description}
-                        onChange={(e) =>
-                          setPlanForm({
-                            ...planForm,
-                            plan_description: e.target.value,
-                          })
-                        }
-                        style={{ width: '100%', minHeight: '90px' }}
-                        required
-                      />
-                    </div>
+                                  {showDeletePlanConfirm === plan.plan_id && (
+                                    <tr className="delete-confirm-row">
+                                      <td colSpan={7}>
+                                        <div className="delete-confirm-box">
+                                          <p>
+                                            Are you sure you want to delete this case
+                                            conference record?
+                                          </p>
+                                          <p className="delete-subtext">
+                                            This action cannot be undone.
+                                          </p>
+                                          <div className="confirm-actions">
+                                            <button
+                                              type="button"
+                                              className="btn-confirm-delete"
+                                              onClick={() => handleDeletePlan(plan.plan_id)}
+                                              disabled={deletingPlanId === plan.plan_id}
+                                            >
+                                              {deletingPlanId === plan.plan_id
+                                                ? 'Deleting...'
+                                                : 'Yes, Delete'}
+                                            </button>
+                                            <button
+                                              type="button"
+                                              className="btn-confirm-cancel"
+                                              onClick={() => setShowDeletePlanConfirm(null)}
+                                              disabled={deletingPlanId === plan.plan_id}
+                                            >
+                                              Cancel
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-
-                  <div style={{ marginTop: '16px', display: 'flex', gap: '12px' }}>
-                    <button
-                      type="submit"
-                      style={blueButtonStyle}
-                      disabled={submittingPlan}
-                    >
-                      {submittingPlan
-                        ? 'Saving...'
-                        : editingPlanId !== null
-                        ? 'Update Case Conference Record'
-                        : 'Add Case Conference Record'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={resetPlanForm}
-                      style={blueButtonStyle}
-                      disabled={submittingPlan}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              <h2 style={{ marginTop: 0 }}>Upcoming Case Conferences</h2>
-              <table
-                border={1}
-                cellPadding={10}
-                style={{
-                  width: '100%',
-                  textAlign: 'center',
-                  marginBottom: '28px',
-                }}
-              >
-                <thead>
-                  <tr>
-                    <th>Conference Date</th>
-                    <th>Category</th>
-                    <th>Plan Description</th>
-                    <th>Services Provided</th>
-                    <th>Status</th>
-                    <th>Target Date</th>
-                    <th>Last Updated</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {contentLoading ? (
-                    <tr>
-                      <td colSpan={8}>Loading upcoming case conferences...</td>
-                    </tr>
-                  ) : upcomingPlans.length === 0 ? (
-                    <tr>
-                      <td colSpan={8}>No upcoming case conferences found</td>
-                    </tr>
-                  ) : (
-                    upcomingPlans.map((p) => (
-                      <tr key={p.plan_id}>
-                        <td>{formatDate(p.case_conference_date)}</td>
-                        <td>{p.plan_category}</td>
-                        <td>{p.plan_description}</td>
-                        <td>{p.services_provided}</td>
-                        <td>{p.status}</td>
-                        <td>{formatDate(p.target_date)}</td>
-                        <td>{formatDate(p.updated_at)}</td>
-                        <td>
-                          <div
-                            style={{
-                              display: 'flex',
-                              gap: '8px',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <button
-                              onClick={() => handleEditPlan(p)}
-                              style={editButtonStyle}
-                              disabled={deletingPlanId === p.plan_id}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeletePlan(p.plan_id)}
-                              style={deleteButtonStyle}
-                              disabled={deletingPlanId === p.plan_id}
-                            >
-                              {deletingPlanId === p.plan_id ? 'Deleting...' : 'Delete'}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-
-              <h2>Past Case Conferences</h2>
-              <table
-                border={1}
-                cellPadding={10}
-                style={{ width: '100%', textAlign: 'center' }}
-              >
-                <thead>
-                  <tr>
-                    <th>Conference Date</th>
-                    <th>Category</th>
-                    <th>Plan Description</th>
-                    <th>Services Provided</th>
-                    <th>Status</th>
-                    <th>Target Date</th>
-                    <th>Last Updated</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {contentLoading ? (
-                    <tr>
-                      <td colSpan={8}>Loading past case conferences...</td>
-                    </tr>
-                  ) : pastPlans.length === 0 ? (
-                    <tr>
-                      <td colSpan={8}>No past case conferences found</td>
-                    </tr>
-                  ) : (
-                    pastPlans.map((p) => (
-                      <tr key={p.plan_id}>
-                        <td>{formatDate(p.case_conference_date)}</td>
-                        <td>{p.plan_category}</td>
-                        <td>{p.plan_description}</td>
-                        <td>{p.services_provided}</td>
-                        <td>{p.status}</td>
-                        <td>{formatDate(p.target_date)}</td>
-                        <td>{formatDate(p.updated_at)}</td>
-                        <td>
-                          <div
-                            style={{
-                              display: 'flex',
-                              gap: '8px',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <button
-                              onClick={() => handleEditPlan(p)}
-                              style={editButtonStyle}
-                              disabled={deletingPlanId === p.plan_id}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeletePlan(p.plan_id)}
-                              style={deleteButtonStyle}
-                              disabled={deletingPlanId === p.plan_id}
-                            >
-                              {deletingPlanId === p.plan_id ? 'Deleting...' : 'Delete'}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                )}
+              </div>
             </>
           )}
         </>
+      )}
+
+      {showVisitModal && (
+        <div className="modal-overlay active" onClick={resetVisitForm}>
+          <div className="modal-content home-visitation-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{editingVisitId !== null ? 'Edit Home Visit' : 'Add Home Visit'}</h2>
+              <button className="modal-close" onClick={resetVisitForm}>
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleVisitSubmit} className="resident-form">
+              <div className="form-section">
+                <h3>Visit Information</h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Visit Date</label>
+                    <input
+                      type="date"
+                      value={visitForm.visit_date}
+                      onChange={(e) =>
+                        setVisitForm({ ...visitForm, visit_date: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Social Worker</label>
+                    <input
+                      type="text"
+                      value={visitForm.social_worker}
+                      onChange={(e) =>
+                        setVisitForm({ ...visitForm, social_worker: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Visit Type</label>
+                    <select
+                      value={visitForm.visit_type}
+                      onChange={(e) =>
+                        setVisitForm({ ...visitForm, visit_type: e.target.value })
+                      }
+                      required
+                    >
+                      <option value="">Select type</option>
+                      <option value="Initial Assessment">Initial Assessment</option>
+                      <option value="Routine Follow-Up">Routine Follow-Up</option>
+                      <option value="Reintegration Assessment">
+                        Reintegration Assessment
+                      </option>
+                      <option value="Post-Placement Monitoring">
+                        Post-Placement Monitoring
+                      </option>
+                      <option value="Emergency">Emergency</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Family Cooperation Level</label>
+                    <select
+                      value={visitForm.family_cooperation_level}
+                      onChange={(e) =>
+                        setVisitForm({
+                          ...visitForm,
+                          family_cooperation_level: e.target.value,
+                        })
+                      }
+                      required
+                    >
+                      <option value="">Select level</option>
+                      <option value="Highly Cooperative">Highly Cooperative</option>
+                      <option value="Cooperative">Cooperative</option>
+                      <option value="Neutral">Neutral</option>
+                      <option value="Uncooperative">Uncooperative</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h3>Visit Details</h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Location Visited</label>
+                    <input
+                      type="text"
+                      value={visitForm.location_visited}
+                      onChange={(e) =>
+                        setVisitForm({ ...visitForm, location_visited: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Family Members Present</label>
+                    <input
+                      type="text"
+                      value={visitForm.family_members_present}
+                      onChange={(e) =>
+                        setVisitForm({
+                          ...visitForm,
+                          family_members_present: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row full">
+                  <div className="form-group">
+                    <label>Purpose</label>
+                    <input
+                      type="text"
+                      value={visitForm.purpose}
+                      onChange={(e) =>
+                        setVisitForm({ ...visitForm, purpose: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row full">
+                  <div className="form-group">
+                    <label>Observations</label>
+                    <textarea
+                      value={visitForm.observations}
+                      onChange={(e) =>
+                        setVisitForm({ ...visitForm, observations: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h3>Outcome & Follow-Up</h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Visit Outcome</label>
+                    <select
+                      value={visitForm.visit_outcome}
+                      onChange={(e) =>
+                        setVisitForm({ ...visitForm, visit_outcome: e.target.value })
+                      }
+                      required
+                    >
+                      <option value="">Select outcome</option>
+                      <option value="Favorable">Favorable</option>
+                      <option value="Needs Improvement">Needs Improvement</option>
+                      <option value="Unfavorable">Unfavorable</option>
+                      <option value="Inconclusive">Inconclusive</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group checkbox-column">
+                    <label className="checkbox-inline">
+                      <input
+                        type="checkbox"
+                        checked={visitForm.safety_concerns_noted}
+                        onChange={(e) =>
+                          setVisitForm({
+                            ...visitForm,
+                            safety_concerns_noted: e.target.checked,
+                          })
+                        }
+                      />
+                      Safety Concerns Noted
+                    </label>
+
+                    <label className="checkbox-inline">
+                      <input
+                        type="checkbox"
+                        checked={visitForm.follow_up_needed}
+                        onChange={(e) =>
+                          setVisitForm({
+                            ...visitForm,
+                            follow_up_needed: e.target.checked,
+                            follow_up_notes: e.target.checked
+                              ? visitForm.follow_up_notes
+                              : '',
+                          })
+                        }
+                      />
+                      Follow-Up Needed
+                    </label>
+                  </div>
+                </div>
+
+                <div className="form-row full">
+                  <div className="form-group">
+                    <label>Follow-Up Notes</label>
+                    <textarea
+                      value={visitForm.follow_up_notes}
+                      onChange={(e) =>
+                        setVisitForm({
+                          ...visitForm,
+                          follow_up_notes: e.target.value,
+                        })
+                      }
+                      required={visitForm.follow_up_needed}
+                      disabled={!visitForm.follow_up_needed}
+                      placeholder={
+                        visitForm.follow_up_needed
+                          ? 'Enter required follow-up notes'
+                          : 'Check "Follow-Up Needed" to add notes'
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button type="button" className="btn-secondary" onClick={resetVisitForm}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary" disabled={submittingVisit}>
+                  {submittingVisit
+                    ? 'Saving...'
+                    : editingVisitId !== null
+                    ? 'Update Home Visit'
+                    : 'Create Home Visit'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showPlanModal && (
+        <div className="modal-overlay active" onClick={resetPlanForm}>
+          <div className="modal-content home-visitation-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                {editingPlanId !== null
+                  ? 'Edit Case Conference Record'
+                  : 'Add Case Conference Record'}
+              </h2>
+              <button className="modal-close" onClick={resetPlanForm}>
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handlePlanSubmit} className="resident-form">
+              <div className="form-section">
+                <h3>Conference Information</h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Conference Date</label>
+                    <input
+                      type="date"
+                      value={planForm.case_conference_date ?? ''}
+                      onChange={(e) =>
+                        setPlanForm({
+                          ...planForm,
+                          case_conference_date: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Category</label>
+                    <select
+                      value={planForm.plan_category}
+                      onChange={(e) =>
+                        setPlanForm({
+                          ...planForm,
+                          plan_category: e.target.value,
+                        })
+                      }
+                      required
+                    >
+                      <option value="">Select category</option>
+                      <option value="Safety">Safety</option>
+                      <option value="Psychosocial">Psychosocial</option>
+                      <option value="Education">Education</option>
+                      <option value="Physical Health">Physical Health</option>
+                      <option value="Legal">Legal</option>
+                      <option value="Reintegration">Reintegration</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Services Provided</label>
+                    <input
+                      type="text"
+                      value={planForm.services_provided}
+                      onChange={(e) =>
+                        setPlanForm({
+                          ...planForm,
+                          services_provided: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Status</label>
+                    <select
+                      value={planForm.status}
+                      onChange={(e) =>
+                        setPlanForm({
+                          ...planForm,
+                          status: e.target.value,
+                        })
+                      }
+                      required
+                    >
+                      <option value="">Select status</option>
+                      <option value="Open">Open</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Achieved">Achieved</option>
+                      <option value="On Hold">On Hold</option>
+                      <option value="Closed">Closed</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Target Date</label>
+                    <input
+                      type="date"
+                      value={planForm.target_date ?? ''}
+                      onChange={(e) =>
+                        setPlanForm({
+                          ...planForm,
+                          target_date: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Target Value</label>
+                    <input
+                      type="number"
+                      value={planForm.target_value ?? ''}
+                      onChange={(e) =>
+                        setPlanForm({
+                          ...planForm,
+                          target_value:
+                            e.target.value === '' ? null : Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h3>Plan Description</h3>
+                <div className="form-row full">
+                  <div className="form-group">
+                    <label>Description</label>
+                    <textarea
+                      value={planForm.plan_description}
+                      onChange={(e) =>
+                        setPlanForm({
+                          ...planForm,
+                          plan_description: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button type="button" className="btn-secondary" onClick={resetPlanForm}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary" disabled={submittingPlan}>
+                  {submittingPlan
+                    ? 'Saving...'
+                    : editingPlanId !== null
+                    ? 'Update Case Conference Record'
+                    : 'Create Case Conference Record'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   )
