@@ -160,9 +160,6 @@ function toSeries(trend: PublicImpactQuarterlyTrendItem[], key: keyof PublicImpa
   return trend.map(t => ({ label: t.quarter, value: t[key] as number | null }))
 }
 
-const FALLBACK_HEADLINE = 'Restoring Hope, One Life at a Time'
-const FALLBACK_SUMMARY =
-  'Every girl in our care receives safe shelter, holistic support, and a guided path toward a future she deserves. Your generosity makes this possible.'
 
 /* ── Impact Page ─────────────────────────────────────────── */
 type Status = 'loading' | 'success' | 'error'
@@ -179,8 +176,6 @@ export default function Impact() {
       .catch(() => setStatus('error'))
   }, [])
 
-  const headline = data?.story.headline ?? FALLBACK_HEADLINE
-  const summary = data?.story.summaryText ?? FALLBACK_SUMMARY
   const trend = data?.quarterlyTrend ?? []
 
   return (
@@ -201,8 +196,8 @@ export default function Impact() {
               </div>
             ) : (
               <>
-                <h1>{headline}</h1>
-                <p>{summary}</p>
+                <h1>Luz De Vida Current Impact Update</h1>
+                <p>Every number below reflects real lives changed, safe shelter provided, sessions delivered, and futures restored through your generosity.</p>
                 {data?.story.storyPublishedAt && (
                   <p className="impact-hero__updated">
                     Last updated {formatDate(data.story.storyPublishedAt)}

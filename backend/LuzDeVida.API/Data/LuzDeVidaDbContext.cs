@@ -12,6 +12,8 @@ public partial class LuzDeVidaDbContext : DbContext
     {
     }
 
+    public virtual DbSet<app_user> app_users { get; set; }
+
     public virtual DbSet<donation> donations { get; set; }
 
     public virtual DbSet<donation_allocation> donation_allocations { get; set; }
@@ -48,6 +50,27 @@ public partial class LuzDeVidaDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<app_user>(entity =>
+        {
+            entity.HasKey(e => e.user_id);
+
+            entity.ToTable("app_users");
+
+            entity.HasIndex(e => e.email).IsUnique();
+
+            entity.Property(e => e.user_id).ValueGeneratedOnAdd();
+            entity.Property(e => e.email).HasMaxLength(255).IsRequired();
+            entity.Property(e => e.password_hash).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.role).HasMaxLength(50).HasDefaultValue("supporter");
+            entity.Property(e => e.is_active).HasDefaultValue(true);
+            entity.Property(e => e.created_at).HasColumnType("datetime");
+
+            entity.HasOne(e => e.supporter)
+                .WithMany()
+                .HasForeignKey(e => e.supporter_id)
+                .HasConstraintName("FK_app_users_supporters");
+        });
+
         modelBuilder.Entity<donation>(entity =>
         {
             entity.HasKey(e => e.donation_id).HasName("PK__donation__296B91DC41AB1A05");

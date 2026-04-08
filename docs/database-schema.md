@@ -25,6 +25,7 @@ Schema covers three domains (see `claude.md` for entity lists):
 
 ## Primary Keys
 
+- `app_users`: `user_id` **(PK, IDENTITY)**
 - `donation_allocations`: `allocation_id` **(PK)**
 - `donations`: `donation_id` **(PK)**
 - `education_records`: `education_record_id` **(PK)**
@@ -76,6 +77,17 @@ Schema covers three domains (see `claude.md` for entity lists):
 - `safehouse_monthly_metrics.safehouse_id` → `safehouses.safehouse_id`
 
 ## Table-by-Table Schema
+
+### app_users
+- `user_id` (int) **PK, IDENTITY**
+- `email` (nvarchar 255) UNIQUE NOT NULL
+- `password_hash` (nvarchar 500) NOT NULL
+- `role` (nvarchar 50) NOT NULL DEFAULT 'supporter' — values: 'supporter', 'admin'
+- `supporter_id` (int) **FK → supporters.supporter_id** — set on self-registration; null for admin accounts
+- `is_active` (bit) DEFAULT 1
+- `created_at` (datetime) DEFAULT GETUTCDATE()
+
+> Run `docs/migrations/001_create_app_users.sql` before starting the backend.
 
 ### donation_allocations
 - `allocation_id` (int) **PK**
