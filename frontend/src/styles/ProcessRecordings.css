@@ -1,23 +1,30 @@
 /* Process Recordings Page */
 .process-recordings {
-  padding: 2rem;
+  padding: 8rem 2rem 2rem 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  background: var(--cream);
+  min-height: 100vh;
 }
 
 .process-recordings-header {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+  text-align: center;
 }
 
 .process-recordings-header h1 {
-  font-size: 2rem;
-  color: #333;
-  margin: 0 0 0.5rem 0;
+  font-family: var(--font-display);
+  font-size: 2.75rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin: 0 0 0.75rem 0;
+  line-height: 1.1;
 }
 
 .process-recordings-header .subtitle {
-  font-size: 1rem;
-  color: #666;
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  color: var(--text-light);
   margin: 0;
   line-height: 1.5;
 }
@@ -25,13 +32,14 @@
 /* Alerts */
 .error-alert,
 .success-alert {
-  padding: 1rem;
-  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  border-radius: 4px;
   margin-bottom: 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   animation: slideIn 0.3s ease-out;
+  font-weight: 500;
 }
 
 @keyframes slideIn {
@@ -63,8 +71,11 @@
   font-size: 1.5rem;
   color: inherit;
   cursor: pointer;
-  padding: 0;
-  margin-left: 1rem;
+  padding: 0 0 0 1rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s var(--ease);
 }
 
 .alert-close:hover {
@@ -73,18 +84,20 @@
 
 /* Resident Selector */
 .resident-selector {
-  background: #f9f9f9;
+  background: white;
   padding: 1.5rem;
-  border-radius: 8px;
+  border-radius: 4px;
   margin-bottom: 2rem;
-  border: 1px solid #ddd;
+  margin-top: 2rem;
+  border: 1px solid var(--cream-darker);
 }
 
 .resident-selector h2 {
   margin-top: 0;
   margin-bottom: 1rem;
-  color: #333;
+  color: var(--text-dark);
   font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .selector-row {
@@ -102,23 +115,30 @@
 .selector-group label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #555;
+  font-weight: 600;
+  color: var(--text-dark);
   font-size: 0.95rem;
 }
 
 .selector-group select {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--cream-darker);
   border-radius: 4px;
   font-size: 0.95rem;
+  background: white;
+  font-family: inherit;
+  transition: all 0.3s var(--ease);
+}
+
+.selector-group select:hover {
+  border-color: var(--teal);
 }
 
 .selector-group select:focus {
   outline: none;
-  border-color: #4CAF50;
-  box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.08);
 }
 
 /* Action Buttons */
@@ -133,37 +153,41 @@
 .process-recordings .btn-secondary {
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s var(--ease);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .process-recordings .btn-primary {
-  background-color: #4CAF50;
+  background-color: var(--teal);
   color: white;
 }
 
 .process-recordings .btn-primary:hover {
-  background-color: #45a049;
+  background-color: var(--teal-dark);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 128, 128, 0.2);
 }
 
 .process-recordings .btn-primary:disabled {
-  background-color: #ccc;
+  background-color: var(--cream-darker);
   cursor: not-allowed;
   transform: none;
+  color: var(--text-light);
 }
 
 .process-recordings .btn-secondary {
-  background-color: #666;
-  color: white;
+  background-color: var(--cream-dark);
+  color: var(--text-dark);
 }
 
 .process-recordings .btn-secondary:hover {
-  background-color: #555;
+  background-color: var(--cream-darker);
 }
 
 /* Recordings Timeline */
@@ -174,10 +198,10 @@
 .timeline-empty {
   text-align: center;
   padding: 3rem 2rem;
-  background: #f9f9f9;
-  border-radius: 8px;
-  color: #999;
-  border: 1px dashed #ddd;
+  background: var(--cream-light);
+  border-radius: 4px;
+  color: var(--text-light);
+  border: 1px dashed var(--cream-darker);
 }
 
 .timeline-empty p {
@@ -189,18 +213,18 @@
   margin-bottom: 2rem;
   padding: 1.5rem;
   background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: 1px solid var(--cream-darker);
+  border-radius: 4px;
   position: relative;
-  transition: all 0.2s ease;
+  transition: all 0.3s var(--ease);
 }
 
 .timeline-entry:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .timeline-entry.expanded {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .timeline-header {
@@ -212,10 +236,10 @@
 }
 
 .timeline-header:hover {
-  background: #fafafa;
+  background: var(--cream-light);
   margin: -1.5rem;
   padding: 1.5rem;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .timeline-meta {
@@ -225,7 +249,7 @@
 .timeline-date {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-dark);
   margin: 0 0 0.5rem 0;
 }
 
@@ -243,20 +267,20 @@
 }
 
 .timeline-info-label {
-  font-weight: 500;
-  color: #666;
+  font-weight: 600;
+  color: var(--text-light);
   min-width: 100px;
 }
 
 .timeline-info-value {
-  color: #333;
+  color: var(--text-dark);
 }
 
 .timeline-expand-icon {
   font-size: 1.2rem;
-  color: #999;
+  color: var(--text-light);
   margin-left: 1rem;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s var(--ease);
 }
 
 .timeline-entry.expanded .timeline-expand-icon {
@@ -266,7 +290,7 @@
 .timeline-details {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--cream-lighter);
 }
 
 .detail-section {
@@ -275,7 +299,7 @@
 
 .detail-section h4 {
   margin: 0 0 0.75rem 0;
-  color: #555;
+  color: var(--text-light);
   font-size: 0.95rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -284,7 +308,7 @@
 
 .detail-section p {
   margin: 0;
-  color: #333;
+  color: var(--text-dark);
   line-height: 1.6;
   white-space: pre-wrap;
 }
@@ -294,7 +318,7 @@
   gap: 0.75rem;
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--cream-lighter);
 }
 
 .btn-small {
@@ -303,27 +327,30 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s var(--ease);
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .btn-edit {
-  background-color: #2196F3;
+  background-color: var(--teal);
   color: white;
 }
 
 .btn-edit:hover {
-  background-color: #1976D2;
-  transform: translateY(-1px);
+  background-color: var(--teal-dark);
+  transform: translateY(-2px);
 }
 
 .btn-delete {
-  background-color: #f44336;
+  background-color: #dc3545;
   color: white;
 }
 
 .btn-delete:hover {
-  background-color: #da190b;
+  background-color: #a02834;
   transform: translateY(-1px);
 }
 
@@ -356,27 +383,29 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid #eee;
-  background: #f9f9f9;
+  border-bottom: 1px solid var(--cream-darker);
+  background: var(--cream-dark);
 }
 
 .modal-header h2 {
   margin: 0;
-  color: #333;
+  color: var(--text-dark);
   font-size: 1.3rem;
+  font-family: var(--font-display);
 }
 
 .modal-close {
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #999;
+  color: var(--text-light);
   cursor: pointer;
   padding: 0;
+  transition: all 0.3s var(--ease);
 }
 
 .modal-close:hover {
-  color: #333;
+  color: var(--text-dark);
 }
 
 /* Form */
@@ -390,7 +419,7 @@
 
 .form-section h3 {
   margin: 0 0 1rem 0;
-  color: #333;
+  color: var(--text-dark);
   font-size: 1rem;
   font-weight: 600;
 }
@@ -413,8 +442,8 @@
 
 .form-group label {
   margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #555;
+  font-weight: 600;
+  color: var(--text-dark);
   font-size: 0.95rem;
 }
 
@@ -422,18 +451,27 @@
 .form-group select,
 .form-group textarea {
   padding: 0.75rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--cream-darker);
   border-radius: 4px;
   font-size: 0.95rem;
   font-family: inherit;
+  background: white;
+  transition: all 0.3s var(--ease);
+  box-sizing: border-box;
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+  border-color: var(--teal);
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #4CAF50;
-  box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.08);
 }
 
 .form-group textarea {
@@ -445,37 +483,40 @@
   display: flex;
   gap: 1rem;
   padding: 1.5rem;
-  border-top: 1px solid #eee;
-  background: #f9f9f9;
+  border-top: 1px solid var(--cream-darker);
+  background: var(--cream-dark);
   justify-content: flex-end;
 }
 
 .modal-footer button {
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s var(--ease);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .modal-footer .btn-primary {
-  background-color: #4CAF50;
+  background-color: var(--teal);
   color: white;
 }
 
 .modal-footer .btn-primary:hover {
-  background-color: #45a049;
+  background-color: var(--teal-dark);
 }
 
 .modal-footer .btn-secondary {
-  background-color: #999;
-  color: white;
+  background-color: var(--cream-dark);
+  color: var(--text-dark);
 }
 
 .modal-footer .btn-secondary:hover {
-  background-color: #777;
+  background-color: var(--cream-darker);
 }
 
 /* Delete Confirmation */
