@@ -188,7 +188,7 @@ const ProcessRecording: React.FC = () => {
         notes_restricted: null,
       };
 
-      if (showEditModal && formData.recording_id) {
+      if (showEditModal && formData.recording_id != null) {
         // Update existing recording
         await updateProcessRecording(formData.recording_id, payload);
         showAlert('success', 'Process recording updated successfully');
