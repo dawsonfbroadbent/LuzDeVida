@@ -214,7 +214,7 @@ const ProcessRecording: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (!recordingToDelete || !selectedResident) return;
+    if (recordingToDelete === null || selectedResident === null) return;
 
     try {
       setLoading(true);
