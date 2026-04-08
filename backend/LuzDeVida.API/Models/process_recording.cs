@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace LuzDeVida.API.Models;
 
@@ -35,5 +36,6 @@ public partial class process_recording
 
     public string? notes_restricted { get; set; }
 
-    public virtual resident resident { get; set; } = null!;
+    [JsonIgnore]
+    public virtual resident? resident { get; set; }
 }
