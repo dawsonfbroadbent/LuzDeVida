@@ -39,10 +39,6 @@ const FAQ_ITEMS = [
     q: 'Can I set up a recurring monthly gift?',
     a: 'Absolutely. Monthly gifts are especially powerful because they allow us to plan ahead and provide consistent care. Simply select the "Monthly" option before completing your gift.',
   },
-  {
-    q: 'Is my payment information secure?',
-    a: 'Yes. All payments are processed with 256-bit SSL encryption via Stripe, the same payment infrastructure used by leading nonprofits and Fortune 500 companies worldwide.',
-  },
 ]
 
 /* ── Donate Page ─────────────────────────────────────────── */

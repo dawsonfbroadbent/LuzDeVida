@@ -12,6 +12,7 @@ import ProcessRecording from './pages/ProcessRecording'
 import AdminDashboard from './pages/AdminDashboard'
 import Login from './pages/Login'
 import PrivacyPolicy from './pages/PrivacyPolicy'
+import DonorManagement from './pages/DonorManagement'
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
             <Route path="/homevisitations" element={<HomeVisitations />} />
           <Route path="/admin/caseload-inventory" element={<CaseloadInventory />} />
           <Route path="/admin/process-recording" element={<ProcessRecording />} />
+          <Route path="/admin/donor-management" element={<DonorManagement />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           </Routes>
         </main>
