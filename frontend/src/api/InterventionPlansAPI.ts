@@ -57,7 +57,8 @@ export async function createInterventionPlan(
   })
 
   if (!response.ok) {
-    throw new Error('Failed to create intervention plan')
+    const errorText = await response.text()
+    throw new Error(`Failed to create intervention plan: ${response.status} ${errorText}`)
   }
 
   return await response.json()

@@ -53,10 +53,22 @@ namespace LuzDeVida.API.Controllers
         [HttpPost]
         public async Task<IActionResult> PostInterventionPlan([FromBody] intervention_plan plan)
         {
-            _context.intervention_plans.Add(plan);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var maxId = await _context.intervention_plans
+                    .MaxAsync(p => (int?)p.plan_id) ?? 0;
 
-            return Ok(plan);
+                plan.plan_id = maxId + 1;
+
+                _context.intervention_plans.Add(plan);
+                await _context.SaveChangesAsync();
+
+                return Ok(plan);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException?.Message ?? ex.Message);
+            }
         }
 
         // PUT: api/interventionplans/5

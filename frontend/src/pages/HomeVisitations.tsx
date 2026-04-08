@@ -191,33 +191,42 @@ export default function HomeVisitations() {
     e.preventDefault()
     if (selectedResidentId == null) return
 
+    if (
+      !planForm.plan_category.trim() ||
+      !planForm.plan_description.trim() ||
+      !planForm.services_provided.trim() ||
+      !planForm.status.trim()
+    ) {
+      alert('Please fill in all required fields before saving.')
+      return
+    }
+
     try {
       const now = new Date().toISOString()
 
       if (editingPlanId !== null) {
-        await updateInterventionPlan(editingPlanId, {
+        const updatePayload: intervention_plan = {
           ...planForm,
           resident_id: selectedResidentId,
           updated_at: now,
-        })
-      } else {
-        const selectedResident = residents.find(
-          (r) => r.resident_id === selectedResidentId
-        )
+        }
 
-        await createInterventionPlan({
+        await updateInterventionPlan(editingPlanId, updatePayload)
+      } else {
+        const createPayload: Omit<intervention_plan, 'plan_id'> = {
           resident_id: selectedResidentId,
-          resident: selectedResident,
           plan_category: planForm.plan_category,
           plan_description: planForm.plan_description,
           services_provided: planForm.services_provided,
           target_value: planForm.target_value,
-          target_date: planForm.target_date,
+          target_date: planForm.target_date || '',
           status: planForm.status,
-          case_conference_date: planForm.case_conference_date,
+          case_conference_date: planForm.case_conference_date || '',
           created_at: now,
           updated_at: now,
-        })
+        }
+
+        await createInterventionPlan(createPayload)
       }
 
       await loadPlans(selectedResidentId)

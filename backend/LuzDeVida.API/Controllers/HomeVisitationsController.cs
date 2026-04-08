@@ -52,6 +52,11 @@ namespace LuzDeVida.API.Controllers
         [HttpPost]
         public async Task<IActionResult> PostHomeVisitation([FromBody] home_visitation visit)
         {
+            var maxId = await _context.home_visitations
+                .MaxAsync(h => (int?)h.visitation_id) ?? 0;
+
+            visit.visitation_id = maxId + 1;
+
             _context.home_visitations.Add(visit);
             await _context.SaveChangesAsync();
 
