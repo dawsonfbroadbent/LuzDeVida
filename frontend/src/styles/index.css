@@ -1114,7 +1114,7 @@ button { cursor: pointer; font-family: var(--font-body); }
 /* DONATE — Main section */
 .donate-main {
   background: var(--cream);
-  padding: 80px 0 120px;
+  padding: 80px 0 48px;
 }
 
 .donate-layout {
@@ -1515,10 +1515,10 @@ button { cursor: pointer; font-family: var(--font-body); }
 
 /* IN-KIND SECTION */
 .inkind-section {
-  padding: 64px 0 0;
+  padding: 0 0 64px;
 }
 .inkind-card {
-  background: var(--jungle);
+  background: var(--blue-darker);
   border-radius: 20px;
   overflow: hidden;
   padding: 48px 52px;

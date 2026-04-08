@@ -363,14 +363,19 @@ export default function Donate() {
       {/* ── In-Kind Donation ──────────────────────────── */}
       <section className="inkind-section">
         <div className="container">
-          <div className="inkind-card reveal">
+          <div className="inkind-card">
             <div className="inkind-card__body">
               <span className="section-label" style={{ marginBottom: '8px' }}>Another Way to Help</span>
-              <h3>Giving Goods or Services?</h3>
+              <h3>In-Kind Donations</h3>
               <p>
-                We gratefully accept in-kind donations — clothing, school supplies,
-                hygiene products, professional services, and more. Reach out and
-                we'll coordinate the details together.
+                Not every gift comes in the form of money — and we are more than
+                happy to receive in-kind donations that directly support the girls
+                in our care. Whether it's clothing, school supplies, hygiene
+                products, books, or professional services, every contribution makes
+                a tangible difference in the lives of those we serve. If you'd like
+                to give an in-kind donation, we'd love to hear from you. Simply
+                reach out to us by email and we'll work with you to make sure your
+                gift gets where it's needed most.
               </p>
               <a
                 href="mailto:info@luzdevida.org?subject=In-Kind%20Donation%20Inquiry"
@@ -380,7 +385,7 @@ export default function Donate() {
                   <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
                   <path d="M22 6L12 13L2 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
-                Email us at info@luzdevida.org
+                info@luzdevida.org
               </a>
             </div>
           </div>
@@ -405,12 +410,12 @@ export default function Donate() {
             <div className="trust-item reveal delay-2">
               <div className="trust-item__icon" aria-hidden="true">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <rect x="3" y="11" width="18" height="11" rx="2" stroke="var(--blue)" strokeWidth="1.5"/>
-                  <path d="M7 11V7C7 4.24 9.24 2 12 2C14.76 2 17 4.24 17 7V11" stroke="var(--blue)" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M12 3C12 3 4 6 4 12V17L12 21L20 17V12C20 6 12 3 12 3Z" stroke="var(--blue)" strokeWidth="1.5" strokeLinejoin="round"/>
+                  <path d="M9 12L11 14L15 10" stroke="var(--blue)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <h4>Secure Payments</h4>
-              <p>Bank-level 256-bit SSL encryption on every transaction.</p>
+              <h4>Full Transparency</h4>
+              <p>We report back on every allocation — you'll know exactly how your gift was put to work.</p>
             </div>
 
             <div className="trust-item reveal delay-3">
