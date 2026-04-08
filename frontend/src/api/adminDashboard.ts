@@ -35,7 +35,7 @@ export interface AdminDashboardMetrics {
   timestamp: string
 }
 
-const API_BASE_URL = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api/admin/dashboard'
+const API_BASE_URL = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api/admindashboard/metrics'
 
 export const fetchAdminDashboardMetrics = async (): Promise<AdminDashboardMetrics> => {
   try {
