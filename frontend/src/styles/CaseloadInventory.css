@@ -456,27 +456,6 @@
   margin-right: 0;
 }
 
-.btn-edit {
-  background: var(--teal);
-  color: white;
-}
-
-.btn-edit:hover {
-  background: var(--teal-dark);
-  box-shadow: 0 2px 4px rgba(0, 128, 128, 0.2);
-}
-
-.btn-delete {
-  background: #f0f0f0;
-  color: #e74c3c;
-  border: 1px solid #e74c3c;
-}
-
-.btn-delete:hover {
-  background: #e74c3c;
-  color: white;
-}
-
 /* ====== LOADING & NO DATA ====== */
 .loading,
 .no-data {
@@ -551,20 +530,6 @@
 
 .total-pages {
   font-weight: 600;
-}
-
-/* ====== MODAL ====== */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  justify-content: center;
-  align-items: center;
 }
 
 /* ====== STATUS BADGES ====== */
@@ -878,43 +843,6 @@
 .empty-state p {
   margin: 0.5rem 0;
   font-size: 0.95rem;
-}
-
-/* ====== PAGINATION ====== */
-.pagination {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--cream-darker);
-}
-
-.pagination button {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--cream-darker);
-  border-radius: 4px;
-  background: white;
-  color: var(--text-dark);
-  cursor: pointer;
-  transition: all 0.3s var(--ease);
-  font-weight: 500;
-}
-
-.pagination button:hover:not(:disabled) {
-  border-color: var(--teal);
-  color: var(--teal);
-}
-
-.pagination button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pagination button.active {
-  background: var(--teal);
-  color: white;
-  border-color: var(--teal);
 }
 
 /* ====== RESPONSIVE ====== */
