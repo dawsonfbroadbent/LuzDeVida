@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace LuzDeVida.API.Models;
 
@@ -41,5 +42,6 @@ public partial class donation
 
     public virtual social_media_post? referral_post { get; set; }
 
-    public virtual supporter supporter { get; set; } = null!;
+    [JsonIgnore]
+    public virtual supporter? supporter { get; set; }
 }
