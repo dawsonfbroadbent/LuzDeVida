@@ -73,11 +73,11 @@
 }
 
 /* ====== BUTTONS ====== */
-.btn-primary,
-.btn-secondary,
-.btn-small,
-.btn-edit,
-.btn-delete {
+.caseload-inventory .btn-primary,
+.caseload-inventory .btn-secondary,
+.caseload-inventory .btn-small,
+.caseload-inventory .btn-edit,
+.caseload-inventory .btn-delete {
   padding: 10px 16px;
   border: none;
   border-radius: 6px;
@@ -87,45 +87,45 @@
   transition: all 0.2s ease;
 }
 
-.btn-primary {
+.caseload-inventory .btn-primary {
   background-color: #2563eb;
   color: white;
 }
 
-.btn-primary:hover {
+.caseload-inventory .btn-primary:hover {
   background-color: #1d4ed8;
 }
 
-.btn-secondary {
+.caseload-inventory .btn-secondary {
   background-color: #e5e7eb;
   color: #1a1a1a;
 }
 
-.btn-secondary:hover {
+.caseload-inventory .btn-secondary:hover {
   background-color: #d1d5db;
 }
 
-.btn-small {
+.caseload-inventory .btn-small {
   padding: 6px 10px;
   font-size: 0.8rem;
 }
 
-.btn-edit {
+.caseload-inventory .btn-edit {
   background-color: #8b5cf6;
   color: white;
   margin-right: 5px;
 }
 
-.btn-edit:hover {
+.caseload-inventory .btn-edit:hover {
   background-color: #7c3aed;
 }
 
-.btn-delete {
+.caseload-inventory .btn-delete {
   background-color: #ef4444;
   color: white;
 }
 
-.btn-delete:hover {
+.caseload-inventory .btn-delete:hover {
   background-color: #dc2626;
 }
 

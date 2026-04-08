@@ -129,8 +129,8 @@
   flex-wrap: wrap;
 }
 
-.btn-primary,
-.btn-secondary {
+.process-recordings .btn-primary,
+.process-recordings .btn-secondary {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 6px;
@@ -140,29 +140,29 @@
   transition: all 0.2s ease;
 }
 
-.btn-primary {
+.process-recordings .btn-primary {
   background-color: #4CAF50;
   color: white;
 }
 
-.btn-primary:hover {
+.process-recordings .btn-primary:hover {
   background-color: #45a049;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.btn-primary:disabled {
+.process-recordings .btn-primary:disabled {
   background-color: #ccc;
   cursor: not-allowed;
   transform: none;
 }
 
-.btn-secondary {
+.process-recordings .btn-secondary {
   background-color: #666;
   color: white;
 }
 
-.btn-secondary:hover {
+.process-recordings .btn-secondary:hover {
   background-color: #555;
 }
 
