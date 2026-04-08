@@ -50,10 +50,10 @@ namespace LuzDeVida.API.Controllers
 
         // POST: api/homevisitations
         [HttpPost]
-        public IActionResult PostHomeVisitation([FromBody] home_visitation visit)
+        public async Task<IActionResult> PostHomeVisitation([FromBody] home_visitation visit)
         {
             _context.home_visitations.Add(visit);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return Ok(visit);
         }
