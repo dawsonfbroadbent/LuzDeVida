@@ -98,6 +98,7 @@
 .okr-progress-fill {
   height: 100%;
   background: #4caf50;
+  width: var(--progress-width, 0%);
   transition: width 0.5s var(--ease);
   border-radius: 4px;
 }

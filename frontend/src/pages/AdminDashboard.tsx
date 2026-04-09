@@ -182,9 +182,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ embedded = false }) => 
             <div
               className="okr-progress-fill"
               style={{
-                width: `${metrics.total_residents_all_time > 0 ? (metrics.reintegrated_in_two_years / metrics.total_residents_all_time) * 100 : 0}%`,
-                backgroundColor: '#4caf50',
-              }}
+                '--progress-width': `${metrics.total_residents_all_time > 0 ? (metrics.reintegrated_in_two_years / metrics.total_residents_all_time) * 100 : 0}%`,
+              } as React.CSSProperties}
             ></div>
           </div>
           <p className="okr-subtitle">Success rate of reintegration efforts</p>
