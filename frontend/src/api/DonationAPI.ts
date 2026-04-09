@@ -1,4 +1,4 @@
-const BASE = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api/donations'
+import { apiUrl } from './apiConfig';
 
 export interface DonationPayload {
   amount: number
@@ -10,11 +10,9 @@ export interface DonationPayload {
 export async function createDonation(
   payload: DonationPayload,
 ): Promise<{ donation_id: number }> {
-  const res = await fetch(BASE, {
+  const res = await fetch(apiUrl('/api/donations'), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(payload),
   })

@@ -33,8 +33,7 @@ function validate(form: LoginForm | RegisterForm, tab: Tab): string | null {
   if (!f.email.trim()) return 'Email is required.'
   if (!f.email.includes('@') || !f.email.includes('.')) return 'Please enter a valid email address.'
   if (!f.password) return 'Password is required.'
-  if (f.password.length < 8) return 'Password must be at least 8 characters.'
-  if (!/\d/.test(f.password)) return 'Password must contain at least one number.'
+  if (f.password.length < 14) return 'Password must be at least 14 characters.'
   if (f.password !== f.confirmPassword) return 'Passwords do not match.'
   return null
 }
@@ -277,7 +276,7 @@ export default function Login() {
                 id="reg-password"
                 type="password"
                 className="login-input"
-                placeholder="Min. 8 characters, at least 1 number"
+                placeholder="Min. 14 characters"
                 value={regForm.password}
                 onChange={e => setRegForm(f => ({ ...f, password: e.target.value }))}
                 autoComplete="new-password"

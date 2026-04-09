@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiUrl } from '../api/apiConfig';
 import '../styles/AdminDashboard.css';
 
 interface AdminDashboardProps {
@@ -75,22 +76,12 @@ interface AdminDashboardMetrics {
   timestamp: string;
 }
 
-const API_BASE_URL = import.meta.env.MODE === 'production' 
-  ? 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api'
-  : 'http://localhost:5289/api';
-
-const fetchAdminDashboardMetrics = async (): Promise<AdminDashboardMetrics> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/admindashboard/metrics`);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    const data: AdminDashboardMetrics = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error fetching admin dashboard metrics:', error);
-    throw error;
+const fetchMetrics = async (): Promise<AdminDashboardMetrics> => {
+  const response = await fetch(apiUrl('/api/admindashboard/metrics'), { credentials: 'include' });
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
   }
+  return await response.json();
 };
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ embedded = false }) => {
@@ -125,7 +116,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ embedded = false }) => 
     setLoading(true);
     setError('');
     try {
-      const data = await fetchAdminDashboardMetrics();
+      const data = await fetchMetrics();
       setMetrics(data);
     } catch (err) {
       setError('Failed to load dashboard metrics');

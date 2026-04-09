@@ -1,6 +1,4 @@
-const API_BASE_URL = import.meta.env.DEV
-  ? 'http://localhost:5289/api'
-  : 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api'
+import { apiUrl } from './apiConfig';
 
 export interface ReportsDonationSummary {
   total_monetary: number
@@ -98,7 +96,7 @@ export interface ReportsOverview {
 }
 
 export async function fetchReportsOverview(year: number): Promise<ReportsOverview> {
-  const res = await fetch(`${API_BASE_URL}/reports/overview?year=${year}`)
+  const res = await fetch(apiUrl(`/api/reports/overview?year=${year}`), { credentials: 'include' })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return res.json()
 }
