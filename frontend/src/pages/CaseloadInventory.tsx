@@ -551,6 +551,10 @@ export default function CaseloadInventory({ embedded = false }: CaseloadInventor
                                   <span className="value">{resident.date_of_admission || 'N/A'}</span>
                                 </div>
                                 <div className="detail-item">
+                                  <span className="label">Safehouse:</span>
+                                  <span className="value">{resident.safehouse_id ? `Safehouse ${resident.safehouse_id}` : 'N/A'}</span>
+                                </div>
+                                <div className="detail-item">
                                   <span className="label">Age Upon Admission:</span>
                                   <span className="value">{resident.age_upon_admission || 'N/A'}</span>
                                 </div>
