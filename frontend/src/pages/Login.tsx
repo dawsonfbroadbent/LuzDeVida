@@ -42,11 +42,10 @@ function validate(form: LoginForm | RegisterForm, tab: Tab): string | null {
 export default function Login() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { refreshAuthSession } = useAuth()
+
   const redirectTo = searchParams.get('redirect') ?? '/'
   const tabParam = searchParams.get('tab')
-
-  // This should be a method in your AuthContext that re-checks /api/auth/me
-  // const { refreshSession } = useAuth()
 
   const [tab, setTab] = useState<Tab>(tabParam === 'register' ? 'register' : 'login')
   const [error, setError] = useState<string | null>(null)
@@ -89,10 +88,7 @@ export default function Login() {
 
     try {
       await loginUser(loginForm.email, loginForm.password, rememberMe)
-
-      // Pull fresh auth state from /api/auth/me after cookie login succeeds
-      //await refreshSession()
-
+      await refreshAuthSession()
       navigate(redirectTo)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.')
@@ -115,7 +111,6 @@ export default function Login() {
     setLoading(true)
 
     try {
-      // Following the videos closely: register only with email/password
       await registerUser(regForm.email, regForm.password)
 
       setSuccess('Account created successfully. Please sign in.')

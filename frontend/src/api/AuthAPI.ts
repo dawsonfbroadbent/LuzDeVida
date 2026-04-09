@@ -65,6 +65,8 @@ export async function registerUser(
 }
   export async function loginUser(email: string, password: string, rememberMe: boolean): Promise<void> {
     const searchParams = new URLSearchParams();
+    searchParams.set('UseCookies', 'true');
+
     if (rememberMe) {
       searchParams.set('remember', 'true');
     } else {
