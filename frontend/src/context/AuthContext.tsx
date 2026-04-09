@@ -5,7 +5,7 @@ import type { AuthSession } from '../types/AuthSession'
 
 
 interface AuthContextValue {
-  session: AuthSession | null;
+  authSession: AuthSession | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   refreshAuthSession: () => Promise<void>;
@@ -50,6 +50,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
+
+
+  
 }
 
 // export interface AuthUser {
