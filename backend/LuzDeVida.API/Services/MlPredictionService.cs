@@ -17,20 +17,33 @@ public class OnnxModelHolder : IDisposable
 
     public OnnxModelHolder(string modelsDir, ILogger<OnnxModelHolder>? logger = null)
     {
+        ModelsDir = modelsDir;
         DonorChurn   = TryLoad(Path.Combine(modelsDir, "donor_churn_model.onnx"), logger);
         ResidentRisk = TryLoad(Path.Combine(modelsDir, "resident_risk_model.onnx"), logger);
         SocialMedia  = TryLoad(Path.Combine(modelsDir, "social_media_model.onnx"), logger);
     }
 
-    private static InferenceSession? TryLoad(string path, ILogger? logger)
+    public string ModelsDir { get; }
+    public Dictionary<string, string> LoadErrors { get; } = new();
+
+    private InferenceSession? TryLoad(string path, ILogger? logger)
     {
         try
         {
+            if (!File.Exists(path))
+            {
+                var msg = $"File not found: {path}";
+                logger?.LogWarning(msg);
+                LoadErrors[Path.GetFileName(path)] = msg;
+                return null;
+            }
             return new InferenceSession(path);
         }
         catch (Exception ex)
         {
-            logger?.LogWarning("Failed to load ONNX model from {Path}: {Message}", path, ex.Message);
+            var msg = $"{ex.GetType().Name}: {ex.Message}";
+            logger?.LogWarning("Failed to load ONNX model from {Path}: {Error}", path, msg);
+            LoadErrors[Path.GetFileName(path)] = msg;
             return null;
         }
     }
