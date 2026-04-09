@@ -80,6 +80,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<PublicImpactService>();
 builder.Services.AddScoped<ReportsService>();
+builder.Services.AddScoped<SocialMediaAnalyticsService>();
 
 var app = builder.Build();
 
