@@ -126,40 +126,32 @@ public class MlPredictionService
     // =====================================================================
     public MlPredictionItem EvaluateSocialMediaPost(SocialMediaEvaluateRequest req)
     {
-        var row = EncodeSocialMediaFeaturesFromRequest(req);
-        var prob = Math.Round(NativeTreeModels.PredictSocialMedia(row.Values.ToArray()), 4);
+        // Feature order must match the scaler/tree training order exactly
+        var features = new float[]
+        {
+            req.post_hour,
+            req.caption_length,
+            req.features_resident_story ? 1f : 0f,
+            req.is_boosted ? 1f : 0f,
+            req.in_campaign ? 1f : 0f,
+            req.platform == "LinkedIn" ? 1f : 0f,
+            req.post_type == "EducationalContent" ? 1f : 0f,
+            req.post_type == "EventPromotion" ? 1f : 0f,
+            req.post_type == "ImpactStory" ? 1f : 0f,
+            req.post_type == "ThankYou" ? 1f : 0f,
+            req.media_type == "Reel" ? 1f : 0f,
+            req.media_type == "Text" ? 1f : 0f,
+            req.sentiment_tone == "Emotional" ? 1f : 0f,
+            req.sentiment_tone == "Informative" ? 1f : 0f,
+            (req.call_to_action_type == "None" || !req.has_call_to_action) ? 1f : 0f,
+        };
+
+        var prob = Math.Round(NativeTreeModels.PredictSocialMedia(features), 4);
 
         return new MlPredictionItem
         {
             score = prob,
             tier = Tier(prob),
-        };
-    }
-
-    // =====================================================================
-    //  Social Media One-Hot Encoding (for single-post evaluator only)
-    // =====================================================================
-    private static Dictionary<string, float> EncodeSocialMediaFeaturesFromRequest(
-        SocialMediaEvaluateRequest r)
-    {
-        return new Dictionary<string, float>
-        {
-            ["post_hour"] = r.post_hour,
-            ["caption_length"] = r.caption_length,
-            ["features_resident_story"] = r.features_resident_story ? 1f : 0f,
-            ["is_boosted"] = r.is_boosted ? 1f : 0f,
-            ["in_campaign"] = r.in_campaign ? 1f : 0f,
-            ["platform_LinkedIn"] = (r.platform == "LinkedIn") ? 1f : 0f,
-            ["post_type_EducationalContent"] = (r.post_type == "EducationalContent") ? 1f : 0f,
-            ["post_type_EventPromotion"] = (r.post_type == "EventPromotion") ? 1f : 0f,
-            ["post_type_ImpactStory"] = (r.post_type == "ImpactStory") ? 1f : 0f,
-            ["post_type_ThankYou"] = (r.post_type == "ThankYou") ? 1f : 0f,
-            ["media_type_Reel"] = (r.media_type == "Reel") ? 1f : 0f,
-            ["media_type_Text"] = (r.media_type == "Text") ? 1f : 0f,
-            ["sentiment_tone_Emotional"] = (r.sentiment_tone == "Emotional") ? 1f : 0f,
-            ["sentiment_tone_Informative"] = (r.sentiment_tone == "Informative") ? 1f : 0f,
-            ["call_to_action_type_None"] = (r.call_to_action_type == "None"
-                || !r.has_call_to_action) ? 1f : 0f,
         };
     }
 
