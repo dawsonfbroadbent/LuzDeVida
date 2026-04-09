@@ -19,6 +19,7 @@ builder.Services.AddDbContext<LuzDeVidaDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<PublicImpactService>();
+builder.Services.AddScoped<ReportsService>();
 
 // JWT authentication
 var jwtKey = builder.Configuration["Jwt:Key"]
