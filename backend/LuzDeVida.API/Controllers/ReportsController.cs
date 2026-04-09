@@ -148,7 +148,13 @@ public class ReportsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error generating reports overview for year {Year}", targetYear);
-            return StatusCode(500, new { message = "Error generating report", error = ex.Message });
+            return StatusCode(500, new
+            {
+                message     = "Error generating report",
+                error       = ex.Message,
+                inner       = ex.InnerException?.Message,
+                type        = ex.GetType().Name,
+            });
         }
     }
 }

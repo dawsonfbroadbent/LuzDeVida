@@ -73,15 +73,15 @@ public class ReportsService
         var aarStudentsEnrolled = await _context.education_records.CountAsync(e => e.record_date.HasValue && e.record_date >= yearStart && e.record_date <= yearEnd && e.enrollment_status == "Enrolled");
         var aarStudentsComplete = await _context.education_records.CountAsync(e => e.record_date.HasValue && e.record_date >= yearStart && e.record_date <= yearEnd && e.completion_status == "Completed");
         var aarCounselingSess  = await _context.process_recordings.CountAsync(p => p.session_date.HasValue && p.session_date >= yearStart && p.session_date <= yearEnd);
-        var aarSessionMinutes  = await _context.process_recordings.Where(p => p.session_date.HasValue && p.session_date >= yearStart && p.session_date <= yearEnd).SumAsync(p => p.session_duration_minutes ?? 0);
+        var aarSessionMinutes  = (await _context.process_recordings.Where(p => p.session_date.HasValue && p.session_date >= yearStart && p.session_date <= yearEnd).SumAsync(p => (int?)p.session_duration_minutes)) ?? 0;
         var aarProgressNoted   = await _context.process_recordings.CountAsync(p => p.session_date.HasValue && p.session_date >= yearStart && p.session_date <= yearEnd && p.progress_noted == true);
         var aarConcernsFlagged = await _context.process_recordings.CountAsync(p => p.session_date.HasValue && p.session_date >= yearStart && p.session_date <= yearEnd && p.concerns_flagged == true);
         var aarHomeVisits      = await _context.home_visitations.CountAsync(v => v.visit_date.HasValue && v.visit_date >= yearStart && v.visit_date <= yearEnd);
         var aarHomeVisitSafety = await _context.home_visitations.CountAsync(v => v.visit_date.HasValue && v.visit_date >= yearStart && v.visit_date <= yearEnd && v.safety_concerns_noted == true);
         var aarIncidents       = await _context.incident_reports.CountAsync(i => i.incident_date.HasValue && i.incident_date >= yearStart && i.incident_date <= yearEnd);
         var aarIncidentsRes    = await _context.incident_reports.CountAsync(i => i.incident_date.HasValue && i.incident_date >= yearStart && i.incident_date <= yearEnd && i.resolved == true);
-        var aarMonetaryTotal   = await _context.donations.Where(d => d.donation_date.HasValue && d.donation_date >= yearStart && d.donation_date <= yearEnd && d.donation_type == "Monetary").SumAsync(d => d.amount ?? 0);
-        var aarInKindTotal     = await _context.donations.Where(d => d.donation_date.HasValue && d.donation_date >= yearStart && d.donation_date <= yearEnd && d.donation_type == "In-Kind").SumAsync(d => d.estimated_value ?? 0);
+        var aarMonetaryTotal   = (await _context.donations.Where(d => d.donation_date.HasValue && d.donation_date >= yearStart && d.donation_date <= yearEnd && d.donation_type == "Monetary").SumAsync(d => d.amount)) ?? 0m;
+        var aarInKindTotal     = (await _context.donations.Where(d => d.donation_date.HasValue && d.donation_date >= yearStart && d.donation_date <= yearEnd && d.donation_type == "In-Kind").SumAsync(d => d.estimated_value)) ?? 0m;
 
         // ── Donation trend (24 months rolling) ──────────────────────────────
         var donationTrend = donationsRaw
