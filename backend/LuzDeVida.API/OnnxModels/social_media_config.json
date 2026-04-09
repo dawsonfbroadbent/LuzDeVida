@@ -1,0 +1,24 @@
+{
+  "features": [
+    "post_hour",
+    "caption_length",
+    "features_resident_story",
+    "is_boosted",
+    "in_campaign",
+    "platform_LinkedIn",
+    "post_type_EducationalContent",
+    "post_type_EventPromotion",
+    "post_type_ImpactStory",
+    "post_type_ThankYou",
+    "media_type_Reel",
+    "media_type_Text",
+    "sentiment_tone_Emotional",
+    "sentiment_tone_Informative",
+    "call_to_action_type_None"
+  ],
+  "conversion_thresholds": {
+    "High": 0.6,
+    "Medium": 0.3,
+    "Low": 0.0
+  }
+}

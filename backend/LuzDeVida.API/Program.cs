@@ -21,6 +21,11 @@ builder.Services.AddDbContext<LuzDeVidaDbContext>(options =>
 builder.Services.AddScoped<PublicImpactService>();
 builder.Services.AddScoped<ReportsService>();
 
+// ONNX ML models -- loaded once, shared across requests
+var onnxModelsDir = Path.Combine(AppContext.BaseDirectory, "OnnxModels");
+builder.Services.AddSingleton(new OnnxModelHolder(onnxModelsDir));
+builder.Services.AddScoped<MlPredictionService>();
+
 // JWT authentication
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("Jwt:Key is not configured.");
