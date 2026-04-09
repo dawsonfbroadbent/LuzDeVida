@@ -758,12 +758,12 @@
   }
 
   .donations-table {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .donations-table th,
   .donations-table td {
-    padding: 0.75rem;
+    padding: 1rem 0.875rem;
   }
 
   .conference-header {
@@ -824,6 +824,12 @@
   .tooltip-breakdown {
     grid-template-columns: 1fr;
     gap: 1rem;
+  }
+
+  .donations-table th,
+  .donations-table td {
+    padding: 0.875rem 0.75rem;
+    font-size: 0.75rem;
   }
 
   .tooltip-label {

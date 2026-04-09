@@ -193,3 +193,32 @@
     min-height: unset;
   }
 }
+
+@media (max-width: 480px) {
+  .admin-workspace {
+    padding: calc(var(--nav-height) + 16px) 12px 36px;
+  }
+
+  .admin-workspace__hero {
+    padding: 20px 16px;
+    border-radius: 20px;
+  }
+
+  .admin-workspace__hero h1 {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+  }
+
+  .admin-workspace__hero-copy {
+    font-size: 0.95rem;
+  }
+
+  .admin-workspace__context-card {
+    padding: 18px 20px;
+    border-radius: 16px;
+  }
+
+  .admin-workspace__context-card strong {
+    font-size: 1.15rem;
+  }
+}

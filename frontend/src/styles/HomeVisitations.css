@@ -271,4 +271,31 @@
   .home-visitations__table-card {
     overflow-x: auto;
   }
+
+  .home-visitations__table th,
+  .home-visitations__table td {
+    padding: 1rem 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-visitations {
+    padding: calc(var(--nav-height) + 14px) 12px 32px;
+  }
+
+  .home-visitations h2 {
+    font-size: 1.1rem;
+    margin-bottom: 14px;
+  }
+
+  .home-visitations__table {
+    font-size: 0.75rem;
+  }
+
+  .home-visitations__table th,
+  .home-visitations__table td {
+    padding: 0.75rem 0.625rem;
+  }
+
+  .home-visitations__table button { min-height: 44px; padding: 0.5rem 0.75rem; }
 }
