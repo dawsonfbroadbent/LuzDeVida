@@ -1,3 +1,5 @@
+import { apiUrl } from './apiConfig';
+
 export interface resident {
   resident_id: number
   case_control_no: string | null
@@ -50,93 +52,56 @@ export interface resident {
   notes_restricted: string | null
 }
 
-const API_URL = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api/Residents'
-// change the port if your HTTPS backend uses a different one
-
 export const fetchResidents = async (): Promise<resident[]> => {
-  try {
-    const response = await fetch(API_URL)
-
-    if (!response.ok) {
-      throw new Error(`FAILED TO FETCH RESIDENTS: ${response.statusText}`)
-    }
-
-    return await response.json()
-  } catch (error) {
-    console.error('Error fetching residents:', error)
-    throw error
+  const response = await fetch(apiUrl('/api/Residents'), { credentials: 'include' })
+  if (!response.ok) {
+    throw new Error(`Failed to fetch residents: ${response.statusText}`)
   }
+  return await response.json()
 }
 
 export const fetchResidentById = async (residentId: number): Promise<resident> => {
-  try {
-    const response = await fetch(`${API_URL}/${residentId}`)
-
-    if (!response.ok) {
-      throw new Error(`FAILED TO FETCH RESIDENT: ${response.statusText}`)
-    }
-
-    return await response.json()
-  } catch (error) {
-    console.error('Error fetching resident:', error)
-    throw error
+  const response = await fetch(apiUrl(`/api/Residents/${residentId}`), { credentials: 'include' })
+  if (!response.ok) {
+    throw new Error(`Failed to fetch resident: ${response.statusText}`)
   }
+  return await response.json()
 }
 
 export const createResident = async (resident: Omit<resident, 'resident_id' | 'created_at'>): Promise<resident> => {
-  try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(resident),
-    })
-
-    if (!response.ok) {
-      throw new Error(`FAILED TO CREATE RESIDENT: ${response.statusText}`)
-    }
-
-    return await response.json()
-  } catch (error) {
-    console.error('Error creating resident:', error)
-    throw error
+  const response = await fetch(apiUrl('/api/Residents'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(resident),
+  })
+  if (!response.ok) {
+    throw new Error(`Failed to create resident: ${response.statusText}`)
   }
+  return await response.json()
 }
 
 export const updateResident = async (
   residentId: number,
   resident: Omit<resident, 'resident_id' | 'created_at'>
 ): Promise<void> => {
-  try {
-    const response = await fetch(`${API_URL}/${residentId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ ...resident, resident_id: residentId }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`FAILED TO UPDATE RESIDENT: ${response.statusText}`)
-    }
-  } catch (error) {
-    console.error('Error updating resident:', error)
-    throw error
+  const response = await fetch(apiUrl(`/api/Residents/${residentId}`), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ ...resident, resident_id: residentId }),
+  })
+  if (!response.ok) {
+    throw new Error(`Failed to update resident: ${response.statusText}`)
   }
 }
 
 export const deleteResident = async (residentId: number): Promise<void> => {
-  try {
-    const response = await fetch(`${API_URL}/${residentId}`, {
-      method: 'DELETE',
-    })
-
-    if (!response.ok) {
-      throw new Error(`FAILED TO DELETE RESIDENT: ${response.statusText}`)
-    }
-  } catch (error) {
-    console.error('Error deleting resident:', error)
-    throw error
+  const response = await fetch(apiUrl(`/api/Residents/${residentId}`), {
+    method: 'DELETE',
+    credentials: 'include',
+  })
+  if (!response.ok) {
+    throw new Error(`Failed to delete resident: ${response.statusText}`)
   }
 }

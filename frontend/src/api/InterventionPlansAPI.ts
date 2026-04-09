@@ -1,3 +1,5 @@
+import { apiUrl } from './apiConfig';
+
 export type intervention_plan = {
   plan_id: number
   resident_id: number
@@ -13,18 +15,15 @@ export type intervention_plan = {
   updated_at: string
 }
 
-const API_BASE = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api/InterventionPlans'
-// change this if your backend uses a different port
-
 export async function fetchInterventionPlans(
   residentId?: number
 ): Promise<intervention_plan[]> {
   const url =
     residentId !== undefined
-      ? `${API_BASE}?residentId=${residentId}`
-      : API_BASE
+      ? apiUrl(`/api/InterventionPlans?residentId=${residentId}`)
+      : apiUrl('/api/InterventionPlans')
 
-  const response = await fetch(url)
+  const response = await fetch(url, { credentials: 'include' })
 
   if (!response.ok) {
     throw new Error('Failed to fetch intervention plans')
@@ -36,7 +35,7 @@ export async function fetchInterventionPlans(
 export async function fetchInterventionPlanById(
   id: number
 ): Promise<intervention_plan> {
-  const response = await fetch(`${API_BASE}/${id}`)
+  const response = await fetch(apiUrl(`/api/InterventionPlans/${id}`), { credentials: 'include' })
 
   if (!response.ok) {
     throw new Error(`Failed to fetch intervention plan ${id}`)
@@ -48,11 +47,10 @@ export async function fetchInterventionPlanById(
 export async function createInterventionPlan(
   plan: Omit<intervention_plan, 'plan_id'>
 ): Promise<intervention_plan> {
-  const response = await fetch(API_BASE, {
+  const response = await fetch(apiUrl('/api/InterventionPlans'), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(plan),
   })
 
@@ -68,11 +66,10 @@ export async function updateInterventionPlan(
   id: number,
   plan: intervention_plan
 ): Promise<void> {
-  const response = await fetch(`${API_BASE}/${id}`, {
+  const response = await fetch(apiUrl(`/api/InterventionPlans/${id}`), {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(plan),
   })
 
@@ -82,8 +79,9 @@ export async function updateInterventionPlan(
 }
 
 export async function deleteInterventionPlan(id: number): Promise<void> {
-  const response = await fetch(`${API_BASE}/${id}`, {
+  const response = await fetch(apiUrl(`/api/InterventionPlans/${id}`), {
     method: 'DELETE',
+    credentials: 'include',
   })
 
   if (!response.ok) {

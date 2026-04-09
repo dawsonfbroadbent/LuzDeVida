@@ -1,3 +1,5 @@
+import { apiUrl } from './apiConfig';
+
 export interface AdminDashboardMetrics {
   active_residents_total: number
   residents_by_safehouse: Array<{
@@ -35,18 +37,10 @@ export interface AdminDashboardMetrics {
   timestamp: string
 }
 
-const API_BASE_URL = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api'
-
 export const fetchAdminDashboardMetrics = async (): Promise<AdminDashboardMetrics> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/admindashboard/metrics`)
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`)
-    }
-    const data: AdminDashboardMetrics = await response.json()
-    return data
-  } catch (error) {
-    console.error('Error fetching admin dashboard metrics:', error)
-    throw error
+  const response = await fetch(apiUrl('/api/admindashboard/metrics'), { credentials: 'include' })
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`)
   }
+  return await response.json()
 }

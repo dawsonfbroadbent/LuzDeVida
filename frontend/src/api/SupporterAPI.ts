@@ -1,4 +1,4 @@
-const BASE = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api/supporters'
+import { apiUrl } from './apiConfig';
 
 export interface SupporterStats {
   totalSupporters: number
@@ -101,14 +101,14 @@ export interface CreateSupporterPayload {
 export type UpdateSupporterPayload = CreateSupporterPayload
 
 export async function fetchSupporterStats(): Promise<SupporterStats> {
-  const res = await fetch(`${BASE}/stats`)
+  const res = await fetch(apiUrl('/api/supporters/stats'), { credentials: 'include' })
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error((data as { message?: string }).message ?? 'Failed to load stats.')
   return data as SupporterStats
 }
 
 export async function fetchSupporterTypes(): Promise<string[]> {
-  const res = await fetch(`${BASE}/types`)
+  const res = await fetch(apiUrl('/api/supporters/types'), { credentials: 'include' })
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error((data as { message?: string }).message ?? 'Failed to load types.')
   return data as string[]
@@ -138,14 +138,14 @@ export async function fetchSupporters(
   if (params.sortBy) query.set('sortBy', params.sortBy)
   if (params.sortDir) query.set('sortDir', params.sortDir)
 
-  const res = await fetch(`${BASE}?${query.toString()}`)
+  const res = await fetch(apiUrl(`/api/supporters?${query.toString()}`), { credentials: 'include' })
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error((data as { message?: string }).message ?? 'Failed to load supporters.')
   return data as SupporterPagedResult
 }
 
 export async function fetchSupporterById(id: number): Promise<SupporterDetail> {
-  const res = await fetch(`${BASE}/${id}`)
+  const res = await fetch(apiUrl(`/api/supporters/${id}`), { credentials: 'include' })
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error((data as { message?: string }).message ?? 'Failed to load supporter.')
   return data as SupporterDetail
@@ -154,9 +154,10 @@ export async function fetchSupporterById(id: number): Promise<SupporterDetail> {
 export async function createSupporter(
   payload: CreateSupporterPayload,
 ): Promise<SupporterDetail> {
-  const res = await fetch(BASE, {
+  const res = await fetch(apiUrl('/api/supporters'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(payload),
   })
   const data = await res.json().catch(() => ({}))
@@ -168,9 +169,10 @@ export async function updateSupporter(
   id: number,
   payload: UpdateSupporterPayload,
 ): Promise<void> {
-  const res = await fetch(`${BASE}/${id}`, {
+  const res = await fetch(apiUrl(`/api/supporters/${id}`), {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(payload),
   })
   if (!res.ok) {

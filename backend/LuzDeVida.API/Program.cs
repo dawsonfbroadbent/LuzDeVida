@@ -1,17 +1,26 @@
 using LuzDeVida.API.Data;
+using LuzDeVida.API.Infrastructure;
 using LuzDeVida.API.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+const string FrontendCorsPolicy = "PublicFrontend";
+const string DefaultFrontendUrl = "http://localhost:3000";
+
+var frontendUrls = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? [DefaultFrontendUrl];
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
-builder.Services.AddOpenApi();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<LuzDeVidaDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -23,76 +32,85 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AuthIdentityDbContext>();
 
-builder.Services.AddScoped<PublicImpactService>();
-builder.Services.AddScoped<ReportsService>();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AuthPolicies.RequireAdmin, policy => policy.RequireRole(AuthRoles.Admin));
+});
 
-// ONNX ML models -- loaded once, shared across requests
-// var onnxModelsDir = Path.Combine(AppContext.BaseDirectory, "OnnxModels");
-// builder.Services.AddSingleton(sp =>
-//     new OnnxModelHolder(onnxModelsDir, sp.GetRequiredService<ILogger<OnnxModelHolder>>()));
-// builder.Services.AddScoped<MlPredictionService>();
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 14;
+    options.Password.RequiredUniqueChars = 1;
+});
 
-builder.Services.AddAuthorization();
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.ExpireTimeSpan = TimeSpan.FromDays(7);
+    options.SlidingExpiration = true;
+
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return Task.CompletedTask;
+    };
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        return Task.CompletedTask;
+    };
+});
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("PublicFrontend", policy =>
+    options.AddPolicy(FrontendCorsPolicy, policy =>
     {
-        var origins = builder.Configuration
-            .GetSection("Cors:AllowedOrigins")
-            .Get<string[]>() ?? ["http://localhost:5173"];
-        policy.WithOrigins(origins).AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+        policy.WithOrigins(frontendUrls)
+            .AllowCredentials()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
     });
 });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<PublicImpactService>();
+builder.Services.AddScoped<ReportsService>();
 
 var app = builder.Build();
 
-// Ensure Identity roles exist
 using (var scope = app.Services.CreateScope())
 {
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    foreach (var role in new[] { "Admin", "Supporter" })
-    {
-        if (!await roleManager.RoleExistsAsync(role))
-            await roleManager.CreateAsync(new IdentityRole(role));
-    }
+    await AuthIdentityGenerator.GenerateDefaultIdentityAsync(scope.ServiceProvider, app.Configuration);
 }
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-else
+
+if (!app.Environment.IsDevelopment())
 {
-    // Force HTTPS in production environments
-    app.UseHttpsRedirection();
-    // Add HSTS (HTTP Strict-Transport-Security) header
     app.UseHsts();
 }
 
-// Add security headers
-app.Use(async (context, next) =>
-{
-    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-    context.Response.Headers.Append("X-Frame-Options", "DENY");
-    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
-    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
-    await next();
-});
+app.UseSecurityHeaders();
 
-app.UseCors("PublicFrontend");
+app.UseCors(FrontendCorsPolicy);
+app.UseHttpsRedirection();
+
 app.UseExceptionHandler(errApp => errApp.Run(async ctx =>
 {
     ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
     ctx.Response.ContentType = "application/json";
     await ctx.Response.WriteAsync("{\"error\":\"Internal server error\"}");
 }));
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

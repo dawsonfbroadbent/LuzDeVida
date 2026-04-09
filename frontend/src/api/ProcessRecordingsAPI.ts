@@ -1,3 +1,5 @@
+import { apiUrl } from './apiConfig';
+
 export interface processRecording {
   recording_id: number
   resident_id: number
@@ -16,13 +18,8 @@ export interface processRecording {
   notes_restricted: string | null
 }
 
-const API_ROOT = 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api'
-
-const PROCESS_RECORDINGS_URL = `${API_ROOT}/processrecordings`
-const RESIDENTS_URL = `${API_ROOT}/residents`
-
 export async function fetchResidentsForRecording(): Promise<any[]> {
-  const response = await fetch(RESIDENTS_URL)
+  const response = await fetch(apiUrl('/api/residents'), { credentials: 'include' })
   if (!response.ok) {
     throw new Error(`Failed to fetch residents: ${response.status}`)
   }
@@ -33,10 +30,10 @@ export async function fetchProcessRecordings(
   residentId?: number
 ): Promise<processRecording[]> {
   const url = residentId
-    ? `${PROCESS_RECORDINGS_URL}?residentId=${residentId}`
-    : PROCESS_RECORDINGS_URL
+    ? apiUrl(`/api/processrecordings?residentId=${residentId}`)
+    : apiUrl('/api/processrecordings')
 
-  const response = await fetch(url)
+  const response = await fetch(url, { credentials: 'include' })
   if (!response.ok) {
     throw new Error(`Failed to fetch process recordings: ${response.status}`)
   }
@@ -47,7 +44,8 @@ export async function fetchProcessRecordingsByResident(
   residentId: number
 ): Promise<processRecording[]> {
   const response = await fetch(
-    `${PROCESS_RECORDINGS_URL}?residentId=${residentId}`
+    apiUrl(`/api/processrecordings?residentId=${residentId}`),
+    { credentials: 'include' }
   )
   if (!response.ok) {
     throw new Error(
@@ -60,11 +58,10 @@ export async function fetchProcessRecordingsByResident(
 export async function createProcessRecording(
   recording: Omit<processRecording, 'recording_id'>
 ): Promise<processRecording> {
-  const response = await fetch(PROCESS_RECORDINGS_URL, {
+  const response = await fetch(apiUrl('/api/processrecordings'), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(recording),
   })
 
@@ -80,11 +77,10 @@ export async function updateProcessRecording(
   recordingId: number,
   recording: Omit<processRecording, 'recording_id'>
 ): Promise<void> {
-  const response = await fetch(`${PROCESS_RECORDINGS_URL}/${recordingId}`, {
+  const response = await fetch(apiUrl(`/api/processrecordings/${recordingId}`), {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({
       ...recording,
       recording_id: recordingId,
@@ -98,8 +94,9 @@ export async function updateProcessRecording(
 }
 
 export async function deleteProcessRecording(recordingId: number): Promise<void> {
-  const response = await fetch(`${PROCESS_RECORDINGS_URL}/${recordingId}`, {
+  const response = await fetch(apiUrl(`/api/processrecordings/${recordingId}`), {
     method: 'DELETE',
+    credentials: 'include',
   })
 
   if (!response.ok) {
