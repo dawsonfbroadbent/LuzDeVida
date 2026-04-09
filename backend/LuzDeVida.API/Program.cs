@@ -82,6 +82,12 @@ builder.Services.AddScoped<PublicImpactService>();
 builder.Services.AddScoped<ReportsService>();
 builder.Services.AddScoped<SocialMediaAnalyticsService>();
 
+// ONNX ML models -- loaded once, shared across requests
+var onnxModelsDir = Path.Combine(AppContext.BaseDirectory, "OnnxModels");
+builder.Services.AddSingleton(sp =>
+    new OnnxModelHolder(onnxModelsDir, sp.GetRequiredService<ILogger<OnnxModelHolder>>()));
+builder.Services.AddScoped<MlPredictionService>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
