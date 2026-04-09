@@ -2,6 +2,8 @@ import { apiUrl } from './apiConfig';
 
 export interface AdminDashboardMetrics {
   active_residents_total: number
+  reintegrated_in_two_years: number
+  total_residents_all_time: number
   residents_by_safehouse: Array<{
     safehouse_id: number
     safehouse_name: string

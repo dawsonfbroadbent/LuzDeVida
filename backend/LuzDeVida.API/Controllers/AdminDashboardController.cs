@@ -38,7 +38,8 @@ public class AdminDashboardController : ControllerBase
                     r.case_status,
                     r.date_of_admission,
                     r.date_of_birth,
-                    r.reintegration_status
+                    r.reintegration_status,
+                    r.length_of_stay
                 })
                 .ToListAsync();
 
@@ -328,10 +329,37 @@ public class AdminDashboardController : ControllerBase
                 avg_volunteer_hours_per_month = avgVolunteerHours
             };
 
+            // ========== OKR: GIRLS REINTEGRATED IN 2 YEARS OR LESS ==========
+            
+            // Count girls reintegrated in <= 2 years by parsing length_of_stay
+            var reintegratedInTwoYears = allResidents
+                .Where(r => r.reintegration_status == "Completed")
+                .Count(r =>
+                {
+                    if (string.IsNullOrEmpty(r.length_of_stay))
+                        return false;
+                    
+                    // Parse "X Years Y months" format to extract X
+                    var lengthStr = r.length_of_stay.Trim();
+                    var parts = lengthStr.Split(' ');
+                    
+                    if (parts.Length >= 2 && int.TryParse(parts[0], out var years))
+                    {
+                        return years < 2;
+                    }
+                    
+                    return false;
+                });
+
+            // Total reintegrated residents for denominator
+            var totalReintegratedResidents = allResidents.Count(r => r.reintegration_status == "Completed");
+
             var metrics = new AdminDashboardMetrics
             {
                 active_residents_total = totalActiveResidents,
                 residents_by_safehouse = residentsWithSafehouse,
+                reintegrated_in_two_years = reintegratedInTwoYears,
+                total_residents_all_time = totalReintegratedResidents,
                 recent_donations_total = totalRecentDonations,
                 recent_donations_count = recentDonationCount,
                 recent_donations = recentDonations,
@@ -475,6 +503,8 @@ public class AdminDashboardController : ControllerBase
 public class AdminDashboardMetrics
 {
     public int active_residents_total { get; set; }
+    public int reintegrated_in_two_years { get; set; }
+    public int total_residents_all_time { get; set; }
     public List<ResidentBySafehouseWithNameDto> residents_by_safehouse { get; set; } = new();
     public decimal recent_donations_total { get; set; }
     public int recent_donations_count { get; set; }
