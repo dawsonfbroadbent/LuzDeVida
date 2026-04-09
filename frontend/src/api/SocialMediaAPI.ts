@@ -1,6 +1,4 @@
-const API_BASE_URL = import.meta.env.DEV
-  ? 'http://localhost:5289/api'
-  : 'https://luzdevidabackend-aegdcxe9grhucsfm.francecentral-01.azurewebsites.net/api'
+import { apiUrl, authenticatedFetch } from './apiConfig'
 
 /* ── Analytics DTOs ─────────────────────────────────────────────────────────── */
 
@@ -120,7 +118,7 @@ export interface MlPredictionItem {
 /* ── Fetch functions ────────────────────────────────────────────────────────── */
 
 export async function fetchSocialMediaAnalytics(): Promise<SocialMediaAnalytics> {
-  const res = await fetch(`${API_BASE_URL}/social-media-analytics`)
+  const res = await authenticatedFetch(apiUrl('/api/social-media-analytics'))
   const data = await res.json().catch(() => ({}))
   if (!res.ok)
     throw new Error((data as { message?: string }).message ?? 'Failed to load social media analytics.')
@@ -130,7 +128,7 @@ export async function fetchSocialMediaAnalytics(): Promise<SocialMediaAnalytics>
 export async function evaluateSocialMediaPost(
   req: SocialMediaEvaluateRequest,
 ): Promise<MlPredictionItem> {
-  const res = await fetch(`${API_BASE_URL}/ml/social-media/evaluate`, {
+  const res = await authenticatedFetch(apiUrl('/api/ml/social-media/evaluate'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(req),
