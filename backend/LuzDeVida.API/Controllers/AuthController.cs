@@ -13,7 +13,7 @@ namespace LuzDeVida.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(UserManager<ApplicationUser> userManager) : ControllerBase
+public class AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager) : ControllerBase
 {
     [HttpGet("me")]
     public async Task<IActionResult> GetCurrentSession()
@@ -44,6 +44,15 @@ public class AuthController(UserManager<ApplicationUser> userManager) : Controll
             email = user?.Email,
             roles
         });
+
+
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+
+        await signInManager.SignOutAsync();
+
+        return Ok(new { message = "Logged out successfully." });
 
     }
 }
