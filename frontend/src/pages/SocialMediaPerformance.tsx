@@ -167,15 +167,7 @@ interface GaugeProps {
 
 function ConversionGauge({ score, tier }: GaugeProps) {
   const R = 80, cx = 100, cy = 95, strokeW = 14
-  const startAngle = Math.PI
-  const endAngle = 0
   const sweepAngle = Math.PI * Math.max(0, Math.min(score, 1))
-
-  const arcPath = (angle: number) => {
-    const x = cx + R * Math.cos(Math.PI - angle)
-    const y = cy - R * Math.sin(angle)
-    return `${x} ${y}`
-  }
 
   const bgD = `M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`
   const fillEnd = sweepAngle
