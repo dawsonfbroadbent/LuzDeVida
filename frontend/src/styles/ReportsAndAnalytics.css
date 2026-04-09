@@ -1,0 +1,507 @@
+/* ── Block: reports ──────────────────────────────────────────────────────── */
+.reports {
+  padding: 0;
+}
+
+/* ── Header row ─────────────────────────────────────────────────────────── */
+.reports__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.reports__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 500;
+  color: var(--text-dark);
+  margin: 0 0 4px;
+  line-height: 1.1;
+}
+
+.reports__subtitle {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin: 0;
+}
+
+.reports__controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.reports__controls-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+.reports__year-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0.6rem 2.2rem 0.6rem 1rem;
+  border: 1.5px solid var(--cream-darker);
+  border-radius: 10px;
+  background: var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236E8F95' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 0.75rem center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: border-color 0.18s;
+}
+.reports__year-select:focus {
+  outline: none;
+  border-color: var(--teal);
+}
+
+.reports__meta {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin-top: 0.35rem;
+}
+
+/* ── Section navigation ──────────────────────────────────────────────────── */
+.reports__section-nav {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--cream-darker);
+  padding-bottom: 0;
+}
+
+.reports__section-btn {
+  padding: 0.65rem 1.25rem;
+  border-radius: 10px 10px 0 0;
+  border: none;
+  background: transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  position: relative;
+  bottom: -2px;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+.reports__section-btn:hover {
+  background: var(--cream-dark);
+  color: var(--text-dark);
+}
+.reports__section-btn--active {
+  color: var(--teal-dark);
+  border-bottom-color: var(--teal);
+  background: var(--teal-pale);
+}
+
+/* ── Loading & error states ──────────────────────────────────────────────── */
+.reports__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+  color: var(--text-light);
+  font-size: 0.95rem;
+}
+
+.reports__spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--cream-darker);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: reports-spin 0.8s linear infinite;
+}
+
+@keyframes reports-spin {
+  to { transform: rotate(360deg); }
+}
+
+.reports__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  gap: 1rem;
+  text-align: center;
+}
+.reports__error-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--text-dark);
+  margin: 0;
+}
+.reports__error-msg {
+  color: var(--text-light);
+  font-size: 0.92rem;
+  margin: 0;
+}
+.reports__retry-btn {
+  padding: 0.6rem 1.5rem;
+  background: var(--teal);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.reports__retry-btn:hover { background: var(--teal-dark); }
+
+/* ── Stat strip ──────────────────────────────────────────────────────────── */
+.reports-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.reports-stat-card {
+  background: var(--white);
+  border: 1px solid var(--cream-darker);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+}
+
+.reports-stat-card__value {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 500;
+  color: var(--teal-dark);
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+
+.reports-stat-card__label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+/* ── Section panel (chart / table wrapper) ───────────────────────────────── */
+.reports-section-panel {
+  background: var(--white);
+  border: 1px solid var(--cream-darker);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 1.75rem;
+}
+
+.reports-section-panel__title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin: 0 0 0.35rem;
+}
+.reports-section-panel__subtitle {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin: 0 0 1.5rem;
+}
+
+/* ── Chart grids ─────────────────────────────────────────────────────────── */
+.reports-charts-grid--2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.reports-chart-figure {
+  background: var(--cream-light);
+  border: 1px solid var(--cream-darker);
+  border-radius: 14px;
+  padding: 1.25rem;
+}
+
+.reports-chart-figure figcaption {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 0.75rem;
+}
+
+.reports-chart-figure svg {
+  display: block;
+  width: 100%;
+}
+
+.reports-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 140px;
+  color: var(--text-light);
+  font-size: 0.88rem;
+  font-style: italic;
+}
+
+/* ── AAR pillars ─────────────────────────────────────────────────────────── */
+.reports-pillars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.reports-pillar {
+  background: var(--white);
+  border: 1px solid var(--cream-darker);
+  border-top: 4px solid var(--teal);
+  border-radius: 16px;
+  padding: 1.75rem 1.5rem;
+}
+
+.reports-pillar--healing { border-top-color: var(--sand-dark); }
+.reports-pillar--teaching { border-top-color: var(--blue-dark); }
+
+.reports-pillar__eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 0.25rem;
+}
+.reports-pillar--healing .reports-pillar__eyebrow { color: var(--sand-dark); }
+.reports-pillar--teaching .reports-pillar__eyebrow { color: var(--blue-dark); }
+
+.reports-pillar__title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin: 0 0 1.25rem;
+}
+
+.reports-pillar__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.reports-pillar__stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--cream-dark);
+}
+.reports-pillar__stat:last-child { border-bottom: none; }
+
+.reports-pillar__stat-label {
+  font-size: 0.88rem;
+  color: var(--text-mid);
+}
+
+.reports-pillar__stat-value {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.reports-pillar__stat-unit {
+  font-family: inherit;
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-left: 3px;
+}
+
+/* AAR summary row (visits + incidents) */
+.reports-aar-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.reports-aar-card {
+  background: var(--white);
+  border: 1px solid var(--cream-darker);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+}
+
+.reports-aar-card__label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 0.6rem;
+}
+
+.reports-aar-card__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.reports-aar-card__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.9rem;
+}
+
+.reports-aar-card__row-label { color: var(--text-mid); }
+.reports-aar-card__row-value {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.reports-aar-note {
+  background: var(--teal-pale);
+  border: 1px solid rgba(76, 168, 178, 0.18);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.83rem;
+  color: var(--teal-dark);
+  margin-bottom: 1rem;
+}
+
+/* ── Data tables ─────────────────────────────────────────────────────────── */
+.reports-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+  border: 1px solid var(--cream-darker);
+}
+
+.reports-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.91rem;
+  min-width: 480px;
+}
+
+.reports-table th {
+  background: var(--cream-dark);
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.76rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--teal-dark);
+  border-bottom: 2px solid var(--cream-darker);
+  white-space: nowrap;
+}
+
+.reports-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--cream-dark);
+  color: var(--text-mid);
+  white-space: nowrap;
+}
+
+.reports-table tbody tr:last-child td { border-bottom: none; }
+.reports-table tbody tr:hover td { background: var(--cream-light); }
+
+.reports-table__td--best {
+  background: var(--teal-pale) !important;
+  font-weight: 700;
+  color: var(--teal-dark) !important;
+}
+
+.reports-table__td--number {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--text-dark);
+  text-align: right;
+}
+
+.reports-table__td--name {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+/* Rate / pct badges */
+.reports-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.reports-badge--teal {
+  background: var(--teal-pale);
+  color: var(--teal-dark);
+}
+.reports-badge--sand {
+  background: #faf7ed;
+  color: var(--sand-dark);
+}
+
+/* ── Safehouse comparison ────────────────────────────────────────────────── */
+.reports-safehouse-charts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+/* ── Reintegration section ───────────────────────────────────────────────── */
+.reports-reintegration-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* KPI accent variant */
+.reports-stat-card--accent .reports-stat-card__value { color: var(--teal-dark); }
+.reports-stat-card--rate .reports-stat-card__value { color: var(--blue-dark); }
+
+/* ── Donation section details ────────────────────────────────────────────── */
+.reports-donation-charts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.75rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .reports-pillars { grid-template-columns: repeat(2, 1fr); }
+  .reports-pillar--teaching { grid-column: span 2; }
+  .reports-charts-grid--2col { grid-template-columns: 1fr; }
+  .reports-donation-charts { grid-template-columns: 1fr; }
+  .reports-safehouse-charts { grid-template-columns: repeat(2, 1fr); }
+  .reports-reintegration-kpis { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .reports-pillars { grid-template-columns: 1fr; }
+  .reports-pillar--teaching { grid-column: span 1; }
+  .reports__header { flex-direction: column; align-items: flex-start; }
+  .reports-stat-strip { grid-template-columns: repeat(2, 1fr); }
+  .reports-safehouse-charts { grid-template-columns: 1fr; }
+  .reports-reintegration-kpis { grid-template-columns: repeat(2, 1fr); }
+  .reports-section-panel { padding: 1.25rem; }
+}
+
+@media (max-width: 480px) {
+  .reports-stat-strip { grid-template-columns: 1fr; }
+  .reports-reintegration-kpis { grid-template-columns: 1fr; }
+}

@@ -11,6 +11,7 @@ import HomeVisitations from './HomeVisitations'
 import CaseloadInventory from './CaseloadInventory'
 import ProcessRecording from './ProcessRecording'
 import DonorManagement from './DonorManagement'
+import ReportsAndAnalytics from './ReportsAndAnalytics'
 import '../styles/AdminWorkspace.css'
 
 function renderTabContent(tabId: AdminTabId) {
@@ -25,6 +26,8 @@ function renderTabContent(tabId: AdminTabId) {
       return <ProcessRecording embedded />
     case 'donor-management':
       return <DonorManagement embedded />
+    case 'reports':
+      return <ReportsAndAnalytics embedded />
     default:
       return <AdminDashboard embedded />
   }
