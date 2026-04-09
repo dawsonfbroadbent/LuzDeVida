@@ -48,6 +48,10 @@ public partial class LuzDeVidaDbContext : DbContext
 
     public virtual DbSet<supporter> supporters { get; set; }
 
+    public virtual DbSet<ml_donor_churn_prediction> ml_donor_churn_predictions { get; set; }
+    public virtual DbSet<ml_resident_risk_prediction> ml_resident_risk_predictions { get; set; }
+    public virtual DbSet<ml_social_media_prediction> ml_social_media_predictions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<app_user>(entity =>
@@ -389,6 +393,41 @@ public partial class LuzDeVidaDbContext : DbContext
             entity.Property(e => e.relationship_type).HasMaxLength(100);
             entity.Property(e => e.status).HasMaxLength(50);
             entity.Property(e => e.supporter_type).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<ml_donor_churn_prediction>(entity =>
+        {
+            entity.HasKey(e => e.supporter_id);
+            entity.ToTable("ml_donor_churn_predictions");
+            entity.Property(e => e.supporter_id).ValueGeneratedNever();
+            entity.Property(e => e.display_name).HasMaxLength(255);
+            entity.Property(e => e.email).HasMaxLength(255);
+            entity.Property(e => e.risk_tier).HasMaxLength(50);
+            entity.Property(e => e.scored_at).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<ml_resident_risk_prediction>(entity =>
+        {
+            entity.HasKey(e => e.resident_id);
+            entity.ToTable("ml_resident_risk_predictions");
+            entity.Property(e => e.resident_id).ValueGeneratedNever();
+            entity.Property(e => e.case_control_no).HasMaxLength(50);
+            entity.Property(e => e.internal_code).HasMaxLength(50);
+            entity.Property(e => e.safehouse_name).HasMaxLength(255);
+            entity.Property(e => e.risk_tier).HasMaxLength(50);
+            entity.Property(e => e.scored_at).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<ml_social_media_prediction>(entity =>
+        {
+            entity.HasKey(e => e.post_id);
+            entity.ToTable("ml_social_media_predictions");
+            entity.Property(e => e.post_id).ValueGeneratedNever();
+            entity.Property(e => e.platform).HasMaxLength(50);
+            entity.Property(e => e.post_type).HasMaxLength(100);
+            entity.Property(e => e.content_topic).HasMaxLength(100);
+            entity.Property(e => e.conversion_tier).HasMaxLength(50);
+            entity.Property(e => e.scored_at).HasColumnType("datetime");
         });
 
         OnModelCreatingPartial(modelBuilder);
