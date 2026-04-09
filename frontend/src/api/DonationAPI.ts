@@ -9,14 +9,13 @@ export interface DonationPayload {
 
 export async function createDonation(
   payload: DonationPayload,
-  token: string,
 ): Promise<{ donation_id: number }> {
   const res = await fetch(BASE, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
     },
+    credentials: 'include',
     body: JSON.stringify(payload),
   })
   const data = await res.json().catch(() => ({}))

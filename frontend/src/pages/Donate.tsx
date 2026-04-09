@@ -45,7 +45,7 @@ const FAQ_ITEMS = [
 export default function Donate() {
   useScrollReveal()
 
-  const { isAuthenticated, token } = useAuth()
+  const { isAuthenticated } = useAuth()
 
   const [frequency, setFrequency] = useState<Frequency>('once')
   const [selectedAmount, setSelectedAmount] = useState<number | null>(50)
@@ -98,7 +98,6 @@ export default function Donate() {
           amount: finalAmount,
           isRecurring: frequency === 'monthly',
         },
-        token!,
       )
       setSubmitted(true)
     } catch (err) {
