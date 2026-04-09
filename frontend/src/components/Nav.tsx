@@ -145,6 +145,14 @@ export default function Nav() {
                 Impact
               </Link>
             </li>
+            <li>
+              <Link
+                to="/get-help"
+                className={location.pathname === '/get-help' ? 'active' : ''}
+              >
+                Get Help
+              </Link>
+            </li>
 
             {isAuthenticated && isAdmin && (
               <li className="nav__item nav__item--dropdown" ref={adminMenuRef}>
@@ -281,6 +289,7 @@ export default function Nav() {
         <Link to="/">Home</Link>
         <Link to="/about">About</Link>
         <Link to="/impact">Impact</Link>
+        <Link to="/get-help">Get Help</Link>
 
         {isAuthenticated && isAdmin && (
           <div className="nav__mobile-group">
