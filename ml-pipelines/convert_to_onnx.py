@@ -89,7 +89,7 @@ save_onnx(resident_model, sample_df_r, "resident_risk_model")
 
 resident_config_json = {
     "numeric_features": numeric_features_r,
-    "risk_thresholds": resident_config["risk_thresholds"],
+    "scoring_method": "rank",
 }
 with open(os.path.join(OUTPUT_DIR, "resident_risk_config.json"), "w") as f:
     json.dump(resident_config_json, f, indent=2)

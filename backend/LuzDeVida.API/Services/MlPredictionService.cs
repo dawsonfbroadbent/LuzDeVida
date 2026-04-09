@@ -186,10 +186,8 @@ public class MlPredictionService
             .ToListAsync();
 
         var healthRecords = await _db.health_wellbeing_records.ToListAsync();
-        var visitations = await _db.home_visitations.ToListAsync();
-        var recordings = await _db.process_recordings.ToListAsync();
         var incidents = await _db.incident_reports.ToListAsync();
-        var eduRecords = await _db.education_records.ToListAsync();
+        var recordings = await _db.process_recordings.ToListAsync();
 
         var rows = new List<Dictionary<string, float>>();
         var metaList = new List<(int id, string? ccn, string? code, string? sh)>();
@@ -197,14 +195,8 @@ public class MlPredictionService
         foreach (var r in residents)
         {
             var rHealth = healthRecords.Where(h => h.resident_id == r.resident_id).ToList();
-            var rVisits = visitations.Where(v => v.resident_id == r.resident_id).ToList();
-            var rSessions = recordings.Where(p => p.resident_id == r.resident_id).ToList();
             var rIncidents = incidents.Where(i => i.resident_id == r.resident_id).ToList();
-            var rEdu = eduRecords.Where(e => e.resident_id == r.resident_id).ToList();
-
-            float lengthOfStay = r.date_of_admission.HasValue
-                ? (float)((DateTime.UtcNow - r.date_of_admission.Value
-                    .ToDateTime(TimeOnly.MinValue)).TotalDays / 30.44) : 0;
+            var rRecordings = recordings.Where(rec => rec.resident_id == r.resident_id).ToList();
 
             float healthMean = rHealth.Count > 0
                 ? (float)rHealth.Average(h => h.general_health_score ?? 0) : 0;
@@ -212,8 +204,6 @@ public class MlPredictionService
                 ? (float)rHealth.Average(h => h.nutrition_score ?? 0) : 0;
             float sleepMean = rHealth.Count > 0
                 ? (float)rHealth.Average(h => h.sleep_score ?? 0) : 0;
-            float energyMean = rHealth.Count > 0
-                ? (float)rHealth.Average(h => h.energy_score ?? 0) : 0;
             float bmiLatest = rHealth.Count > 0
                 ? (float)(rHealth.OrderByDescending(h => h.record_date).First().bmi ?? 0) : 0;
             float medicalProp = rHealth.Count > 0
@@ -223,58 +213,30 @@ public class MlPredictionService
             float psychProp = rHealth.Count > 0
                 ? rHealth.Count(h => h.psychological_checkup_done == true) / (float)rHealth.Count : 0;
 
-            float progressMean = rEdu.Count > 0
-                ? (float)rEdu.Average(e => e.progress_percent ?? 0) : 0;
-
-            float incidentResRate = rIncidents.Count > 0
+            float incidentResolutionRate = rIncidents.Count > 0
                 ? rIncidents.Count(i => i.resolved == true) / (float)rIncidents.Count : 0;
 
-            float emotionalEndMean = 0;
-            if (rSessions.Count > 0)
-            {
-                var endScores = rSessions
-                    .Where(s => float.TryParse(s.emotional_state_end, out _))
-                    .Select(s => float.Parse(s.emotional_state_end!)).ToList();
-                if (endScores.Count > 0)
-                    emotionalEndMean = endScores.Average();
-            }
+            float sessionDurationMean = rRecordings.Count > 0
+                ? (float)rRecordings.Average(rec => rec.session_duration_minutes ?? 0) : 0;
 
-            float sessionDurMean = rSessions.Count > 0
-                ? (float)rSessions.Average(s => s.session_duration_minutes ?? 0) : 0;
-
-            int swDistinct = rSessions
-                .Select(s => s.social_worker)
-                .Where(sw => !string.IsNullOrEmpty(sw))
-                .Distinct().Count();
-
-            var allDates = new List<DateTime>();
-            allDates.AddRange(rHealth.Where(h => h.record_date.HasValue)
-                .Select(h => h.record_date!.Value.ToDateTime(TimeOnly.MinValue)));
-            allDates.AddRange(rVisits.Where(v => v.visit_date.HasValue)
-                .Select(v => v.visit_date!.Value.ToDateTime(TimeOnly.MinValue)));
-            allDates.AddRange(rSessions.Where(s => s.session_date.HasValue)
-                .Select(s => s.session_date!.Value.ToDateTime(TimeOnly.MinValue)));
-            float monthsOfData = allDates.Count >= 2
-                ? (float)((allDates.Max() - allDates.Min()).TotalDays / 30.44) : 0;
+            float lengthOfStayMonths = r.date_of_admission.HasValue
+                ? (float)(DateOnly.FromDateTime(DateTime.UtcNow).DayNumber - r.date_of_admission.Value.DayNumber) / 30.44f
+                : 0;
 
             rows.Add(new Dictionary<string, float>
             {
+                ["family_informal_settler"] = (r.family_informal_settler == true) ? 1f : 0f,
                 ["capacity_girls"] = r.safehouse?.capacity_girls ?? 0,
-                ["length_of_stay_months"] = lengthOfStay,
-                ["progress_percent_mean"] = progressMean,
+                ["length_of_stay_months"] = lengthOfStayMonths,
                 ["general_health_score_mean"] = healthMean,
                 ["nutrition_score_mean"] = nutritionMean,
                 ["sleep_quality_score_mean"] = sleepMean,
-                ["energy_level_score_mean"] = energyMean,
                 ["bmi_latest"] = bmiLatest,
                 ["medical_checkup_done_prop"] = medicalProp,
                 ["dental_checkup_done_prop"] = dentalProp,
                 ["psychological_checkup_done_prop"] = psychProp,
-                ["incident_resolution_rate"] = incidentResRate,
-                ["emotional_state_end_mean"] = emotionalEndMean,
-                ["session_duration_mean"] = sessionDurMean,
-                ["sw_distinct_count"] = swDistinct,
-                ["months_of_data_available"] = monthsOfData,
+                ["incident_resolution_rate"] = incidentResolutionRate,
+                ["session_duration_mean"] = sessionDurationMean,
             });
 
             metaList.Add((r.resident_id, r.case_control_no, r.internal_code,
@@ -286,20 +248,46 @@ public class MlPredictionService
 
         var probas = RunNumericInference(_models.ResidentRisk, rows);
 
-        var result = new ResidentRiskResultDto { generated_at = DateTime.UtcNow };
+        // Build predictions sorted by risk_score descending for ranking
+        var predictions = new List<ResidentRiskPredictionDto>();
         for (int i = 0; i < probas.Count; i++)
         {
-            result.predictions.Add(new ResidentRiskPredictionDto
+            predictions.Add(new ResidentRiskPredictionDto
             {
                 resident_id = metaList[i].id,
                 case_control_no = metaList[i].ccn,
                 internal_code = metaList[i].code,
                 safehouse_name = metaList[i].sh,
                 risk_score = probas[i],
-                risk_tier = Tier(probas[i]),
             });
         }
-        return result;
+
+        // Global rank (1 = highest risk)
+        var sorted = predictions.OrderByDescending(p => p.risk_score).ToList();
+        int totalResidents = sorted.Count;
+        for (int r = 0; r < sorted.Count; r++)
+        {
+            sorted[r].rank_global = r + 1;
+            sorted[r].total_residents = totalResidents;
+        }
+
+        // Per-safehouse rank
+        foreach (var group in sorted.GroupBy(p => p.safehouse_name))
+        {
+            int safehouseTotal = group.Count();
+            int rank = 1;
+            foreach (var p in group.OrderByDescending(p => p.risk_score))
+            {
+                p.rank_in_safehouse = rank++;
+                p.total_in_safehouse = safehouseTotal;
+            }
+        }
+
+        return new ResidentRiskResultDto
+        {
+            predictions = sorted,
+            generated_at = DateTime.UtcNow,
+        };
     }
 
     // =====================================================================
