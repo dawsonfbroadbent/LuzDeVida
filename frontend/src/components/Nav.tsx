@@ -4,6 +4,11 @@ import { useAuth } from '../context/AuthContext'
 import { ADMIN_TABS, getAdminTabHref, normalizeAdminTab } from '../adminTabs'
 
 export default function Nav() {
+  const { authSession, isAuthenticated, isLoading } = useAuth();
+
+  let statusClassName = 'badge rounded-pill text-bg-secondary';
+  let statusText = 'Loading...';
+
   const [scrolled, setScrolled]       = useState(false)
   const [menuOpen, setMenuOpen]       = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -11,7 +16,6 @@ export default function Nav() {
   const location                      = useLocation()
   const navigate                      = useNavigate()
   const isHome                        = location.pathname === '/'
-  const { isAuthenticated, user, logout } = useAuth()
   const userMenuRef                   = useRef<HTMLDivElement>(null)
   const adminMenuRef                  = useRef<HTMLLIElement>(null)
   const isAdminRoute                  =

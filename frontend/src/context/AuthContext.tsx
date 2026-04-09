@@ -1,4 +1,10 @@
-import { createContext, useCallback, useContext, useState, useEffect } from 'react'
+import { 
+  createContext, 
+  useCallback, 
+  useContext, 
+  useState, 
+  useEffect 
+} from 'react'
 import { type ReactNode } from 'react'
 import { getAuthSession } from '../api/AuthAPI'
 import type { AuthSession } from '../types/AuthSession'
@@ -50,9 +56,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
+}
 
+export function useAuth() {
+  const context = useContext(AuthContext);
 
-  
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }
 
 // export interface AuthUser {
