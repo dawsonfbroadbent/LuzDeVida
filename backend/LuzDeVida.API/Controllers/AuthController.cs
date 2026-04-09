@@ -18,26 +18,35 @@ public class AuthController(UserManager<ApplicationUser> userManager) : Controll
     [HttpGet("me")]
     public async Task<IActionResult> GetCurrentSession()
     {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null)
-            return NotFound();
-
-        return Ok(new
+        if (User.Identity?.IsAuthenticated != true)
         {
-            Id = user.Id,
-            Email = user.Email,
-            DisplayName = user.DisplayName
+            return Ok(new 
+            { 
+                IsAuthenticated = false,
+                userName = (string?)null,
+                email = (string?)null,
+                roles = Array.Empty<string>(),
+            });
+        }
+
+        var user = await userManager.GetUserAsync(User);
+        var roles = User.Claims
+            .Where(claim => claim.Type == ClaimTypes.Role)
+            .Select(claim => claim.Value)
+            .Distinct()
+            .OrderBy(role => role)
+            .ToArray();
+
+        return Ok(new 
+        {
+            IsAuthenticated = true,
+            userName = user?.UserName ?? User.Identity?.Name,
+            email = user?.Email,
+            roles
         });
+
     }
 }
-//     private readonly LuzDeVidaDbContext _context;
-//     private readonly IConfiguration _config;
-
-//     public AuthController(LuzDeVidaDbContext context, IConfiguration config)
-//     {
-//         _context = context;
-//         _config = config;
-//     }
 
 //     [HttpPost("register")]
 //     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
