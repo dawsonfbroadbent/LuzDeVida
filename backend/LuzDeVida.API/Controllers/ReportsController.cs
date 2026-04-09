@@ -1,4 +1,5 @@
 using LuzDeVida.API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LuzDeVida.API.Controllers;
@@ -125,6 +126,7 @@ public class ReportsAarDto
 
 [ApiController]
 [Route("api/reports")]
+[Authorize(Roles = "Admin")]
 public class ReportsController : ControllerBase
 {
     private readonly ReportsService _service;

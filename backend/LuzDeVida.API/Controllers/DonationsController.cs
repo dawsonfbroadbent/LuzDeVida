@@ -2,10 +2,9 @@ using LuzDeVida.API.Data;
 using LuzDeVida.API.Models;
 using LuzDeVida.API.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace LuzDeVida.API.Controllers;
 
@@ -15,10 +14,12 @@ namespace LuzDeVida.API.Controllers;
 public class DonationsController : ControllerBase
 {
     private readonly LuzDeVidaDbContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public DonationsController(LuzDeVidaDbContext context)
+    public DonationsController(LuzDeVidaDbContext context, UserManager<ApplicationUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
     [HttpPost]
@@ -27,13 +28,13 @@ public class DonationsController : ControllerBase
         if (dto.Amount <= 0)
             return BadRequest(new { message = "Donation amount must be greater than zero." });
 
-        // Try both claim types — .NET 8+ doesn't remap sub, but earlier versions do
-        var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
-                       ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!int.TryParse(userIdClaim, out var userId))
+        var identityUser = await _userManager.GetUserAsync(User);
+        if (identityUser?.Email == null)
             return Unauthorized(new { message = "Invalid session. Please log in again." });
 
-        var appUser = await _context.app_users.FindAsync(userId);
+        var appUser = await _context.app_users
+            .FirstOrDefaultAsync(u => u.email.ToLower() == identityUser.Email.ToLower());
+
         if (appUser == null || !appUser.is_active)
             return Unauthorized(new { message = "Account not found or inactive." });
 

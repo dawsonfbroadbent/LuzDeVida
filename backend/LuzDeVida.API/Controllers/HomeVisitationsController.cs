@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LuzDeVida.API.Data;
@@ -7,6 +8,7 @@ namespace LuzDeVida.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class HomeVisitationsController : ControllerBase
     {
         private readonly LuzDeVidaDbContext _context;

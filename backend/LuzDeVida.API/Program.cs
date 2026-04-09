@@ -1,10 +1,7 @@
 using LuzDeVida.API.Data;
 using LuzDeVida.API.Services;
-//using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-//using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +19,9 @@ builder.Services.AddDbContext<LuzDeVidaDbContext>(options =>
 builder.Services.AddDbContext<AuthIdentityDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentityApiEndpoints<ApplicationUser>().AddEntityFrameworkStores<AuthIdentityDbContext>();
+builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<AuthIdentityDbContext>();
 
 builder.Services.AddScoped<PublicImpactService>();
 builder.Services.AddScoped<ReportsService>();
@@ -33,25 +32,6 @@ builder.Services.AddScoped<ReportsService>();
 //     new OnnxModelHolder(onnxModelsDir, sp.GetRequiredService<ILogger<OnnxModelHolder>>()));
 // builder.Services.AddScoped<MlPredictionService>();
 
-// JWT authentication
-var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("Jwt:Key is not configured.");
-
-// builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//     .AddJwtBearer(options =>
-//     {
-//         options.TokenValidationParameters = new TokenValidationParameters
-//         {
-//             ValidateIssuer           = true,
-//             ValidateAudience         = true,
-//             ValidateLifetime         = true,
-//             ValidateIssuerSigningKey = true,
-//             ValidIssuer              = builder.Configuration["Jwt:Issuer"],
-//             ValidAudience            = builder.Configuration["Jwt:Audience"],
-//             IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-//         };
-//     });
-
 builder.Services.AddAuthorization();
 
 builder.Services.AddCors(options =>
@@ -61,7 +41,7 @@ builder.Services.AddCors(options =>
         var origins = builder.Configuration
             .GetSection("Cors:AllowedOrigins")
             .Get<string[]>() ?? ["http://localhost:5173"];
-        policy.WithOrigins(origins).AllowAnyMethod().AllowAnyHeader();
+        policy.WithOrigins(origins).AllowAnyMethod().AllowAnyHeader().AllowCredentials();
     });
 });
 
@@ -69,6 +49,17 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Ensure Identity roles exist
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    foreach (var role in new[] { "Admin", "Supporter" })
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+            await roleManager.CreateAsync(new IdentityRole(role));
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
