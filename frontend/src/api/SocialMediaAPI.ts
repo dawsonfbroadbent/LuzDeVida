@@ -134,8 +134,10 @@ export async function evaluateSocialMediaPost(
     body: JSON.stringify(req),
   })
   const data = await res.json().catch(() => ({}))
-  if (!res.ok)
-    throw new Error((data as { message?: string }).message ?? 'Failed to evaluate post.')
+  if (!res.ok) {
+    const apiError = (data as { error?: { message?: string; details?: string[] } }).error
+    throw new Error(apiError?.details?.[0] ?? apiError?.message ?? 'Failed to evaluate post.')
+  }
   // The ML endpoint wraps in ApiResponseDto
   return (data as { data: MlPredictionItem }).data
 }
