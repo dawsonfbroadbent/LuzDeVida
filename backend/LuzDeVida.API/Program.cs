@@ -91,6 +91,12 @@ app.Use(async (context, next) =>
 });
 
 app.UseCors("PublicFrontend");
+app.UseExceptionHandler(errApp => errApp.Run(async ctx =>
+{
+    ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
+    ctx.Response.ContentType = "application/json";
+    await ctx.Response.WriteAsync("{\"error\":\"Internal server error\"}");
+}));
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
