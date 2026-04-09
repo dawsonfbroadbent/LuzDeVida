@@ -462,7 +462,7 @@ function SectionAar({ data, year }: { data: ReportsOverview; year: number }) {
               <span className="reports-aar-card__row-value">{fmtPHP(a.total_monetary_received)}</span>
             </div>
             <div className="reports-aar-card__row">
-              <span className="reports-aar-card__row-label">In-kind (est. value)</span>
+              <span className="reports-aar-card__row-label">Est. value (all donations)</span>
               <span className="reports-aar-card__row-value">{fmtPHP(a.total_in_kind_estimated)}</span>
             </div>
           </div>
@@ -480,7 +480,7 @@ function SectionDonations({ data }: { data: ReportsOverview }) {
   const trend = data.donation_trend
 
   const monetarySeries = trend.map(m => ({ label: m.month_key, value: m.monetary_total }))
-  const inKindSeries   = trend.map(m => ({ label: m.month_key, value: m.in_kind_count }))
+  const inKindSeries   = trend.map(m => ({ label: m.month_key, value: m.in_kind_total }))
 
   // Table: last 12 months
   const last12 = trend.slice(-12)
@@ -495,7 +495,7 @@ function SectionDonations({ data }: { data: ReportsOverview }) {
         </div>
         <div className="reports-stat-card">
           <div className="reports-stat-card__value">{fmtPHP(s.total_in_kind_estimated)}</div>
-          <div className="reports-stat-card__label">In-Kind Est. Value</div>
+          <div className="reports-stat-card__label">Total Est. Value</div>
         </div>
         <div className="reports-stat-card">
           <div className="reports-stat-card__value">{fmt(s.unique_donor_count)}</div>
@@ -520,11 +520,11 @@ function SectionDonations({ data }: { data: ReportsOverview }) {
           />
         </div>
         <div className="reports-section-panel">
-          <p className="reports-section-panel__title">Monthly In-Kind Donations</p>
-          <p className="reports-section-panel__subtitle">Number of in-kind donation records per month</p>
+          <p className="reports-section-panel__title">Monthly Est. Value</p>
+          <p className="reports-section-panel__subtitle">Sum of estimated_value across all donations per month</p>
           <BarChart
             data={inKindSeries}
-            title="Monthly In-Kind Count"
+            title="Monthly Est. Value (PHP)"
             color="var(--sand-dark)"
           />
         </div>
@@ -540,7 +540,7 @@ function SectionDonations({ data }: { data: ReportsOverview }) {
                 <th>Month</th>
                 <th style={{ textAlign: 'right' }}>Monetary Total (PHP)</th>
                 <th style={{ textAlign: 'right' }}>Monetary Count</th>
-                <th style={{ textAlign: 'right' }}>In-Kind Est. Value (PHP)</th>
+                <th style={{ textAlign: 'right' }}>Est. Value (PHP)</th>
                 <th style={{ textAlign: 'right' }}>In-Kind Count</th>
               </tr>
             </thead>

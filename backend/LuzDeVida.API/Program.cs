@@ -27,6 +27,12 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>().AddEntityFrameworkSt
 builder.Services.AddScoped<PublicImpactService>();
 builder.Services.AddScoped<ReportsService>();
 
+// ONNX ML models -- loaded once, shared across requests
+// var onnxModelsDir = Path.Combine(AppContext.BaseDirectory, "OnnxModels");
+// builder.Services.AddSingleton(sp =>
+//     new OnnxModelHolder(onnxModelsDir, sp.GetRequiredService<ILogger<OnnxModelHolder>>()));
+// builder.Services.AddScoped<MlPredictionService>();
+
 // JWT authentication
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("Jwt:Key is not configured.");
@@ -90,6 +96,12 @@ app.Use(async (context, next) =>
 });
 
 app.UseCors("PublicFrontend");
+app.UseExceptionHandler(errApp => errApp.Run(async ctx =>
+{
+    ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
+    ctx.Response.ContentType = "application/json";
+    await ctx.Response.WriteAsync("{\"error\":\"Internal server error\"}");
+}));
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

@@ -174,6 +174,8 @@ public class SupportersController : ControllerBase
                     TotalGiven = s.donations
                         .Where(d => d.donation_type == "monetary")
                         .Sum(d => (decimal?)d.amount) ?? 0m,
+                    InKindEstimatedValue = s.donations
+                        .Sum(d => (decimal?)d.estimated_value) ?? 0m,
                     LastDonationDate = s.donations
                         .Max(d => (DateOnly?)d.donation_date),
                     ContributionTypes = s.donations
