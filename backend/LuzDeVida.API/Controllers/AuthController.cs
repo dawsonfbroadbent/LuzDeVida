@@ -1,19 +1,16 @@
 using LuzDeVida.API.Data;
-// using LuzDeVida.API.Models;
-// using LuzDeVida.API.Models.Dtos;
-using Microsoft.AspNetCore.Mvc;
-// using Microsoft.EntityFrameworkCore;
-// using Microsoft.IdentityModel.Tokens;
-// using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
-// using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LuzDeVida.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager) : ControllerBase
+public class AuthController(
+    UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager,
+    IConfiguration configuration) : ControllerBase
 {
     [HttpGet("me")]
     public async Task<IActionResult> GetCurrentSession()
@@ -50,10 +47,39 @@ public class AuthController(UserManager<ApplicationUser> userManager, SignInMana
     public async Task<IActionResult> Logout()
     {
         await signInManager.SignOutAsync();
-
         return Ok(new { message = "Logged out successfully." });
     }
+
+    // One-time endpoint: assigns the Admin role to a user account.
+    // Requires the bootstrap token configured in AdminBootstrap:Token.
+    // Call once per admin user, then optionally remove from deployment.
+    [HttpPost("assign-admin")]
+    public async Task<IActionResult> AssignAdmin([FromBody] AssignAdminDto dto)
+    {
+        var configuredToken = configuration["AdminBootstrap:Token"];
+        if (string.IsNullOrEmpty(configuredToken) ||
+            configuredToken == "CHANGE-THIS-SECRET-BEFORE-DEPLOYING" ||
+            dto.BootstrapToken != configuredToken)
+        {
+            return Unauthorized(new { message = "Invalid bootstrap token." });
+        }
+
+        var user = await userManager.FindByEmailAsync(dto.Email);
+        if (user == null)
+            return NotFound(new { message = $"No account found for {dto.Email}." });
+
+        if (await userManager.IsInRoleAsync(user, "Admin"))
+            return Ok(new { message = $"{dto.Email} is already an Admin." });
+
+        var result = await userManager.AddToRoleAsync(user, "Admin");
+        if (!result.Succeeded)
+            return StatusCode(500, new { message = "Failed to assign role.", errors = result.Errors });
+
+        return Ok(new { message = $"{dto.Email} has been assigned the Admin role." });
+    }
 }
+
+public record AssignAdminDto(string Email, string BootstrapToken);
 
 //     [HttpPost("register")]
 //     public async Task<IActionResult> Register([FromBody] RegisterDto dto)

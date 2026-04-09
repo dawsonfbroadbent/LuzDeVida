@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LuzDeVida.API.Data;
@@ -10,6 +7,7 @@ namespace LuzDeVida.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "Admin")]
 public class AdminDashboardController : ControllerBase
 {
     private readonly LuzDeVidaDbContext _context;

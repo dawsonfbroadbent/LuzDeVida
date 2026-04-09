@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import {
   ADMIN_TABS,
   getAdminTabHref,
@@ -12,6 +12,7 @@ import CaseloadInventory from './CaseloadInventory'
 import ProcessRecording from './ProcessRecording'
 import DonorManagement from './DonorManagement'
 import ReportsAndAnalytics from './ReportsAndAnalytics'
+import { useAuth } from '../context/AuthContext'
 import '../styles/AdminWorkspace.css'
 
 function renderTabContent(tabId: AdminTabId) {
@@ -37,12 +38,30 @@ export default function AdminWorkspace() {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = normalizeAdminTab(searchParams.get('tab'))
   const activeTabMeta = ADMIN_TABS.find((tab) => tab.id === activeTab) ?? ADMIN_TABS[0]
+  const { authSession, isLoading } = useAuth()
 
   useEffect(() => {
     if (searchParams.get('tab') !== activeTab) {
       setSearchParams({ tab: activeTab }, { replace: true })
     }
   }, [activeTab, searchParams, setSearchParams])
+
+  if (isLoading) return null
+
+  if (!authSession?.isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (!authSession.roles.includes('Admin')) {
+    return (
+      <div className="admin-workspace">
+        <section className="admin-workspace__hero">
+          <h1>Access Denied</h1>
+          <p>Your account does not have admin privileges.</p>
+        </section>
+      </div>
+    )
+  }
 
   return (
     <div className="admin-workspace">
