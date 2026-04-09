@@ -18,7 +18,11 @@ import '../styles/HomeVisitations.css'
 
 type ActiveView = 'homeVisits' | 'caseConferences'
 
-export default function HomeVisitations() {
+interface HomeVisitationsProps {
+  embedded?: boolean
+}
+
+export default function HomeVisitations({ embedded = false }: HomeVisitationsProps) {
   const [residents, setResidents] = useState<resident[]>([])
   const [selectedResidentId, setSelectedResidentId] = useState<number | null>(null)
 

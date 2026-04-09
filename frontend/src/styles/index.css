@@ -21,8 +21,10 @@
   --teal-pale:    #E5F7F8;
 
   --cream:         #F5FBFB;
+  --cream-light:   #F9FDFD;
   --cream-dark:    #EAF5F6;
   --cream-darker:  #D3E6E8;
+  --cream-lighter: #EEF7F8;
 
   --text-dark:     #17353B;
   --text-mid:      #47686F;
@@ -278,7 +280,8 @@ button { cursor: pointer; font-family: var(--font-body); }
   list-style: none;
 }
 
-.nav__links a:not(.btn) {
+.nav__links a:not(.btn),
+.nav__menu-trigger {
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.06em;
@@ -286,9 +289,12 @@ button { cursor: pointer; font-family: var(--font-body); }
   color: rgba(255,255,255,0.8);
   position: relative;
   padding-bottom: 2px;
+  background: none;
+  border: none;
   transition: color 0.25s ease;
 }
-.nav__links a:not(.btn)::after {
+.nav__links a:not(.btn)::after,
+.nav__menu-trigger::after {
   content: '';
   position: absolute;
   bottom: -2px;
@@ -299,19 +305,114 @@ button { cursor: pointer; font-family: var(--font-body); }
   transition: width 0.25s ease;
 }
 .nav__links a:not(.btn):hover,
-.nav__links a:not(.btn).active {
+.nav__links a:not(.btn).active,
+.nav__menu-trigger:hover,
+.nav__menu-trigger.active {
   color: var(--white);
 }
 .nav__links a:not(.btn):hover::after,
-.nav__links a:not(.btn).active::after {
+.nav__links a:not(.btn).active::after,
+.nav__menu-trigger:hover::after,
+.nav__menu-trigger.active::after {
   width: 100%;
 }
 .nav--solid .nav__links a:not(.btn) {
   color: var(--text-mid);
 }
 .nav--solid .nav__links a:not(.btn):hover,
+.nav--solid .nav__links a:not(.btn).active,
+.nav--solid .nav__menu-trigger {
+  color: var(--text-mid);
+}
+.nav--solid .nav__menu-trigger:hover,
+.nav--solid .nav__menu-trigger.active,
+.nav--solid .nav__links a:not(.btn):hover,
 .nav--solid .nav__links a:not(.btn).active {
   color: var(--text-dark);
+}
+
+.nav__item {
+  position: relative;
+}
+
+.nav__menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.nav__menu-trigger svg {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.nav__menu-trigger[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+.nav__admin-dropdown {
+  position: absolute;
+  top: calc(100% + 18px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 360px;
+  padding: 10px;
+  border-radius: 18px;
+  border: 1px solid rgba(23, 53, 59, 0.08);
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 18px 40px rgba(23, 53, 59, 0.12);
+  backdrop-filter: blur(18px);
+}
+
+.nav__admin-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.97);
+  border-top: 1px solid rgba(23, 53, 59, 0.08);
+  border-left: 1px solid rgba(23, 53, 59, 0.08);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.nav__admin-dropdown-item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.nav__admin-dropdown-item:hover,
+.nav__admin-dropdown-item.active {
+  background: var(--cream-dark);
+  transform: translateY(-1px);
+}
+
+.nav__admin-dropdown-item::after {
+  display: none;
+}
+
+.nav__admin-dropdown-label {
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--text-dark);
+}
+
+.nav__admin-dropdown-copy {
+  font-size: 0.76rem;
+  line-height: 1.5;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text-light);
 }
 
 .nav__cta {
@@ -380,6 +481,30 @@ button { cursor: pointer; font-family: var(--font-body); }
   margin-top: 16px;
   text-align: center;
   justify-content: center;
+}
+
+.nav__mobile-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--cream-darker);
+}
+
+.nav__mobile-group-label {
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+.nav__mobile-group a {
+  font-size: 22px;
+  border-bottom: none;
+  padding: 7px 0;
 }
 
 /* ============================================================

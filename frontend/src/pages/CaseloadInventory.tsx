@@ -10,7 +10,11 @@ import '../styles/CaseloadInventory.css'
 
 type ResidentFormData = Omit<resident, 'resident_id' | 'created_at'>
 
-export default function CaseloadInventory() {
+interface CaseloadInventoryProps {
+  embedded?: boolean
+}
+
+export default function CaseloadInventory({ embedded = false }: CaseloadInventoryProps) {
   // ===== STATE =====
   const [residents, setResidents] = useState<resident[]>([])
   const [filteredResidents, setFilteredResidents] = useState<resident[]>([])
@@ -347,7 +351,7 @@ export default function CaseloadInventory() {
 
   // ===== RENDER =====
   return (
-    <div className="caseload-inventory">
+    <div className={`caseload-inventory${embedded ? ' caseload-inventory--embedded' : ''}`}>
       <div className="caseload-header">
         <h1>Caseload Inventory</h1>
         <p className="subtitle">
@@ -375,7 +379,7 @@ export default function CaseloadInventory() {
 
       <div className="action-bar">
         <button onClick={openCreateModal} className="btn-primary">
-          + Add New Resident
+          Add Resident
         </button>
       </div>
 
