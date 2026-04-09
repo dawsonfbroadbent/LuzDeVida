@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { useAuth } from '../context/AuthContext'
 import {
   fetchSupporterStats,
   fetchSupporterTypes,
@@ -106,8 +105,6 @@ interface DonorManagementProps {
 }
 
 export default function DonorManagement({ embedded = false }: DonorManagementProps) {
-  const { token } = useAuth()
-
   // ── Consolidated filter/sort/pagination state ─────────────
   const [filters, setFilters] = useState<Filters>({ ...INITIAL_FILTERS })
   // searchInput drives the text box; we debounce it into filters.search
@@ -150,42 +147,37 @@ export default function DonorManagement({ embedded = false }: DonorManagementPro
     return () => clearTimeout(t)
   }, [searchInput])
 
-  // ── Load stats + types whenever token becomes available ──
+  // ── Load stats + types on mount ──────────────────────────
   useEffect(() => {
-    if (!token) return
     loadStats()
     loadSupporterTypes()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token])
+  }, [])
 
-  // ── Single reactive effect: fires whenever filters OR token changes.
+  // ── Single reactive effect: fires whenever filters change.
   //    All params come from the filters object — no stale closures. ─────────
   useEffect(() => {
-    if (!token) return
     doLoadSupporters(filters)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, token])
+  }, [filters])
 
   // ── Data loaders ──────────────────────────────────────────
   async function loadStats() {
-    if (!token) return
     setStatsLoading(true)
     try {
-      setStats(await fetchSupporterStats(token))
+      setStats(await fetchSupporterStats())
     } catch { /* non-critical */ } finally {
       setStatsLoading(false)
     }
   }
 
   async function loadSupporterTypes() {
-    if (!token) return
     try {
-      setSupporterTypes(await fetchSupporterTypes(token))
+      setSupporterTypes(await fetchSupporterTypes())
     } catch { /* non-critical */ }
   }
 
   async function doLoadSupporters(f: Filters) {
-    if (!token) return
     setLoading(true)
     setError(null)
     try {
@@ -199,7 +191,7 @@ export default function DonorManagement({ embedded = false }: DonorManagementPro
         region: f.region !== 'All' ? f.region : undefined,
         sortBy: f.sortField,
         sortDir: f.sortDir,
-      }, token)
+      })
       setSupporters(result.items)
       setTotalCount(result.totalCount)
     } catch (err) {
@@ -230,11 +222,10 @@ export default function DonorManagement({ embedded = false }: DonorManagementPro
 
   // ── Modal actions ─────────────────────────────────────────
   async function openViewModal(id: number) {
-    if (!token) return
     setFormError(null)
     setExpandedDonation(null)
     try {
-      setSelectedSupporter(await fetchSupporterById(id, token))
+      setSelectedSupporter(await fetchSupporterById(id))
       setModalMode('view')
       setShowModal(true)
     } catch (err) {
@@ -250,10 +241,9 @@ export default function DonorManagement({ embedded = false }: DonorManagementPro
   }
 
   async function openEditModal(s: SupporterListItem) {
-    if (!token) return
     setFormError(null)
     try {
-      const detail = await fetchSupporterById(s.supporterId, token)
+      const detail = await fetchSupporterById(s.supporterId)
       setFormData({
         supporterType: detail.supporterType ?? '',
         displayName: detail.displayName ?? '',
@@ -312,7 +302,6 @@ export default function DonorManagement({ embedded = false }: DonorManagementPro
 
   async function handleFormSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!token) return
     const resolvedName = formData.displayName || `${formData.firstName ?? ''} ${formData.lastName ?? ''}`.trim()
     if (!resolvedName) {
       setFormError('Please enter a display name or first and last name.')
@@ -322,10 +311,10 @@ export default function DonorManagement({ embedded = false }: DonorManagementPro
     setFormError(null)
     try {
       if (modalMode === 'create') {
-        await createSupporter(formData, token)
+        await createSupporter(formData)
         setSuccessMessage('Supporter created successfully.')
       } else if (modalMode === 'edit' && editingSupporterId !== null) {
-        await updateSupporter(editingSupporterId, formData, token)
+        await updateSupporter(editingSupporterId, formData)
         setSuccessMessage('Supporter updated successfully.')
       }
       closeModal()

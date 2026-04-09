@@ -100,19 +100,15 @@ export interface CreateSupporterPayload {
 
 export type UpdateSupporterPayload = CreateSupporterPayload
 
-export async function fetchSupporterStats(token: string): Promise<SupporterStats> {
-  const res = await fetch(`${BASE}/stats`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+export async function fetchSupporterStats(): Promise<SupporterStats> {
+  const res = await fetch(`${BASE}/stats`)
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error((data as { message?: string }).message ?? 'Failed to load stats.')
   return data as SupporterStats
 }
 
-export async function fetchSupporterTypes(token: string): Promise<string[]> {
-  const res = await fetch(`${BASE}/types`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+export async function fetchSupporterTypes(): Promise<string[]> {
+  const res = await fetch(`${BASE}/types`)
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error((data as { message?: string }).message ?? 'Failed to load types.')
   return data as string[]
@@ -130,7 +126,6 @@ export async function fetchSupporters(
     sortBy?: string
     sortDir?: 'asc' | 'desc'
   },
-  token: string,
 ): Promise<SupporterPagedResult> {
   const query = new URLSearchParams()
   if (params.page) query.set('page', String(params.page))
@@ -143,18 +138,14 @@ export async function fetchSupporters(
   if (params.sortBy) query.set('sortBy', params.sortBy)
   if (params.sortDir) query.set('sortDir', params.sortDir)
 
-  const res = await fetch(`${BASE}?${query.toString()}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  const res = await fetch(`${BASE}?${query.toString()}`)
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error((data as { message?: string }).message ?? 'Failed to load supporters.')
   return data as SupporterPagedResult
 }
 
-export async function fetchSupporterById(id: number, token: string): Promise<SupporterDetail> {
-  const res = await fetch(`${BASE}/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+export async function fetchSupporterById(id: number): Promise<SupporterDetail> {
+  const res = await fetch(`${BASE}/${id}`)
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error((data as { message?: string }).message ?? 'Failed to load supporter.')
   return data as SupporterDetail
@@ -162,14 +153,10 @@ export async function fetchSupporterById(id: number, token: string): Promise<Sup
 
 export async function createSupporter(
   payload: CreateSupporterPayload,
-  token: string,
 ): Promise<SupporterDetail> {
   const res = await fetch(BASE, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
   const data = await res.json().catch(() => ({}))
@@ -180,14 +167,10 @@ export async function createSupporter(
 export async function updateSupporter(
   id: number,
   payload: UpdateSupporterPayload,
-  token: string,
 ): Promise<void> {
   const res = await fetch(`${BASE}/${id}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
   if (!res.ok) {
