@@ -32,6 +32,18 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AuthIdentityDbContext>();
 
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+{
+    builder.Services.AddAuthentication()
+        .AddGoogle(options =>
+        {
+            options.ClientId = googleClientId;
+            options.ClientSecret = googleClientSecret;
+        });
+}
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(AuthPolicies.RequireAdmin, policy => policy.RequireRole(AuthRoles.Admin));

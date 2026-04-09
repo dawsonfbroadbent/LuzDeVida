@@ -1,11 +1,11 @@
 using System.Security.Claims;
-using LuzDeVida.API.Data;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using RootkitAuth.API.Data;
 
-namespace LuzDeVida.API.Controllers;
+namespace RootkitAuth.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
@@ -15,7 +15,7 @@ public class AuthController(
     IConfiguration configuration) : ControllerBase
 {
     private const string DefaultFrontendUrl = "http://localhost:3000";
-    private const string DefaultExternalReturnPath = "/";
+    private const string DefaultExternalReturnPath = "/catalog";
 
     [HttpGet("me")]
     public async Task<IActionResult> GetCurrentSession()
@@ -73,7 +73,10 @@ public class AuthController(
         if (!string.Equals(provider, GoogleDefaults.AuthenticationScheme, StringComparison.OrdinalIgnoreCase) ||
             !IsGoogleConfigured())
         {
-            return BadRequest(new { message = "The requested external login provider is not available." });
+            return BadRequest(new
+            {
+                message = "The requested external login provider is not available."
+            });
         }
 
         var callbackUrl = Url.Action(nameof(ExternalLoginCallback), new
@@ -94,9 +97,7 @@ public class AuthController(
     }
 
     [HttpGet("external-callback")]
-    public async Task<IActionResult> ExternalLoginCallback(
-        [FromQuery] string? returnPath = null,
-        [FromQuery] string? remoteError = null)
+    public async Task<IActionResult> ExternalLoginCallback([FromQuery] string? returnPath = null, [FromQuery] string? remoteError = null)
     {
         if (!string.IsNullOrWhiteSpace(remoteError))
         {
@@ -140,9 +141,9 @@ public class AuthController(
                 EmailConfirmed = true
             };
 
-            var createResult = await userManager.CreateAsync(user);
+            var createUserResult = await userManager.CreateAsync(user);
 
-            if (!createResult.Succeeded)
+            if (!createUserResult.Succeeded)
             {
                 return Redirect(BuildFrontendErrorUrl("Unable to create a local account for the external login."));
             }
@@ -163,17 +164,26 @@ public class AuthController(
     public async Task<IActionResult> Logout()
     {
         await signInManager.SignOutAsync();
-        return Ok(new { message = "Logout successful." });
+
+        return Ok(new
+        {
+            message = "Logout successful."
+        });
     }
 
-    private bool IsGoogleConfigured() =>
-        !string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]) &&
-        !string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientSecret"]);
+    private bool IsGoogleConfigured()
+    {
+        return !string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientId"]) &&
+            !string.IsNullOrWhiteSpace(configuration["Authentication:Google:ClientSecret"]);
+    }
 
-    private static string NormalizeReturnPath(string? returnPath)
+    private string NormalizeReturnPath(string? returnPath)
     {
         if (string.IsNullOrWhiteSpace(returnPath) || !returnPath.StartsWith('/'))
+        {
             return DefaultExternalReturnPath;
+        }
+
         return returnPath;
     }
 
