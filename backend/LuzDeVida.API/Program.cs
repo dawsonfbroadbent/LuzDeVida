@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,11 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<LuzDeVidaDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddDbContext<AuthIdentityDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddIdentityApiEndpoints<ApplicationUser>().AddEntityFrameworkStores<AuthIdentityDbContext>();
 
 builder.Services.AddScoped<PublicImpactService>();
 builder.Services.AddScoped<ReportsService>();
@@ -69,13 +75,23 @@ else
 {
     // Force HTTPS in production environments
     app.UseHttpsRedirection();
+    // Add HSTS (HTTP Strict-Transport-Security) header
+    app.UseHsts();
 }
 
-app.UseCors("PublicFrontend");
+// Add security headers
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+    await next();
+});
 
+app.UseCors("PublicFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
+app.MapGroup("/api/auth").MapIdentityApi<ApplicationUser>();
 app.Run();
