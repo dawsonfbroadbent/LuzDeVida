@@ -1,6 +1,7 @@
 using LuzDeVida.API.Data;
 using LuzDeVida.API.Models;
 using LuzDeVida.API.Models.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,7 @@ namespace LuzDeVida.API.Controllers;
 
 [ApiController]
 [Route("api/supporters")]
+[AllowAnonymous]
 public class SupportersController : ControllerBase
 {
     private readonly LuzDeVidaDbContext _context;
