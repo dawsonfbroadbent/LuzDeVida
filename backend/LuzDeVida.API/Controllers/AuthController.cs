@@ -20,8 +20,8 @@ public class AuthController(UserManager<ApplicationUser> userManager, SignInMana
     {
         if (User.Identity?.IsAuthenticated != true)
         {
-            return Ok(new 
-            { 
+            return Ok(new
+            {
                 IsAuthenticated = false,
                 userName = (string?)null,
                 email = (string?)null,
@@ -37,23 +37,21 @@ public class AuthController(UserManager<ApplicationUser> userManager, SignInMana
             .OrderBy(role => role)
             .ToArray();
 
-        return Ok(new 
+        return Ok(new
         {
             IsAuthenticated = true,
             userName = user?.UserName ?? User.Identity?.Name,
             email = user?.Email,
             roles
         });
-
+    }
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
-
         await signInManager.SignOutAsync();
 
         return Ok(new { message = "Logged out successfully." });
-
     }
 }
 
