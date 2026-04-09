@@ -62,34 +62,26 @@ public class ReportsService
             .Select(m => new { m.safehouse_id, m.month_start, m.active_residents, m.avg_education_progress, m.avg_health_score, m.process_recording_count, m.home_visitation_count })
             .ToListAsync();
 
-        // ── AAR parallel server-side aggregations ───────────────────────────
-        var t_newAdmissions    = _context.residents.CountAsync(r => r.date_of_admission.HasValue && r.date_of_admission >= yearStart && r.date_of_admission <= yearEnd);
-        var t_closedCases      = _context.residents.CountAsync(r => r.date_closed.HasValue && r.date_closed >= yearStart && r.date_closed <= yearEnd);
-        var t_activeEndOfYear  = _context.residents.CountAsync(r => r.case_status == "Active");
-        var t_medicalCheckups  = _context.health_wellbeing_records.CountAsync(h => h.record_date.HasValue && h.record_date >= yearStart && h.record_date <= yearEnd && h.medical_checkup_done == true);
-        var t_dentalCheckups   = _context.health_wellbeing_records.CountAsync(h => h.record_date.HasValue && h.record_date >= yearStart && h.record_date <= yearEnd && h.dental_checkup_done == true);
-        var t_psychCheckups    = _context.health_wellbeing_records.CountAsync(h => h.record_date.HasValue && h.record_date >= yearStart && h.record_date <= yearEnd && h.psychological_checkup_done == true);
-        var t_totalHealthRecs  = _context.health_wellbeing_records.CountAsync(h => h.record_date.HasValue && h.record_date >= yearStart && h.record_date <= yearEnd);
-        var t_studentsEnrolled = _context.education_records.CountAsync(e => e.record_date.HasValue && e.record_date >= yearStart && e.record_date <= yearEnd && e.enrollment_status == "Enrolled");
-        var t_studentsComplete = _context.education_records.CountAsync(e => e.record_date.HasValue && e.record_date >= yearStart && e.record_date <= yearEnd && e.completion_status == "Completed");
-        var t_counselingSess   = _context.process_recordings.CountAsync(p => p.session_date.HasValue && p.session_date >= yearStart && p.session_date <= yearEnd);
-        var t_sessionMinutes   = _context.process_recordings.Where(p => p.session_date.HasValue && p.session_date >= yearStart && p.session_date <= yearEnd).SumAsync(p => (int)(p.session_duration_minutes ?? 0));
-        var t_progressNoted    = _context.process_recordings.CountAsync(p => p.session_date.HasValue && p.session_date >= yearStart && p.session_date <= yearEnd && p.progress_noted == true);
-        var t_concernsFlagged  = _context.process_recordings.CountAsync(p => p.session_date.HasValue && p.session_date >= yearStart && p.session_date <= yearEnd && p.concerns_flagged == true);
-        var t_homeVisits       = _context.home_visitations.CountAsync(v => v.visit_date.HasValue && v.visit_date >= yearStart && v.visit_date <= yearEnd);
-        var t_homeVisitSafety  = _context.home_visitations.CountAsync(v => v.visit_date.HasValue && v.visit_date >= yearStart && v.visit_date <= yearEnd && v.safety_concerns_noted == true);
-        var t_incidents        = _context.incident_reports.CountAsync(i => i.incident_date.HasValue && i.incident_date >= yearStart && i.incident_date <= yearEnd);
-        var t_incidentsRes     = _context.incident_reports.CountAsync(i => i.incident_date.HasValue && i.incident_date >= yearStart && i.incident_date <= yearEnd && i.resolved == true);
-        var t_monetaryTotal    = _context.donations.Where(d => d.donation_date.HasValue && d.donation_date >= yearStart && d.donation_date <= yearEnd && d.donation_type == "Monetary").SumAsync(d => d.amount ?? 0);
-        var t_inKindTotal      = _context.donations.Where(d => d.donation_date.HasValue && d.donation_date >= yearStart && d.donation_date <= yearEnd && d.donation_type == "In-Kind").SumAsync(d => d.estimated_value ?? 0);
-
-        await Task.WhenAll(t_newAdmissions, t_closedCases, t_activeEndOfYear,
-            t_medicalCheckups, t_dentalCheckups, t_psychCheckups, t_totalHealthRecs,
-            t_studentsEnrolled, t_studentsComplete,
-            t_counselingSess, t_sessionMinutes, t_progressNoted, t_concernsFlagged,
-            t_homeVisits, t_homeVisitSafety,
-            t_incidents, t_incidentsRes,
-            t_monetaryTotal, t_inKindTotal);
+        // ── AAR server-side aggregations (sequential — EF Core DbContext is not thread-safe) ──
+        var aarNewAdmissions   = await _context.residents.CountAsync(r => r.date_of_admission.HasValue && r.date_of_admission >= yearStart && r.date_of_admission <= yearEnd);
+        var aarClosedCases     = await _context.residents.CountAsync(r => r.date_closed.HasValue && r.date_closed >= yearStart && r.date_closed <= yearEnd);
+        var aarActiveEndOfYear = await _context.residents.CountAsync(r => r.case_status == "Active");
+        var aarMedicalCheckups = await _context.health_wellbeing_records.CountAsync(h => h.record_date.HasValue && h.record_date >= yearStart && h.record_date <= yearEnd && h.medical_checkup_done == true);
+        var aarDentalCheckups  = await _context.health_wellbeing_records.CountAsync(h => h.record_date.HasValue && h.record_date >= yearStart && h.record_date <= yearEnd && h.dental_checkup_done == true);
+        var aarPsychCheckups   = await _context.health_wellbeing_records.CountAsync(h => h.record_date.HasValue && h.record_date >= yearStart && h.record_date <= yearEnd && h.psychological_checkup_done == true);
+        var aarTotalHealthRecs = await _context.health_wellbeing_records.CountAsync(h => h.record_date.HasValue && h.record_date >= yearStart && h.record_date <= yearEnd);
+        var aarStudentsEnrolled = await _context.education_records.CountAsync(e => e.record_date.HasValue && e.record_date >= yearStart && e.record_date <= yearEnd && e.enrollment_status == "Enrolled");
+        var aarStudentsComplete = await _context.education_records.CountAsync(e => e.record_date.HasValue && e.record_date >= yearStart && e.record_date <= yearEnd && e.completion_status == "Completed");
+        var aarCounselingSess  = await _context.process_recordings.CountAsync(p => p.session_date.HasValue && p.session_date >= yearStart && p.session_date <= yearEnd);
+        var aarSessionMinutes  = await _context.process_recordings.Where(p => p.session_date.HasValue && p.session_date >= yearStart && p.session_date <= yearEnd).SumAsync(p => p.session_duration_minutes ?? 0);
+        var aarProgressNoted   = await _context.process_recordings.CountAsync(p => p.session_date.HasValue && p.session_date >= yearStart && p.session_date <= yearEnd && p.progress_noted == true);
+        var aarConcernsFlagged = await _context.process_recordings.CountAsync(p => p.session_date.HasValue && p.session_date >= yearStart && p.session_date <= yearEnd && p.concerns_flagged == true);
+        var aarHomeVisits      = await _context.home_visitations.CountAsync(v => v.visit_date.HasValue && v.visit_date >= yearStart && v.visit_date <= yearEnd);
+        var aarHomeVisitSafety = await _context.home_visitations.CountAsync(v => v.visit_date.HasValue && v.visit_date >= yearStart && v.visit_date <= yearEnd && v.safety_concerns_noted == true);
+        var aarIncidents       = await _context.incident_reports.CountAsync(i => i.incident_date.HasValue && i.incident_date >= yearStart && i.incident_date <= yearEnd);
+        var aarIncidentsRes    = await _context.incident_reports.CountAsync(i => i.incident_date.HasValue && i.incident_date >= yearStart && i.incident_date <= yearEnd && i.resolved == true);
+        var aarMonetaryTotal   = await _context.donations.Where(d => d.donation_date.HasValue && d.donation_date >= yearStart && d.donation_date <= yearEnd && d.donation_type == "Monetary").SumAsync(d => d.amount ?? 0);
+        var aarInKindTotal     = await _context.donations.Where(d => d.donation_date.HasValue && d.donation_date >= yearStart && d.donation_date <= yearEnd && d.donation_type == "In-Kind").SumAsync(d => d.estimated_value ?? 0);
 
         // ── Donation trend (24 months rolling) ──────────────────────────────
         var donationTrend = donationsRaw
@@ -323,26 +315,26 @@ public class ReportsService
         var aar = new ReportsAarDto
         {
             total_residents_served           = totalResidentsServed,
-            new_admissions_in_year           = t_newAdmissions.Result,
-            closed_cases_in_year             = t_closedCases.Result,
-            active_residents_end_of_year     = t_activeEndOfYear.Result,
-            medical_checkups_done            = t_medicalCheckups.Result,
-            dental_checkups_done             = t_dentalCheckups.Result,
-            psychological_checkups_done      = t_psychCheckups.Result,
-            total_health_records             = t_totalHealthRecs.Result,
-            students_enrolled                = t_studentsEnrolled.Result,
-            students_completed               = t_studentsComplete.Result,
+            new_admissions_in_year           = aarNewAdmissions,
+            closed_cases_in_year             = aarClosedCases,
+            active_residents_end_of_year     = aarActiveEndOfYear,
+            medical_checkups_done            = aarMedicalCheckups,
+            dental_checkups_done             = aarDentalCheckups,
+            psychological_checkups_done      = aarPsychCheckups,
+            total_health_records             = aarTotalHealthRecs,
+            students_enrolled                = aarStudentsEnrolled,
+            students_completed               = aarStudentsComplete,
             avg_attendance_rate              = avgAttendanceRate,
-            counseling_sessions_total        = t_counselingSess.Result,
-            total_session_minutes            = t_sessionMinutes.Result,
-            sessions_with_progress_noted     = t_progressNoted.Result,
-            sessions_with_concerns_flagged   = t_concernsFlagged.Result,
-            home_visitations_total           = t_homeVisits.Result,
-            home_visitations_with_safety_concerns = t_homeVisitSafety.Result,
-            incidents_total                  = t_incidents.Result,
-            incidents_resolved               = t_incidentsRes.Result,
-            total_monetary_received          = t_monetaryTotal.Result,
-            total_in_kind_estimated          = t_inKindTotal.Result,
+            counseling_sessions_total        = aarCounselingSess,
+            total_session_minutes            = aarSessionMinutes,
+            sessions_with_progress_noted     = aarProgressNoted,
+            sessions_with_concerns_flagged   = aarConcernsFlagged,
+            home_visitations_total           = aarHomeVisits,
+            home_visitations_with_safety_concerns = aarHomeVisitSafety,
+            incidents_total                  = aarIncidents,
+            incidents_resolved               = aarIncidentsRes,
+            total_monetary_received          = aarMonetaryTotal,
+            total_in_kind_estimated          = aarInKindTotal,
         };
 
         return new ReportsOverviewDto
