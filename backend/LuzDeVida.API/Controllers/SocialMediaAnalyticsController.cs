@@ -1,10 +1,12 @@
 using LuzDeVida.API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LuzDeVida.API.Controllers;
 
 [ApiController]
 [Route("api/social-media-analytics")]
+[Authorize(Roles = "Admin")]
 public class SocialMediaAnalyticsController : ControllerBase
 {
     private readonly SocialMediaAnalyticsService _service;
