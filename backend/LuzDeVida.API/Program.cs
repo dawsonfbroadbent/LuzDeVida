@@ -94,10 +94,7 @@ builder.Services.AddScoped<PublicImpactService>();
 builder.Services.AddScoped<ReportsService>();
 builder.Services.AddScoped<SocialMediaAnalyticsService>();
 
-// ONNX ML models -- loaded once, shared across requests
-var onnxModelsDir = Path.Combine(AppContext.BaseDirectory, "OnnxModels");
-builder.Services.AddSingleton(sp =>
-    new OnnxModelHolder(onnxModelsDir, sp.GetRequiredService<ILogger<OnnxModelHolder>>()));
+// ML predictions — pure C# tree models, no ONNX runtime needed
 builder.Services.AddScoped<MlPredictionService>();
 
 var app = builder.Build();

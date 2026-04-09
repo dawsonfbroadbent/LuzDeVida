@@ -97,8 +97,8 @@ export default function PrivacyPolicy() {
             <h2>Cookies</h2>
             <p>
               The Site uses only cookies that are strictly necessary for it to function
-              (for example, session and authentication tokens stored in your browser's
-              local storage). We do not use advertising, tracking, or profiling cookies.
+              (for example, session and authentication cookies used to maintain secure login sessions
+              ). We do not use advertising, tracking, or profiling cookies.
             </p>
             <p>
               You can clear these tokens at any time through your browser settings; doing
