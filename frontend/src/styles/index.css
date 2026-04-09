@@ -525,6 +525,21 @@ button { cursor: pointer; font-family: var(--font-body); }
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
+@media (max-width: 768px) {
+  .footer__grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding-bottom: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer__grid {
+    gap: 28px;
+    padding-bottom: 28px;
+  }
+}
+
 .footer__brand-logo {
   display: flex;
   align-items: center;
@@ -586,6 +601,25 @@ button { cursor: pointer; font-family: var(--font-body); }
 .footer__bottom p {
   color: rgba(255,255,255,0.3);
   font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .footer__bottom {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 20px 0;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer__col h4 {
+    margin-bottom: 14px;
+  }
+  .footer__col ul {
+    gap: 10px;
+  }
 }
 .footer__legal-link {
   color: rgba(255,255,255,0.45);

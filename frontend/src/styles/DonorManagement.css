@@ -879,5 +879,14 @@
   .dm-filter-row { grid-template-columns: 1fr; }
   .donor-management { padding: calc(var(--nav-height) + 16px) 16px 48px; }
   .dm-table { font-size: 0.8rem; }
-  .dm-table th, .dm-table td { padding: 10px 12px; }
+  .dm-table th, .dm-table td { padding: 0.875rem 1rem; }
+  .dm-table button { min-height: 44px; min-width: 44px; padding: 0.625rem 1rem; }
+}
+
+@media (max-width: 480px) {
+  .donor-management { padding: calc(var(--nav-height) + 12px) 12px 36px; }
+  .dm-table { font-size: 0.75rem; }
+  .dm-table th, .dm-table td { padding: 0.75rem 0.875rem; }
+  .dm-header { flex-direction: column; gap: 1rem; }
+  .dm-stats-grid { grid-template-columns: 1fr; }
 }

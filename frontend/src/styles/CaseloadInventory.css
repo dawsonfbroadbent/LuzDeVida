@@ -888,8 +888,10 @@
 
   .caseload-table th,
   .caseload-table td {
-    padding: 0.75rem;
+    padding: 1rem 0.875rem;
   }
+
+  .caseload-table button { min-height: 44px; padding: 0.625rem 0.875rem; }
 
   .modal-dialog {
     width: 95%;
@@ -913,6 +915,14 @@
   .filters-section {
     padding: 1rem;
   }
+
+  .caseload-table th,
+  .caseload-table td {
+    padding: 0.75rem 0.625rem;
+    font-size: 0.75rem;
+  }
+
+  .caseload-table button { min-height: 44px; padding: 0.5rem 0.75rem; }
 
   .btn-primary,
   .btn-add,
