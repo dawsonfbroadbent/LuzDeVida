@@ -8,6 +8,8 @@ interface AdminDashboardProps {
 
 interface AdminDashboardMetrics {
   active_residents_total: number;
+  reintegrated_in_two_years: number;
+  total_residents_all_time: number;
   residents_by_safehouse: Array<{
     safehouse_id: number;
     safehouse_name: string;
@@ -167,39 +169,41 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ embedded = false }) => 
         <p className="subtitle">Command Center for Daily Operations</p>
       </div>
 
-      {/* Girls in Care OKR */}
+      {/* Girls Reintegrated in 2 Years OKR */}
       <div
         className="okr-card"
         onMouseEnter={() => setShowGirlsInCareTooltip(true)}
         onMouseLeave={() => setShowGirlsInCareTooltip(false)}
       >
         <div className="okr-content">
-          <p className="okr-label">GIRLS IN CARE</p>
-          <p className="okr-value">{metrics.active_residents_total}</p>
+          <p className="okr-label">REINTEGRATED IN 2 YEARS</p>
+          <p className="okr-value">{metrics.reintegrated_in_two_years} of {metrics.total_residents_all_time}</p>
           <div className="okr-progress-bar">
             <div
               className="okr-progress-fill"
               style={{
-                width: `${Math.min((metrics.active_residents_total / 50) * 100, 100)}%`,
+                width: `${metrics.total_residents_all_time > 0 ? (metrics.reintegrated_in_two_years / metrics.total_residents_all_time) * 100 : 0}%`,
                 backgroundColor: '#4caf50',
               }}
             ></div>
           </div>
-          <p className="okr-subtitle">Active residents across {metrics.safehouses_total} safehouses</p>
+          <p className="okr-subtitle">Success rate of reintegration efforts</p>
         </div>
 
         {showGirlsInCareTooltip && (
           <div className="okr-tooltip">
-            <p className="tooltip-title">Distribution by Safehouse</p>
+            <p className="tooltip-title">Reintegration Success</p>
             <div className="tooltip-breakdown">
-              {metrics.residents_by_safehouse.map((shell) => (
-                <div key={shell.safehouse_id} className="tooltip-item">
-                  <span className="tooltip-label">{shell.safehouse_name}</span>
-                  <span className="tooltip-value">{shell.active_resident_count}</span>
-                </div>
-              ))}
+              <div className="tooltip-item">
+                <span className="tooltip-label">Reintegrated in ≤ 2 years</span>
+                <span className="tooltip-value">{metrics.reintegrated_in_two_years}</span>
+              </div>
+              <div className="tooltip-item">
+                <span className="tooltip-label">Reintegrated cases</span>
+                <span className="tooltip-value">{metrics.total_residents_all_time}</span>
+              </div>
             </div>
-            <p className="tooltip-note">Total active residents currently in our care</p>
+            <p className="tooltip-note">Measures the effectiveness of our reintegration program in completing cases within 2 years</p>
           </div>
         )}
       </div>

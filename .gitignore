@@ -24,3 +24,7 @@ TestResults/
 *.coveragexml
 
 appsettings.Development.json
+
+# Environment files (dev configs, keep production)
+.env
+!.env.production
