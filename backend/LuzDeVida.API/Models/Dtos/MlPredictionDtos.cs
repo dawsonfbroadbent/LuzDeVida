@@ -39,7 +39,10 @@ public class ResidentRiskPredictionDto
     public string? internal_code { get; set; }
     public string? safehouse_name { get; set; }
     public double risk_score { get; set; }
-    public string risk_tier { get; set; } = "";
+    public int rank_global { get; set; }
+    public int rank_in_safehouse { get; set; }
+    public int total_residents { get; set; }
+    public int total_in_safehouse { get; set; }
 }
 
 public class ResidentRiskResultDto
