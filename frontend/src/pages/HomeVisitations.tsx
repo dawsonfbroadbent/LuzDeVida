@@ -14,10 +14,15 @@ import {
   deleteInterventionPlan,
   type intervention_plan,
 } from '../api/InterventionPlansAPI'
+import '../styles/HomeVisitations.css'
 
 type ActiveView = 'homeVisits' | 'caseConferences'
 
-export default function HomeVisitations() {
+interface HomeVisitationsProps {
+  embedded?: boolean
+}
+
+export default function HomeVisitations({ embedded = false }: HomeVisitationsProps) {
   const [residents, setResidents] = useState<resident[]>([])
   const [selectedResidentId, setSelectedResidentId] = useState<number | null>(null)
   const [visits, setVisits] = useState<home_visitation[]>([])
@@ -377,60 +382,18 @@ const pastPlans = [...plans]
     (b.case_conference_date ?? '').localeCompare(a.case_conference_date ?? '')
   )
 
-  const blueButtonStyle = {
-    backgroundColor: '#63c7d8',
-    color: 'white',
-    border: 'none',
-    padding: '10px 16px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontWeight: 'bold' as const,
-  }
-
-  const editButtonStyle = {
-    backgroundColor: 'white',
-    color: '#1f3b4d',
-    border: '1px solid #cfd8df',
-    padding: '8px 14px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontWeight: 'bold' as const,
-  }
-
-  const deleteButtonStyle = {
-    backgroundColor: '#e74c3c',
-    color: 'white',
-    border: 'none',
-    padding: '8px 14px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontWeight: 'bold' as const,
-  }
-
-  const alertStyle = {
-    padding: '12px 16px',
-    borderRadius: '8px',
-    marginBottom: '20px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: '12px',
-  }
+  const pageClassName = `home-visitations${embedded ? ' home-visitations--embedded' : ''}`
 
   if (loading) {
     return (
-      <div style={{ padding: '40px', marginTop: '60px' }}>
-        <h1 style={{ marginTop: '0', marginBottom: '20px' }}>
-          Home Visitations & Case Conferences
-        </h1>
-        <div
-          style={{
-            padding: '20px',
-            borderRadius: '12px',
-            backgroundColor: '#f9fbfc',
-            border: '1px solid #d0d7de',
-          }}
-        >
+      <div className={pageClassName}>
+        <div className="home-visitations__header">
+          <h1>Home Visitations & Case Conferences</h1>
+          <p className="subtitle">
+            Document family visits, follow-up needs, and case conference history.
+          </p>
+        </div>
+        <div className="home-visitations__panel home-visitations__status-card">
           Loading home visitations and case conferences...
         </div>
       </div>
@@ -438,81 +401,49 @@ const pastPlans = [...plans]
   }
 
   return (
-    <div style={{ padding: '40px', marginTop: '60px' }}>
-      <h1 style={{ marginTop: '0', marginBottom: '20px' }}>
-        Home Visitations & Case Conferences
-      </h1>
+    <div className={pageClassName}>
+      <div className="home-visitations__header">
+        <h1>Home Visitations & Case Conferences</h1>
+        <p className="subtitle">
+          Manage visit records, monitor family engagement, and review conference planning for each resident.
+        </p>
+      </div>
 
       {error && (
-        <div
-          style={{
-            ...alertStyle,
-            backgroundColor: '#fdecea',
-            color: '#b42318',
-            border: '1px solid #f5c2c7',
-          }}
-        >
+        <div className="home-visitations__alert home-visitations__alert--error">
           <span>{error}</span>
-          <button
-            onClick={() => setError(null)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontSize: '18px',
-              cursor: 'pointer',
-              color: '#b42318',
-            }}
-          >
+          <button onClick={() => setError(null)} className="home-visitations__alert-close">
             ×
           </button>
         </div>
       )}
 
       {successMessage && (
-        <div
-          style={{
-            ...alertStyle,
-            backgroundColor: '#ecfdf3',
-            color: '#067647',
-            border: '1px solid #abefc6',
-          }}
-        >
+        <div className="home-visitations__alert home-visitations__alert--success">
           <span>{successMessage}</span>
-          <button
-            onClick={() => setSuccessMessage(null)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontSize: '18px',
-              cursor: 'pointer',
-              color: '#067647',
-            }}
-          >
+          <button onClick={() => setSuccessMessage(null)} className="home-visitations__alert-close">
             ×
           </button>
         </div>
       )}
 
       {residents.length === 0 ? (
-        <div
-          style={{
-            padding: '20px',
-            borderRadius: '12px',
-            backgroundColor: '#f9fbfc',
-            border: '1px solid #d0d7de',
-          }}
-        >
+        <div className="home-visitations__panel home-visitations__status-card">
           <p style={{ marginTop: 0 }}>No residents found.</p>
           <p style={{ marginBottom: '12px' }}>
             Add residents first before managing home visitations or case conferences.
           </p>
-          <button type="button" onClick={loadResidents} style={blueButtonStyle}>
+          <button
+            type="button"
+            onClick={loadResidents}
+            className="home-visitations__button home-visitations__button--primary"
+          >
             Retry
           </button>
         </div>
       ) : (
         <>
-          <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+          <div className="home-visitations__panel home-visitations__resident-picker">
             <label>Select Resident: </label>
             <select
               value={selectedResidentId ?? ''}
@@ -530,71 +461,40 @@ const pastPlans = [...plans]
             </select>
           </div>
 
-          <div
-            style={{
-              display: 'inline-flex',
-              backgroundColor: '#e9eef1',
-              borderRadius: '12px',
-              padding: '6px',
-              marginBottom: '24px',
-              gap: '6px',
-            }}
-          >
+          <div className="home-visitations__toggle">
             <button
               onClick={() => setActiveView('homeVisits')}
-              style={{
-                padding: '10px 18px',
-                border: 'none',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                backgroundColor:
-                  activeView === 'homeVisits' ? '#63c7d8' : 'transparent',
-                color: activeView === 'homeVisits' ? '#ffffff' : '#1f3b4d',
-                fontWeight: 600,
-              }}
+              className={`home-visitations__toggle-btn${
+                activeView === 'homeVisits' ? ' is-active' : ''
+              }`}
             >
               Home Visits
             </button>
 
             <button
               onClick={() => setActiveView('caseConferences')}
-              style={{
-                padding: '10px 18px',
-                border: 'none',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                backgroundColor:
-                  activeView === 'caseConferences' ? '#63c7d8' : 'transparent',
-                color: activeView === 'caseConferences' ? '#ffffff' : '#1f3b4d',
-                fontWeight: 600,
-              }}
+              className={`home-visitations__toggle-btn${
+                activeView === 'caseConferences' ? ' is-active' : ''
+              }`}
             >
               Case Conference History
             </button>
           </div>
 
           {contentLoading && (
-            <div
-              style={{
-                padding: '16px',
-                marginBottom: '20px',
-                borderRadius: '12px',
-                backgroundColor: '#f9fbfc',
-                border: '1px solid #d0d7de',
-              }}
-            >
+            <div className="home-visitations__panel home-visitations__status-card">
               Loading resident records...
             </div>
           )}
 
           {activeView === 'homeVisits' ? (
             <>
-              <div style={{ marginBottom: '20px' }}>
+              <div className="home-visitations__actions">
                 {!showVisitForm && (
                   <button
                     type="button"
                     onClick={handleAddVisitClick}
-                    style={blueButtonStyle}
+                    className="home-visitations__button home-visitations__button--primary"
                     disabled={contentLoading}
                   >
                     Add Home Visit
@@ -605,13 +505,7 @@ const pastPlans = [...plans]
               {showVisitForm && (
                 <form
                   onSubmit={handleVisitSubmit}
-                  style={{
-                    border: '1px solid #d0d7de',
-                    borderRadius: '12px',
-                    padding: '20px',
-                    marginBottom: '24px',
-                    backgroundColor: '#f9fbfc',
-                  }}
+                  className="home-visitations__form"
                 >
                   <h2 style={{ marginTop: 0 }}>
                     {editingVisitId !== null ? 'Edit Home Visit' : 'Add Home Visit'}
@@ -836,7 +730,7 @@ const pastPlans = [...plans]
                   <div style={{ marginTop: '16px', display: 'flex', gap: '12px' }}>
                     <button
                       type="submit"
-                      style={blueButtonStyle}
+                      className="home-visitations__button home-visitations__button--primary"
                       disabled={submittingVisit}
                     >
                       {submittingVisit
@@ -848,7 +742,7 @@ const pastPlans = [...plans]
                     <button
                       type="button"
                       onClick={resetVisitForm}
-                      style={blueButtonStyle}
+                      className="home-visitations__button home-visitations__button--secondary"
                       disabled={submittingVisit}
                     >
                       Cancel
@@ -857,11 +751,8 @@ const pastPlans = [...plans]
                 </form>
               )}
 
-              <table
-                border={1}
-                cellPadding={10}
-                style={{ width: '100%', textAlign: 'center' }}
-              >
+              <div className="home-visitations__table-card">
+              <table className="home-visitations__table">
                 <thead>
                   <tr>
                     <th>Date</th>
@@ -903,14 +794,14 @@ const pastPlans = [...plans]
                           >
                             <button
                               onClick={() => handleEditVisit(v)}
-                              style={editButtonStyle}
+                              className="home-visitations__button home-visitations__button--secondary"
                               disabled={deletingVisitId === v.visitation_id}
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => handleDeleteVisit(v.visitation_id)}
-                              style={deleteButtonStyle}
+                              className="home-visitations__button home-visitations__button--danger"
                               disabled={deletingVisitId === v.visitation_id}
                             >
                               {deletingVisitId === v.visitation_id
@@ -924,15 +815,16 @@ const pastPlans = [...plans]
                   )}
                 </tbody>
               </table>
+              </div>
             </>
           ) : (
             <>
-              <div style={{ marginBottom: '20px' }}>
+              <div className="home-visitations__actions">
                 {!showPlanForm && (
                   <button
                     type="button"
                     onClick={handleAddPlanClick}
-                    style={blueButtonStyle}
+                    className="home-visitations__button home-visitations__button--primary"
                     disabled={contentLoading}
                   >
                     Add Case Conference Record
@@ -943,13 +835,7 @@ const pastPlans = [...plans]
               {showPlanForm && (
                 <form
                   onSubmit={handlePlanSubmit}
-                  style={{
-                    border: '1px solid #d0d7de',
-                    borderRadius: '12px',
-                    padding: '20px',
-                    marginBottom: '24px',
-                    backgroundColor: '#f9fbfc',
-                  }}
+                  className="home-visitations__form"
                 >
                   <h2 style={{ marginTop: 0 }}>
                     {editingPlanId !== null
@@ -1090,7 +976,7 @@ const pastPlans = [...plans]
                   <div style={{ marginTop: '16px', display: 'flex', gap: '12px' }}>
                     <button
                       type="submit"
-                      style={blueButtonStyle}
+                      className="home-visitations__button home-visitations__button--primary"
                       disabled={submittingPlan}
                     >
                       {submittingPlan
@@ -1102,7 +988,7 @@ const pastPlans = [...plans]
                     <button
                       type="button"
                       onClick={resetPlanForm}
-                      style={blueButtonStyle}
+                      className="home-visitations__button home-visitations__button--secondary"
                       disabled={submittingPlan}
                     >
                       Cancel
@@ -1112,15 +998,8 @@ const pastPlans = [...plans]
               )}
 
               <h2 style={{ marginTop: 0 }}>Upcoming Case Conferences</h2>
-              <table
-                border={1}
-                cellPadding={10}
-                style={{
-                  width: '100%',
-                  textAlign: 'center',
-                  marginBottom: '28px',
-                }}
-              >
+              <div className="home-visitations__table-card home-visitations__table-card--spaced">
+              <table className="home-visitations__table">
                 <thead>
                   <tr>
                     <th>Conference Date</th>
@@ -1162,14 +1041,14 @@ const pastPlans = [...plans]
                           >
                             <button
                               onClick={() => handleEditPlan(p)}
-                              style={editButtonStyle}
+                              className="home-visitations__button home-visitations__button--secondary"
                               disabled={deletingPlanId === p.plan_id}
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => handleDeletePlan(p.plan_id)}
-                              style={deleteButtonStyle}
+                              className="home-visitations__button home-visitations__button--danger"
                               disabled={deletingPlanId === p.plan_id}
                             >
                               {deletingPlanId === p.plan_id ? 'Deleting...' : 'Delete'}
@@ -1181,13 +1060,11 @@ const pastPlans = [...plans]
                   )}
                 </tbody>
               </table>
+              </div>
 
               <h2>Past Case Conferences</h2>
-              <table
-                border={1}
-                cellPadding={10}
-                style={{ width: '100%', textAlign: 'center' }}
-              >
+              <div className="home-visitations__table-card">
+              <table className="home-visitations__table">
                 <thead>
                   <tr>
                     <th>Conference Date</th>
@@ -1229,14 +1106,14 @@ const pastPlans = [...plans]
                           >
                             <button
                               onClick={() => handleEditPlan(p)}
-                              style={editButtonStyle}
+                              className="home-visitations__button home-visitations__button--secondary"
                               disabled={deletingPlanId === p.plan_id}
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => handleDeletePlan(p.plan_id)}
-                              style={deleteButtonStyle}
+                              className="home-visitations__button home-visitations__button--danger"
                               disabled={deletingPlanId === p.plan_id}
                             >
                               {deletingPlanId === p.plan_id ? 'Deleting...' : 'Delete'}
@@ -1248,6 +1125,7 @@ const pastPlans = [...plans]
                   )}
                 </tbody>
               </table>
+              </div>
             </>
           )}
         </>

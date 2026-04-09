@@ -1,16 +1,26 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { ADMIN_TABS, getAdminTabHref, normalizeAdminTab } from '../adminTabs'
 
 export default function Nav() {
   const [scrolled, setScrolled]       = useState(false)
   const [menuOpen, setMenuOpen]       = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false)
   const location                      = useLocation()
   const navigate                      = useNavigate()
   const isHome                        = location.pathname === '/'
   const { isAuthenticated, user, logout } = useAuth()
   const userMenuRef                   = useRef<HTMLDivElement>(null)
+  const adminMenuRef                  = useRef<HTMLLIElement>(null)
+  const isAdminRoute                  =
+    location.pathname === '/admin' ||
+    location.pathname.startsWith('/admin/') ||
+    location.pathname === '/homevisitations'
+  const activeAdminTab                = normalizeAdminTab(
+    new URLSearchParams(location.search).get('tab')
+  )
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60)
@@ -22,26 +32,30 @@ export default function Nav() {
   useEffect(() => {
     setMenuOpen(false)
     setUserMenuOpen(false)
+    setAdminMenuOpen(false)
     window.scrollTo(0, 0)
-  }, [location.pathname])
+  }, [location.pathname, location.search])
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [menuOpen])
 
-  // Close user dropdown on outside click
+  // Close header dropdowns on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setUserMenuOpen(false)
       }
+      if (adminMenuRef.current && !adminMenuRef.current.contains(e.target as Node)) {
+        setAdminMenuOpen(false)
+      }
     }
-    if (userMenuOpen) {
+    if (userMenuOpen || adminMenuOpen) {
       document.addEventListener('mousedown', handleClick)
     }
     return () => document.removeEventListener('mousedown', handleClick)
-  }, [userMenuOpen])
+  }, [adminMenuOpen, userMenuOpen])
 
   function handleLogout() {
     logout()
@@ -91,35 +105,42 @@ export default function Nav() {
                 Impact
               </Link>
             </li>
-            <li>
-              <Link to="/privacy" className={location.pathname === '/privacy' ? 'active' : ''}>
-                Privacy
-              </Link>
-            </li>
-            <li>
-              <Link to="/admin/dashboard" className={location.pathname === '/admin/dashboard' ? 'active' : ''}>
-                Admin Dashboard
-              </Link>
-            </li>
-            <li>
-              <Link to="/homevisitations" className={location.pathname === '/homevisitations' ? 'active' : ''}>
-                Home Visitations
-              </Link>
-            </li>
-            <li>
-              <Link to="/admin/caseload-inventory" className={location.pathname === '/admin/caseload-inventory' ? 'active' : ''}>
-                Caseload Inventory
-              </Link>
-            </li>
-            <li>
-              <Link to="/admin/process-recording" className={location.pathname === '/admin/process-recording' ? 'active' : ''}>
-                Process Recording
-              </Link>
-            </li>
-            <li>
-              <Link to="/admin/donor-management" className={location.pathname === '/admin/donor-management' ? 'active' : ''}>
-                Donor Management
-              </Link>
+            <li className="nav__item nav__item--dropdown" ref={adminMenuRef}>
+              <button
+                type="button"
+                className={`nav__menu-trigger${isAdminRoute ? ' active' : ''}`}
+                onClick={() => setAdminMenuOpen((open) => !open)}
+                aria-expanded={adminMenuOpen}
+                aria-haspopup="menu"
+              >
+                <span>Admin</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                  <path
+                    d="M2 4l4 4 4-4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              {adminMenuOpen && (
+                <div className="nav__admin-dropdown" role="menu" aria-label="Admin sections">
+                  {ADMIN_TABS.map((tab) => (
+                    <Link
+                      key={tab.id}
+                      to={getAdminTabHref(tab.id)}
+                      className={`nav__admin-dropdown-item${
+                        isAdminRoute && tab.id === activeAdminTab ? ' active' : ''
+                      }`}
+                      onClick={() => setAdminMenuOpen(false)}
+                    >
+                      <span className="nav__admin-dropdown-label">{tab.label}</span>
+                      <span className="nav__admin-dropdown-copy">{tab.description}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </li>
             <li>
               <Link to="/donate" className="btn btn-primary nav__cta">
@@ -186,12 +207,14 @@ export default function Nav() {
         <Link to="/">Home</Link>
         <Link to="/about">About</Link>
         <Link to="/impact">Impact</Link>
-        <Link to="/privacy">Privacy</Link>
-        <Link to="/admin/dashboard">Admin Dashboard</Link>
-        <Link to="/homevisitations">Home Visitations</Link>
-        <Link to="/admin/caseload-inventory">Caseload Inventory</Link>
-        <Link to="/admin/process-recording">Process Recording</Link>
-        <Link to="/admin/donor-management">Donor Management</Link>
+        <div className="nav__mobile-group">
+          <span className="nav__mobile-group-label">Admin</span>
+          {ADMIN_TABS.map((tab) => (
+            <Link key={tab.id} to={getAdminTabHref(tab.id)}>
+              {tab.label}
+            </Link>
+          ))}
+        </div>
         <Link to="/donate" className="btn btn-primary">
           Donate Now
         </Link>

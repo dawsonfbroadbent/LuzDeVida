@@ -101,7 +101,11 @@ function SortIcon({ col, filters }: { col: string; filters: Filters }) {
   return <span className="dm-sort-icon dm-sort-icon--on">{filters.sortDir === 'asc' ? '↑' : '↓'}</span>
 }
 
-export default function DonorManagement() {
+interface DonorManagementProps {
+  embedded?: boolean
+}
+
+export default function DonorManagement({ embedded = false }: DonorManagementProps) {
   const { token } = useAuth()
 
   // ── Consolidated filter/sort/pagination state ─────────────
@@ -338,14 +342,14 @@ export default function DonorManagement() {
 
   // ── Render ────────────────────────────────────────────────
   return (
-    <div className="donor-management">
+    <div className={`donor-management${embedded ? ' donor-management--embedded' : ''}`}>
       {/* Header */}
       <div className="dm-header">
         <div>
           <h1>Donor Management</h1>
           <p className="dm-subtitle">Supporter profiles, contributions, and allocation tracking</p>
         </div>
-        <button className="btn btn-primary" onClick={openCreateModal}>+ Add Supporter</button>
+        <button className="btn btn-primary" onClick={openCreateModal}>Add Supporter</button>
       </div>
 
       {/* Alerts */}
@@ -631,7 +635,7 @@ export default function DonorManagement() {
                             className="dm-expand-btn"
                             onClick={() => setExpandedDonation(expandedDonation === d.donationId ? null : d.donationId)}
                           >
-                            {expandedDonation === d.donationId ? '▲ Hide' : '▼ Details'}
+                            {expandedDonation === d.donationId ? 'Hide details' : 'View details'}
                           </button>
                         )}
                       </div>

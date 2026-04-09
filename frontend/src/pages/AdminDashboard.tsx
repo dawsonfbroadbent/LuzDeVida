@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/AdminDashboard.css';
 
+interface AdminDashboardProps {
+  embedded?: boolean;
+}
+
 interface AdminDashboardMetrics {
   active_residents_total: number;
   residents_by_safehouse: Array<{
@@ -89,7 +93,7 @@ const fetchAdminDashboardMetrics = async (): Promise<AdminDashboardMetrics> => {
   }
 };
 
-const AdminDashboard: React.FC = () => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ embedded = false }) => {
   const [metrics, setMetrics] = useState<AdminDashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -99,6 +103,7 @@ const AdminDashboard: React.FC = () => {
   const [showCaseManagementGuide, setShowCaseManagementGuide] = useState(false);
   const [showInterventionGuide, setShowInterventionGuide] = useState(false);
   const [showEngagementGuide, setShowEngagementGuide] = useState(false);
+  const pageClassName = `admin-dashboard${embedded ? ' admin-dashboard--embedded' : ''}`;
 
   const toggleMetricExpanded = (metricId: string) => {
     setExpandedMetrics((prev) => {
@@ -146,12 +151,12 @@ const AdminDashboard: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="admin-dashboard loading">Loading dashboard...</div>;
+    return <div className={`${pageClassName} loading`}>Loading dashboard...</div>;
   }
 
   if (error) {
     return (
-      <div className="admin-dashboard error">
+      <div className={`${pageClassName} error`}>
         <div className="error-message">
           <p>{error}</p>
           <button onClick={loadDashboardMetrics} className="retry-btn">Retry</button>
@@ -161,11 +166,11 @@ const AdminDashboard: React.FC = () => {
   }
 
   if (!metrics) {
-    return <div className="admin-dashboard">No data available</div>;
+    return <div className={pageClassName}>No data available</div>;
   }
 
   return (
-    <div className="admin-dashboard">
+    <div className={pageClassName}>
       <div className="dashboard-header">
         <h1>Admin Dashboard</h1>
         <p className="subtitle">Command Center for Daily Operations</p>
@@ -212,7 +217,7 @@ const AdminDashboard: React.FC = () => {
       {metrics.recommendations.length > 0 && (
         <div className="dashboard-section" style={{ marginBottom: '2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-            <h2 style={{ margin: 0 }}>📋 Recommendations & Alerts</h2>
+            <h2 style={{ margin: 0 }}>Recommendations & Alerts</h2>
             <button
               onClick={() => setShowThresholdGuide(!showThresholdGuide)}
               style={{
@@ -258,10 +263,19 @@ const AdminDashboard: React.FC = () => {
                   marginBottom: '0.75rem'
                 }}>
                   <span style={{ 
-                    fontSize: '1.2rem',
-                    color: rec.severity === 'critical' ? '#d32f2f' : '#ff9800'
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0.2rem 0.55rem',
+                    borderRadius: '999px',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: rec.severity === 'critical' ? '#8f1d1d' : '#8a4b10',
+                    background: rec.severity === 'critical' ? '#ffd9d9' : '#ffe7c2'
                   }}>
-                    {rec.severity === 'critical' ? '🔴' : '🟡'}
+                    {rec.severity === 'critical' ? 'Critical' : 'Monitor'}
                   </span>
                   <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--text-dark)' }}>
                     {rec.title}
@@ -287,52 +301,52 @@ const AdminDashboard: React.FC = () => {
               borderRadius: '4px',
               border: '1px solid var(--cream-darker)',
             }}>
-              <h3 style={{ marginTop: 0, marginBottom: '1.5rem', color: 'var(--text-dark)' }}>📊 Threshold Guide</h3>
+              <h3 style={{ marginTop: 0, marginBottom: '1.5rem', color: 'var(--text-dark)' }}>Threshold Guide</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
                 <div>
-                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>🔴 Family Reunification Rate</p>
+                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>Family Reunification Rate</p>
                   <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem' }}>Threshold: Less than 40%</p>
                   <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-light)' }}>Alerts if family reintegration rate is below target - prioritize family engagement</p>
                 </div>
 
                 <div>
-                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>🔴 In-Kind Donations Trend</p>
+                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>In-Kind Donations Trend</p>
                   <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem' }}>Threshold: Down 20% or more</p>
                   <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-light)' }}>Alerts when in-kind donations decline significantly month-over-month</p>
                 </div>
 
                 <div>
-                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>🟡 Case Closure Rate</p>
+                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>Case Closure Rate</p>
                   <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem' }}>Threshold: Less than 15%</p>
                   <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-light)' }}>Alerts if cases aren't closing at expected rate - review intervention effectiveness</p>
                 </div>
 
                 <div>
-                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>🟡 Avg Length of Stay</p>
+                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>Average Length of Stay</p>
                   <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem' }}>Threshold: More than 730 days (2 years)</p>
                   <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-light)' }}>Alerts when residents stay significantly longer than expected</p>
                 </div>
 
                 <div>
-                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>🟡 Intervention Completion Rate</p>
+                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>Intervention Completion Rate</p>
                   <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem' }}>Threshold: Less than 25%</p>
                   <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-light)' }}>Alerts if intervention plans aren't being completed - investigate bottlenecks</p>
                 </div>
 
                 <div>
-                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>🟡 Partner Engagement</p>
+                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>Partner Engagement</p>
                   <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem' }}>Threshold: Less than 5 times per month</p>
                   <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-light)' }}>Alerts when partners aren't engaging regularly - reconnect and strengthen relationships</p>
                 </div>
 
                 <div>
-                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>🟡 Donor Retention Rate</p>
+                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>Donor Retention Rate</p>
                   <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem' }}>Threshold: Less than 60%</p>
                   <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-light)' }}>Alerts when repeat donor rate is low - develop retention strategies</p>
                 </div>
 
                 <div>
-                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>🟡 Volunteer Hours</p>
+                  <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', color: 'var(--text-dark)' }}>Volunteer Hours</p>
                   <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem' }}>Threshold: Less than 40 hours per month</p>
                   <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-light)' }}>Alerts when volunteer engagement is low - recruit or re-engage volunteers</p>
                 </div>
@@ -351,7 +365,7 @@ const AdminDashboard: React.FC = () => {
             onClick={() => toggleMetricExpanded('residents')}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-              <div className="metric-icon">👥</div>
+              <div className="metric-icon metric-icon--residents">RS</div>
               <div className="metric-content">
                 <p className="metric-label">Active Residents</p>
                 <p className="metric-value">{metrics.active_residents_total}</p>
@@ -381,7 +395,7 @@ const AdminDashboard: React.FC = () => {
             onClick={() => toggleMetricExpanded('donations')}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-              <div className="metric-icon">💰</div>
+              <div className="metric-icon metric-icon--donations">DN</div>
               <div className="metric-content">
                 <p className="metric-label">Recent Donations (30 days)</p>
                 <p className="metric-value">{formatCurrency(metrics.recent_donations_total)}</p>
@@ -411,7 +425,7 @@ const AdminDashboard: React.FC = () => {
             onClick={() => toggleMetricExpanded('conferences')}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-              <div className="metric-icon">📅</div>
+              <div className="metric-icon metric-icon--conferences">CC</div>
               <div className="metric-content">
                 <p className="metric-label">Upcoming Case Conferences</p>
                 <p className="metric-value">{metrics.upcoming_case_conferences_count}</p>
@@ -499,7 +513,7 @@ const AdminDashboard: React.FC = () => {
                 borderRadius: '4px',
                 border: '1px solid var(--cream-darker)',
               }}>
-                <h4 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-dark)' }}>📊 How These Metrics Are Calculated</h4>
+                <h4 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-dark)' }}>How These Metrics Are Calculated</h4>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                   <div>
                     <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: 'var(--text-dark)' }}>Avg Length of Stay</p>
@@ -598,7 +612,7 @@ const AdminDashboard: React.FC = () => {
                   borderRadius: '4px',
                   border: '1px solid var(--cream-darker)',
                 }}>
-                  <h4 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-dark)' }}>📊 How These Metrics Are Calculated</h4>
+                  <h4 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-dark)' }}>How These Metrics Are Calculated</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                     <div>
                       <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: 'var(--text-dark)' }}>Avg Days to Complete Plan</p>
@@ -690,7 +704,7 @@ const AdminDashboard: React.FC = () => {
                   borderRadius: '4px',
                   border: '1px solid var(--cream-darker)',
                 }}>
-                  <h4 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-dark)' }}>📊 How These Metrics Are Calculated</h4>
+                  <h4 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-dark)' }}>How These Metrics Are Calculated</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                     <div>
                       <p style={{ fontWeight: 600, margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: 'var(--text-dark)' }}>Avg Partner Engagement</p>
@@ -719,7 +733,7 @@ const AdminDashboard: React.FC = () => {
       {/* Refresh Section */}
       <div className="refresh-info">
         <p>Last updated: {formatDate(metrics.timestamp)}</p>
-        <button onClick={loadDashboardMetrics} className="refresh-btn">🔄 Refresh Data</button>
+        <button onClick={loadDashboardMetrics} className="refresh-btn">Refresh Data</button>
       </div>
     </div>
   );

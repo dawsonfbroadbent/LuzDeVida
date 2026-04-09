@@ -27,7 +27,11 @@ interface Alert {
   message: string;
 }
 
-const ProcessRecording: React.FC = () => {
+interface ProcessRecordingProps {
+  embedded?: boolean;
+}
+
+const ProcessRecording: React.FC<ProcessRecordingProps> = ({ embedded = false }) => {
   const [residents, setResidents] = useState<Resident[]>([]);
   const [recordings, setRecordings] = useState<processRecording[]>([]);
   const [selectedResident, setSelectedResident] = useState<number | null>(null);
@@ -240,7 +244,7 @@ const ProcessRecording: React.FC = () => {
   };
 
   return (
-    <div className="process-recordings">
+    <div className={`process-recordings${embedded ? ' process-recordings--embedded' : ''}`}>
       <div className="process-recordings-header">
         <h1>Process Recordings</h1>
         <p className="subtitle">
@@ -286,7 +290,7 @@ const ProcessRecording: React.FC = () => {
             onClick={openCreateModal}
             disabled={loading}
           >
-            + New Process Recording
+            New Process Recording
           </button>
         </div>
       )}
@@ -530,7 +534,7 @@ const ProcessRecording: React.FC = () => {
 
             <div className="recording-form">
               <div className="delete-confirm-box">
-                <p>⚠️ Warning: This action cannot be undone</p>
+                <p>Warning: This action cannot be undone</p>
                 <p>
                   Are you sure you want to delete this process recording from {' '}
                   {getResidentName(selectedResident || 0)}?
