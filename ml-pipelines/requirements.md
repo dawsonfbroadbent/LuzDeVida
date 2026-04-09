@@ -65,3 +65,27 @@ Your pipelines will be evaluated on how well they apply the principles taught in
 •          Deployment as a first-class concern (Ch. 17): A model that only exists in a notebook is not a pipeline. Move it into production.
 
 A team that demonstrates mastery of these principles across multiple pipelines will outscore a team that produces many pipelines with shallow execution. Quality and quantity both matter, but quality comes first.
+
+For each pipeline, submit a Jupyter notebook (.ipynb) in your team’s GitHub repository inside a folder named ml-pipelines/. Name each notebook descriptively (e.g., donor-churn-classifier.ipynb, reintegration-readiness.ipynb). Each notebook should be self-contained and tell the complete story of that pipeline from problem framing through deployment. Specifically, each notebook must include the following sections:
+
+1.        Problem Framing. A clear written explanation (not just code) of the business problem you are solving, who in the organization cares about it, and why it matters. Explicitly state whether your approach is predictive or explanatory and justify that choice using the framework from the textbook.
+
+2.        Data Acquisition, Preparation & Exploration. Load the relevant data, explore it visually and statistically, document what you find (distributions, correlations, missing values, outliers), and prepare it for modeling. Show your feature engineering decisions and explain why you made them. If you join data from multiple tables, explain the logic. Build this as a reproducible pipeline (Ch. 7), not a one-off script.
+
+3.        Modeling & Feature Selection. Build your model(s), compare approaches where appropriate, and document your choices. Justify your feature selection. If you try multiple algorithms, show the comparison. Include hyperparameter tuning if relevant. If your goal is explanatory, discuss what the model structure reveals about relationships in the data. If your goal is predictive, focus on out-of-sample performance.
+
+4.        Evaluation & Interpretation. Evaluate your model using appropriate metrics. Use proper validation (train/test split, cross-validation). Interpret your results in business terms, not just reporting an R² or accuracy score; explain what it means for the organization’s decisions. Discuss the real-world consequences of false positives and false negatives for this specific context.
+
+5.        Causal and Relationship Analysis. This is critical. For each pipeline, include a written analysis discussing the relationships you discovered in the data. What features are most important and why? Do the relationships make theoretical sense? If your model is explanatory, what causal story do the coefficients or feature importances tell? Are those causal claims defensible, or are you observing correlation? If your model is predictive, what does it reveal about the underlying data structure even if the goal isn’t causal inference? Be honest about the limitations: correlation is not causation, and you should discuss when you can and cannot make causal claims. This section is where you demonstrate that you understand the prediction vs. explanation distinction at a deep level.
+
+6.        Deployment Notes. Briefly describe how this model is deployed and integrated into the web application (e.g., API endpoint, dashboard component, interactive form). Include any relevant code snippets or references to where the integration code lives in the repo.
+
+The notebook should be fully executable. A TA should be able to run it top to bottom and reproduce your results. Make sure your data paths are correct relative to the repository structure.
+
+In addition to the notebooks, your deployed web application should include the model outputs in a meaningful way (predictions, dashboards, interactive tools, etc.) as described in the Deployment & Integration section of the rubric.
+
+A good model is one that follows each of the principles taught in the book. There are techniques we covered to help you know how much data is needed, how many features to use, which algorithm to use, and how to tune the model. Follow those principles and don't worry about whether the fit metrics are “good” enough.
+
+If your pipeline is set to follow those principles dynamically, then it will automatically adjust when real data comes through. 
+
+As long as we see a good attempt at following those principles, you won't be penalized because it's synthetic data
