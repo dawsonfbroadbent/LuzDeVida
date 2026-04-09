@@ -111,20 +111,43 @@ interface BarChartProps {
 
 function BarChart({ data, title, color }: BarChartProps) {
   const W = 560
-  const H = 140
-  const PAD = { top: 10, right: 16, bottom: 36, left: 40 }
+  const H = 160
+  const PAD = { top: 16, right: 16, bottom: 36, left: 48 }
   const iW = W - PAD.left - PAD.right
   const iH = H - PAD.top - PAD.bottom
-  const maxVal = Math.max(...data.map(d => d.value), 1)
+
+  const rawMax = Math.max(...data.map(d => d.value), 1)
+  // Nice y-axis ceiling
+  const step = Math.pow(10, Math.floor(Math.log10(rawMax))) / 2
+  const yMax = Math.ceil(rawMax / step) * step || 1
+
+  const gridCount = 4
+  const gridVals = Array.from({ length: gridCount + 1 }, (_, i) =>
+    Math.round((yMax * (i / gridCount)) * 10) / 10
+  )
+
   const barStep = iW / data.length
   const barW = Math.min(barStep * 0.6, 28)
+  const toY = (v: number) => PAD.top + (1 - v / yMax) * iH
 
   return (
     <figure className="impact-barchart" aria-label={title}>
       <figcaption className="impact-chart__label">{title}</figcaption>
       <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+        {/* Y-axis grid lines + labels */}
+        {gridVals.map((v, i) => (
+          <g key={i}>
+            <line x1={PAD.left} y1={toY(v)} x2={W - PAD.right} y2={toY(v)}
+              stroke="var(--cream-darker)" strokeWidth="1" />
+            <text x={PAD.left - 8} y={toY(v)} textAnchor="end" fontSize="11"
+              fill="var(--text-light)" dominantBaseline="middle">
+              {v}
+            </text>
+          </g>
+        ))}
+        {/* Bars */}
         {data.map((d, i) => {
-          const barH = Math.max((d.value / maxVal) * iH, d.value > 0 ? 2 : 0)
+          const barH = Math.max((d.value / yMax) * iH, d.value > 0 ? 2 : 0)
           const x = PAD.left + i * barStep + (barStep - barW) / 2
           const y = PAD.top + iH - barH
           const isQ1 = d.label.startsWith('Q1 ')
