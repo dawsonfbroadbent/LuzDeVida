@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import Nav from './components/Nav'
 import Footer from './components/Footer'
+import CookieConsent from './components/CookieConsent'
 import Landing from './pages/Landing'
 import About from './pages/About'
 import Donate from './pages/Donate'
@@ -47,6 +48,8 @@ export default function App() {
           </Routes>
         </main>
         <Footer />
+        <CookieConsent />
+      </AuthProvider>
       </AuthProvider>
     </BrowserRouter>
   )

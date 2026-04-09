@@ -1,11 +1,14 @@
+using LuzDeVida.API.Data;
 using LuzDeVida.API.Models.Dtos;
 using LuzDeVida.API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LuzDeVida.API.Controllers;
 
 [ApiController]
 [Route("api/public-impact")]
+[AllowAnonymous]  // Public-facing impact data - no authentication required
 public class PublicImpactController : ControllerBase
 {
     private readonly PublicImpactService _service;

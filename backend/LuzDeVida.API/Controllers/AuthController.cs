@@ -1,53 +1,177 @@
-using LuzDeVida.API.Data;
-using LuzDeVida.API.Models;
-using LuzDeVida.API.Models.Dtos;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
+using LuzDeVida.API.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LuzDeVida.API.Controllers;
 
+/// <summary>
+/// Authentication controller for user authentication and account management.
+/// Handles login, logout, registration, and session information.
+/// Uses ASP.NET Core Identity for secure credential management.
+/// </summary>
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly LuzDeVidaDbContext _context;
-    private readonly IConfiguration _config;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
 
-    public AuthController(LuzDeVidaDbContext context, IConfiguration config)
+    public AuthController(
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager,
+        RoleManager<IdentityRole> roleManager)
     {
-        _context = context;
-        _config = config;
+        _userManager = userManager;
+        _signInManager = signInManager;
+        _roleManager = roleManager;
     }
 
-    [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+    /// <summary>
+    /// Get the current authenticated user's session information.
+    /// Does NOT require authentication - allows clients to check auth status.
+    /// </summary>
+    /// <returns>User info if authenticated, or anonymous response if not</returns>
+    [AllowAnonymous]
+    [HttpGet("me")]
+    public async Task<IActionResult> GetCurrentSession()
     {
-        if (string.IsNullOrWhiteSpace(dto.FirstName) ||
-            string.IsNullOrWhiteSpace(dto.LastName) ||
-            string.IsNullOrWhiteSpace(dto.Email) ||
-            string.IsNullOrWhiteSpace(dto.Password))
-            return BadRequest(new { message = "All fields are required." });
-
-        if (dto.Password.Length < 8)
-            return BadRequest(new { message = "Password must be at least 8 characters." });
-
-        if (!dto.Email.Contains('@') || !dto.Email.Contains('.'))
-            return BadRequest(new { message = "Please enter a valid email address." });
-
-        var emailExists = await _context.app_users
-            .AnyAsync(u => u.email.ToLower() == dto.Email.ToLower());
-
-        if (emailExists)
-            return Conflict(new { message = "An account with that email already exists." });
-
-        await using var transaction = await _context.Database.BeginTransactionAsync();
-        try
+        if (User.Identity?.IsAuthenticated != true)
         {
-            var displayName = $"{dto.FirstName.Trim()} {dto.LastName.Trim()}";
+            return Ok(new
+            {
+                isAuthenticated = false,
+                userName = (string?)null,
+                email = (string?)null,
+                roles = Array.Empty<string>()
+            });
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return Ok(new
+            {
+                isAuthenticated = false,
+                userName = (string?)null,
+                email = (string?)null,
+                roles = Array.Empty<string>()
+            });
+        }
+
+        // Get user's roles
+        var roles = await _userManager.GetRolesAsync(user);
+
+        return Ok(new
+        {
+            isAuthenticated = true,
+            userName = user.UserName,
+            email = user.Email,
+            roles = roles.OrderBy(r => r).ToArray()
+        });
+    }
+
+    /// <summary>
+    /// Get the current user's detailed profile information.
+    /// Requires authentication.
+    /// </summary>
+    [Authorize]
+    [HttpGet("profile")]
+    public async Task<IActionResult> GetProfile()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound(new { error = "User not found" });
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+
+        return Ok(new
+        {
+            user.Id,
+            user.UserName,
+            user.Email,
+            user.EmailConfirmed,
+            user.created_at,
+            user.is_active,
+            user.last_login,
+            roles = roles.ToArray()
+        });
+    }
+
+    /// <summary>
+    /// Update current user's password.
+    /// Requires authentication and current password verification.
+    /// </summary>
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.CurrentPassword) || 
+            string.IsNullOrWhiteSpace(dto.NewPassword))
+        {
+            return BadRequest(new { error = "Current password and new password are required" });
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound(new { error = "User not found" });
+        }
+
+        var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+            return BadRequest(new { error = errors });
+        }
+
+        return Ok(new { message = "Password changed successfully" });
+    }
+
+    /// <summary>
+    /// Logout the current user and clear authentication cookie.
+    /// </summary>
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        await _signInManager.SignOutAsync();
+        return Ok(new { message = "Logout successful" });
+    }
+
+    /// <summary>
+    /// Access denied response.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet("access-denied")]
+    public IActionResult AccessDenied()
+    {
+        return Forbid();
+    }
+}
+
+/// <summary>
+/// DTO for login requests (handled by ASP.NET Identity endpoints).
+/// </summary>
+public class LoginDto
+{
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public bool RememberMe { get; set; }
+}
+
+/// <summary>
+/// DTO for password change requests.
+/// </summary>
+public class ChangePasswordDto
+{
+    public string CurrentPassword { get; set; } = string.Empty;
+    public string NewPassword { get; set; } = string.Empty;
+}
 
             // Get next supporter ID (supporters table uses assigned IDs)
             var maxSupporterId = await _context.supporters.MaxAsync(s => (int?)s.supporter_id) ?? 0;

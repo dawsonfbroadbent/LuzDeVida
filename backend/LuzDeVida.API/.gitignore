@@ -5,3 +5,20 @@
 
 # IDE and tooling cache files that can appear under the project
 *.cache
+
+# Environment and secrets (NEVER commit these)
+.env
+.env.local
+.env.*.local
+appsettings.*.local.json
+user-secrets-id
+secrets.json
+
+# Database files
+*.db
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Reference implementations and learning materials (not part of production)
+SecurityHelp/

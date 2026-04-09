@@ -1,11 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using LuzDeVida.API.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace LuzDeVida.API.Data;
 
-public partial class LuzDeVidaDbContext : DbContext
+/// <summary>
+/// Main database context for LuzDeVida application.
+/// Extends IdentityDbContext to support ASP.NET Core Identity for authentication and authorization.
+/// Contains all domain models for residents, donations, safehouses, and operational data.
+/// </summary>
+public partial class LuzDeVidaDbContext : IdentityDbContext<ApplicationUser>
 {
     public LuzDeVidaDbContext(DbContextOptions<LuzDeVidaDbContext> options)
         : base(options)

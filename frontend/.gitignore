@@ -19,5 +19,11 @@ coverage/
 .eslintcache
 *.tsbuildinfo
 
+# Environment variables and secrets (NEVER commit these)
+.env
+.env.local
+.env.*.local
+.env.production.local
+
 # Local-only environment overrides
 *.local

@@ -1,88 +1,134 @@
 using LuzDeVida.API.Data;
+using LuzDeVida.API.Infrastructure;
 using LuzDeVida.API.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// ========== CORS Configuration ==========
+const string FrontendCorsPolicy = "FrontendClient";
+var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:5173";
+
+// Add services to the container
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
+
 builder.Services.AddOpenApi();
 
+// ========== Database Configuration ==========
 builder.Services.AddDbContext<LuzDeVidaDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// ========== ASP.NET Core Identity Configuration ==========
+builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<LuzDeVidaDbContext>();
+
+// ========== Password Policy Configuration ==========
+// Follows IS414 security requirements for strong passwords
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    // Password complexity requirements
+    options.Password.RequireDigit = true;                  // Must contain at least one digit (0-9)
+    options.Password.RequireLowercase = true;             // Must contain at least one lowercase (a-z)
+    options.Password.RequireNonAlphanumeric = true;        // Must contain special character (!@#$%^&*)
+    options.Password.RequireUppercase = true;             // Must contain at least one uppercase (A-Z)
+    options.Password.RequiredLength = 12;                 // Minimum 12 characters
+    options.Password.RequiredUniqueCharacters = 1;        // Must use unique characters
+});
+
+// ========== Cookie Security Configuration ==========
+// Implements secure cookie handling for authentication
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;                       // Prevent JavaScript/XSS access
+    options.Cookie.SameSite = SameSiteMode.Lax;           // CSRF protection - cookies sent with cross-site requests
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // HTTPS only
+    options.ExpireTimeSpan = TimeSpan.FromDays(7);        // Session expires in 7 days
+    options.SlidingExpiration = true;                      // Extend expiration on each request
+    options.LoginPath = "/api/auth/login";                // Redirect to login on auth failure
+    options.LogoutPath = "/api/auth/logout";              // Redirect to logout
+    options.AccessDeniedPath = "/api/auth/access-denied"; // Redirect on authorization failure
+});
+
+// ========== Application Services ==========
 builder.Services.AddScoped<PublicImpactService>();
 builder.Services.AddScoped<ReportsService>();
 
-// JWT authentication
-var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("Jwt:Key is not configured.");
+// ========== Authorization Policies ==========
+// Define fine-grained authorization policies for business logic
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AuthPolicies.ManageResidents, 
+        policy => policy.RequireRole(AuthRoles.Admin, AuthRoles.CaseWorker));
+    
+    options.AddPolicy(AuthPolicies.ManageSafehouses, 
+        policy => policy.RequireRole(AuthRoles.Admin, AuthRoles.PartnerManager));
+    
+    options.AddPolicy(AuthPolicies.ManageDonations, 
+        policy => policy.RequireRole(AuthRoles.Admin));
+    
+    options.AddPolicy(AuthPolicies.ViewPublicImpact, 
+        policy => policy.AllowAnonymousUser());
+    
+    options.AddPolicy(AuthPolicies.ManageUsers, 
+        policy => policy.RequireRole(AuthRoles.Admin));
+    
+    options.AddPolicy(AuthPolicies.DeleteData, 
+        policy => policy.RequireRole(AuthRoles.Admin));
+});
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer           = true,
-            ValidateAudience         = true,
-            ValidateLifetime         = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer              = builder.Configuration["Jwt:Issuer"],
-            ValidAudience            = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-        };
-    });
-
-builder.Services.AddAuthorization();
-
+// ========== CORS Configuration with Credentials ==========
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("PublicFrontend", policy =>
+    options.AddPolicy(FrontendCorsPolicy, policy =>
     {
-        var origins = builder.Configuration
-            .GetSection("Cors:AllowedOrigins")
-            .Get<string[]>() ?? ["http://localhost:5173"];
-        policy.WithOrigins(origins).AllowAnyMethod().AllowAnyHeader();
+        policy.WithOrigins(frontendUrl)
+            .AllowCredentials()              // Allow cookies to be sent with requests
+            .AllowAnyMethod()                // Allow all HTTP methods (GET, POST, PUT, DELETE, etc)
+            .AllowAnyHeader()                // Allow all headers
+            .WithExposedHeaders("Content-Disposition"); // Expose headers for file downloads
     });
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ========== Initialize Default Identity Data ==========
+// Creates default roles and admin user on first run
+using (var scope = app.Services.CreateScope())
+{
+    await AuthIdentityGenerator.GenerateDefaultIdentityAsync(scope.ServiceProvider, app.Configuration);
+}
+
+// ========== HTTP Request Pipeline Configuration ==========
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwagger();
 }
-else
+
+// ========== Security Middleware ==========
+// Always use HTTPS in production
+if (!app.Environment.IsDevelopment())
 {
-    // Force HTTPS in production environments
     app.UseHttpsRedirection();
-    // Add HSTS (HTTP Strict-Transport-Security) header
     app.UseHsts();
 }
 
-// Add security headers
-app.Use(async (context, next) =>
-{
-    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-    context.Response.Headers.Append("X-Frame-Options", "DENY");
-    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
-    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
-    await next();
-});
+// Apply Content-Security-Policy and other security headers
+app.UseSecurityHeaders();
 
-app.UseCors("PublicFrontend");
+// ========== Authentication & Authorization ==========
+app.UseCors(FrontendCorsPolicy);
+app.UseAuthentication();      // Enable authentication middleware
+app.UseAuthorization();       // Enable authorization middleware
 
-app.UseAuthentication();
-app.UseAuthorization();
-
+// ========== Route Mapping ==========
 app.MapControllers();
+app.MapIdentityApi<ApplicationUser>(); // Auto-map identity endpoints (/auth/register, /auth/login, etc)
 
 app.Run();
