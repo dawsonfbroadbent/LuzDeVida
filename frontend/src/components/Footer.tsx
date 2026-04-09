@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
+import { useCookieConsent } from '../context/CookieConsentContext'
 
 export default function Footer() {
+  const { openPreferences } = useCookieConsent()
   return (
     <footer className="footer">
       <div className="container">
@@ -61,6 +63,14 @@ export default function Footer() {
           <p>
             A nonprofit organization.{' '}
             <Link to="/privacy" className="footer__legal-link">Privacy Policy</Link>
+            {' · '}
+            <button
+              type="button"
+              className="footer__legal-link footer__legal-link--btn"
+              onClick={openPreferences}
+            >
+              Cookie Preferences
+            </button>
           </p>
         </div>
       </div>

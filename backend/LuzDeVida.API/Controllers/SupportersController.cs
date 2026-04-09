@@ -1,7 +1,6 @@
 using LuzDeVida.API.Data;
 using LuzDeVida.API.Models;
 using LuzDeVida.API.Models.Dtos;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +8,6 @@ namespace LuzDeVida.API.Controllers;
 
 [ApiController]
 [Route("api/supporters")]
-[Authorize]
 public class SupportersController : ControllerBase
 {
     private readonly LuzDeVidaDbContext _context;
@@ -174,6 +172,8 @@ public class SupportersController : ControllerBase
                     TotalGiven = s.donations
                         .Where(d => d.donation_type == "monetary")
                         .Sum(d => (decimal?)d.amount) ?? 0m,
+                    InKindEstimatedValue = s.donations
+                        .Sum(d => (decimal?)d.estimated_value) ?? 0m,
                     LastDonationDate = s.donations
                         .Max(d => (DateOnly?)d.donation_date),
                     ContributionTypes = s.donations

@@ -1,0 +1,26 @@
+{
+  "numeric_features": [
+    "avg_days_between_donations",
+    "avg_donation_amount",
+    "num_campaigns",
+    "num_channels",
+    "num_program_areas",
+    "inkind_donation_count",
+    "has_inkind",
+    "num_social_referrals",
+    "avg_referral_post_engagement"
+  ],
+  "categorical_features": [
+    "supporter_type",
+    "acquisition_channel",
+    "region",
+    "relationship_type",
+    "preferred_channel",
+    "preferred_program_area"
+  ],
+  "risk_thresholds": {
+    "High": 0.6,
+    "Medium": 0.3,
+    "Low": 0.0
+  }
+}
