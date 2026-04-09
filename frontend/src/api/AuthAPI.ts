@@ -99,3 +99,9 @@ export async function logoutUser(): Promise<void> {
     throw new Error(await readApiError(response, 'Logout failed'));
   }
 }
+
+export function initiateGoogleLogin(returnPath?: string): void {
+  const params = new URLSearchParams({ provider: 'Google' });
+  if (returnPath) params.set('returnPath', returnPath);
+  window.location.href = apiUrl(`/api/auth/external-login?${params.toString()}`);
+}
