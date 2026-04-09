@@ -4,7 +4,10 @@
     "exclude": ["/images/*", "/css/*", "/js/*", "/fonts/*", "/api/*"]
   },
   "responseOverrides": {
-    "404": "/index.html"
+    "404": {
+      "rewrite": "/index.html",
+      "statusCode": 200
+    }
   },
   "globalHeaders": {
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
