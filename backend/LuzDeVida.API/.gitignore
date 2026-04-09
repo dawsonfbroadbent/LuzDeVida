@@ -20,5 +20,5 @@ secrets.json
 *.sqlite-shm
 *.sqlite-wal
 
-# Reference implementations and learning materials (not part of production)
+# Reference implementations and learning materials .(not part of production)
 SecurityHelp/
