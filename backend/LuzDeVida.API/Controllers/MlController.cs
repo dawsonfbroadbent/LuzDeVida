@@ -12,12 +12,30 @@ namespace LuzDeVida.API.Controllers;
 public class MlController : ControllerBase
 {
     private readonly MlPredictionService _service;
+    private readonly OnnxModelHolder _models;
     private readonly ILogger<MlController> _logger;
 
-    public MlController(MlPredictionService service, ILogger<MlController> logger)
+    public MlController(MlPredictionService service, OnnxModelHolder models, ILogger<MlController> logger)
     {
         _service = service;
+        _models = models;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Diagnostic: reports which ONNX models loaded and which failed.
+    /// </summary>
+    [HttpGet("status")]
+    public IActionResult GetModelStatus()
+    {
+        return Ok(new
+        {
+            modelsDir = _models.ModelsDir,
+            donorChurnLoaded = _models.DonorChurn is not null,
+            residentRiskLoaded = _models.ResidentRisk is not null,
+            socialMediaLoaded = _models.SocialMedia is not null,
+            loadErrors = _models.LoadErrors,
+        });
     }
 
     /// <summary>
