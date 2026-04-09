@@ -1,26 +1,57 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { logoutUser } from '../api/AuthAPI'
 import { ADMIN_TABS, getAdminTabHref, normalizeAdminTab } from '../adminTabs'
 
 export default function Nav() {
-  const [scrolled, setScrolled]       = useState(false)
-  const [menuOpen, setMenuOpen]       = useState(false)
+  const { authSession, isAuthenticated, isLoading, refreshAuthSession } = useAuth()
+
+  const [scrolled, setScrolled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [adminMenuOpen, setAdminMenuOpen] = useState(false)
-  const location                      = useLocation()
-  const navigate                      = useNavigate()
-  const isHome                        = location.pathname === '/'
-  const { isAuthenticated, user, logout } = useAuth()
-  const userMenuRef                   = useRef<HTMLDivElement>(null)
-  const adminMenuRef                  = useRef<HTMLLIElement>(null)
-  const isAdminRoute                  =
+
+  const location = useLocation()
+  const navigate = useNavigate()
+  const isHome = location.pathname === '/'
+  const userMenuRef = useRef<HTMLDivElement>(null)
+  const adminMenuRef = useRef<HTMLLIElement>(null)
+
+  const isAdminRoute =
     location.pathname === '/admin' ||
     location.pathname.startsWith('/admin/') ||
     location.pathname === '/homevisitations'
-  const activeAdminTab                = normalizeAdminTab(
+
+  const activeAdminTab = normalizeAdminTab(
     new URLSearchParams(location.search).get('tab')
   )
+
+  const firstName =
+    authSession?.userName?.trim()?.split(' ')[0] ||
+    authSession?.email?.split('@')[0] ||
+    'User'
+
+  const displayName =
+    authSession?.userName?.trim() ||
+    authSession?.email ||
+    'User'
+
+  const isAdmin =
+    authSession?.roles?.some(role => role.toLowerCase() === 'admin') ?? false
+
+  let statusClassName = 'badge rounded-pill text-bg-secondary'
+  let statusText = 'Loading...'
+
+  if (!isLoading && isAuthenticated) {
+    statusClassName = 'badge rounded-pill text-bg-success'
+    statusText = `Signed in as ${authSession?.userName ?? authSession?.email ?? 'user'}`
+  }
+
+  if (!isLoading && !isAuthenticated) {
+    statusClassName = 'badge rounded-pill text-bg-warning'
+    statusText = 'Signed Out'
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60)
@@ -38,10 +69,11 @@ export default function Nav() {
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    return () => {
+      document.body.style.overflow = ''
+    }
   }, [menuOpen])
 
-  // Close header dropdowns on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
@@ -51,16 +83,24 @@ export default function Nav() {
         setAdminMenuOpen(false)
       }
     }
+
     if (userMenuOpen || adminMenuOpen) {
       document.addEventListener('mousedown', handleClick)
     }
+
     return () => document.removeEventListener('mousedown', handleClick)
   }, [adminMenuOpen, userMenuOpen])
 
-  function handleLogout() {
-    logout()
-    setUserMenuOpen(false)
-    navigate('/')
+  async function handleLogout() {
+    try {
+      await logoutUser()
+      await refreshAuthSession()
+      setUserMenuOpen(false)
+      setMenuOpen(false)
+      navigate('/')
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
   }
 
   const isSolid = scrolled || !isHome
@@ -105,94 +145,128 @@ export default function Nav() {
                 Impact
               </Link>
             </li>
-            <li className="nav__item nav__item--dropdown" ref={adminMenuRef}>
-              <button
-                type="button"
-                className={`nav__menu-trigger${isAdminRoute ? ' active' : ''}`}
-                onClick={() => setAdminMenuOpen((open) => !open)}
-                aria-expanded={adminMenuOpen}
-                aria-haspopup="menu"
-              >
-                <span>Admin</span>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                  <path
-                    d="M2 4l4 4 4-4"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-              {adminMenuOpen && (
-                <div className="nav__admin-dropdown" role="menu" aria-label="Admin sections">
-                  {ADMIN_TABS.map((tab) => (
-                    <Link
-                      key={tab.id}
-                      to={getAdminTabHref(tab.id)}
-                      className={`nav__admin-dropdown-item${
-                        isAdminRoute && tab.id === activeAdminTab ? ' active' : ''
-                      }`}
-                      onClick={() => setAdminMenuOpen(false)}
-                    >
-                      <span className="nav__admin-dropdown-label">{tab.label}</span>
-                      <span className="nav__admin-dropdown-copy">{tab.description}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </li>
+
+            {isAuthenticated && isAdmin && (
+              <li className="nav__item nav__item--dropdown" ref={adminMenuRef}>
+                <button
+                  type="button"
+                  className={`nav__menu-trigger${isAdminRoute ? ' active' : ''}`}
+                  onClick={() => setAdminMenuOpen(open => !open)}
+                  aria-expanded={adminMenuOpen}
+                  aria-haspopup="menu"
+                >
+                  <span>Admin</span>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path
+                      d="M2 4l4 4 4-4"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+
+                {adminMenuOpen && (
+                  <div className="nav__admin-dropdown" role="menu" aria-label="Admin sections">
+                    {ADMIN_TABS.map(tab => (
+                      <Link
+                        key={tab.id}
+                        to={getAdminTabHref(tab.id)}
+                        className={`nav__admin-dropdown-item${
+                          isAdminRoute && tab.id === activeAdminTab ? ' active' : ''
+                        }`}
+                        onClick={() => setAdminMenuOpen(false)}
+                      >
+                        <span className="nav__admin-dropdown-label">{tab.label}</span>
+                        <span className="nav__admin-dropdown-copy">{tab.description}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </li>
+            )}
+
             <li>
               <Link to="/donate" className="btn btn-primary nav__cta">
                 Donate
               </Link>
             </li>
-            <li className="nav__auth">
-              {isAuthenticated && user ? (
-                <div className="nav__user-menu" ref={userMenuRef}>
-                  <button
-                    className="nav__user-btn"
-                    onClick={() => setUserMenuOpen(o => !o)}
-                    aria-expanded={userMenuOpen}
-                    aria-haspopup="true"
-                  >
-                    <span className="nav__user-avatar">
-                      {user.displayName.charAt(0).toUpperCase()}
-                    </span>
-                    <span className="nav__user-name">{user.displayName.split(' ')[0]}</span>
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                      <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-                  {userMenuOpen && (
-                    <div className="nav__dropdown">
-                      <div className="nav__dropdown-header">
-                        <span className="nav__dropdown-name">{user.displayName}</span>
-                        <span className="nav__dropdown-role">{user.role}</span>
+
+            {!isLoading && (
+              <li className="nav__auth">
+                {isAuthenticated ? (
+                  <div className="nav__user-menu" ref={userMenuRef}>
+                    <button
+                      type="button"
+                      className="nav__user-btn"
+                      onClick={() => setUserMenuOpen(open => !open)}
+                      aria-expanded={userMenuOpen}
+                      aria-haspopup="true"
+                    >
+                      <span className="nav__user-avatar">
+                        {displayName.charAt(0).toUpperCase()}
+                      </span>
+                      <span className="nav__user-name">{firstName}</span>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                        <path
+                          d="M2 4l4 4 4-4"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+
+                    {userMenuOpen && (
+                      <div className="nav__dropdown">
+                        <div className="nav__dropdown-header">
+                          <span className="nav__dropdown-name">{displayName}</span>
+                          <span className="nav__dropdown-role">
+                            {isAdmin ? 'Admin' : 'Authenticated User'}
+                          </span>
+                        </div>
+
+                        <div className={statusClassName} style={{ margin: '0.75rem 1rem 0.5rem' }}>
+                          {statusText}
+                        </div>
+
+                        <button
+                          type="button"
+                          className="nav__dropdown-item nav__dropdown-item--danger"
+                          onClick={handleLogout}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path
+                              d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                          Log Out
+                        </button>
                       </div>
-                      <button className="nav__dropdown-item nav__dropdown-item--danger" onClick={handleLogout}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        Log Out
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <Link
-                  to="/login"
-                  className={`nav__login-link${location.pathname === '/login' ? ' active' : ''}`}
-                >
-                  Log In
-                </Link>
-              )}
-            </li>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    to="/login"
+                    className={`nav__login-link${location.pathname === '/login' ? ' active' : ''}`}
+                  >
+                    Log In
+                  </Link>
+                )}
+              </li>
+            )}
           </ul>
 
           <button
+            type="button"
             className={`nav__hamburger${menuOpen ? ' is-open' : ''}`}
-            onClick={() => setMenuOpen((o) => !o)}
+            onClick={() => setMenuOpen(open => !open)}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
           >
@@ -207,29 +281,36 @@ export default function Nav() {
         <Link to="/">Home</Link>
         <Link to="/about">About</Link>
         <Link to="/impact">Impact</Link>
-        <div className="nav__mobile-group">
-          <span className="nav__mobile-group-label">Admin</span>
-          {ADMIN_TABS.map((tab) => (
-            <Link key={tab.id} to={getAdminTabHref(tab.id)}>
-              {tab.label}
-            </Link>
-          ))}
-        </div>
+
+        {isAuthenticated && isAdmin && (
+          <div className="nav__mobile-group">
+            <span className="nav__mobile-group-label">Admin</span>
+            {ADMIN_TABS.map(tab => (
+              <Link key={tab.id} to={getAdminTabHref(tab.id)}>
+                {tab.label}
+              </Link>
+            ))}
+          </div>
+        )}
+
         <Link to="/donate" className="btn btn-primary">
           Donate Now
         </Link>
-        {isAuthenticated && user ? (
-          <button
-            className="nav__mobile-logout"
-            onClick={() => { logout(); navigate('/') }}
-          >
-            Log Out ({user.displayName.split(' ')[0]})
-          </button>
-        ) : (
-          <Link to="/login" className="nav__mobile-login">
-            Log In
-          </Link>
-        )}
+
+        {!isLoading &&
+          (isAuthenticated ? (
+            <button
+              type="button"
+              className="nav__mobile-logout"
+              onClick={handleLogout}
+            >
+              Log Out ({firstName})
+            </button>
+          ) : (
+            <Link to="/login" className="nav__mobile-login">
+              Log In
+            </Link>
+          ))}
       </nav>
     </>
   )

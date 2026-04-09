@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import * as AuthAPI from '../api/AuthAPI'
+import { loginUser, registerUser } from '../api/AuthAPI'
 
 type Tab = 'login' | 'register'
 
@@ -40,21 +40,32 @@ function validate(form: LoginForm | RegisterForm, tab: Tab): string | null {
 }
 
 export default function Login() {
-  const { login } = useAuth()
-  const navigate        = useNavigate()
-  const [searchParams]  = useSearchParams()
-  const redirectTo      = searchParams.get('redirect') ?? '/'
-  const tabParam        = searchParams.get('tab')
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const { refreshAuthSession } = useAuth()
 
-  const [tab, setTab]           = useState<Tab>(tabParam === 'register' ? 'register' : 'login')
-  const [error, setError]       = useState<string | null>(null)
-  const [success, setSuccess]   = useState<string | null>(null)
-  const [loading, setLoading]   = useState(false)
+  const redirectTo = searchParams.get('redirect') ?? '/'
+  const tabParam = searchParams.get('tab')
 
-  const [loginForm, setLoginForm] = useState<LoginForm>({ email: '', password: '' })
-  const [regForm, setRegForm]     = useState<RegisterForm>({
-    firstName: '', lastName: '', email: '', password: '', confirmPassword: '',
+  const [tab, setTab] = useState<Tab>(tabParam === 'register' ? 'register' : 'login')
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const [loginForm, setLoginForm] = useState<LoginForm>({
+    email: '',
+    password: '',
   })
+
+  const [regForm, setRegForm] = useState<RegisterForm>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  })
+
+  const [rememberMe, setRememberMe] = useState(true)
 
   function switchTab(next: Tab) {
     setTab(next)
@@ -68,17 +79,16 @@ export default function Login() {
     setSuccess(null)
 
     const err = validate(loginForm, 'login')
-    if (err) { setError(err); return }
+    if (err) {
+      setError(err)
+      return
+    }
 
     setLoading(true)
+
     try {
-      const res = await AuthAPI.login({ email: loginForm.email, password: loginForm.password })
-      login(res.token, {
-        userId:      res.userId,
-        email:       res.email,
-        displayName: res.displayName,
-        role:        res.role,
-      })
+      await loginUser(loginForm.email, loginForm.password, rememberMe)
+      await refreshAuthSession()
       navigate(redirectTo)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.')
@@ -93,24 +103,22 @@ export default function Login() {
     setSuccess(null)
 
     const err = validate(regForm, 'register')
-    if (err) { setError(err); return }
+    if (err) {
+      setError(err)
+      return
+    }
 
     setLoading(true)
+
     try {
-      const res = await AuthAPI.register({
-        firstName: regForm.firstName,
-        lastName:  regForm.lastName,
-        email:     regForm.email,
-        password:  regForm.password,
+      await registerUser(regForm.email, regForm.password)
+
+      setSuccess('Account created successfully. Please sign in.')
+      setTab('login')
+      setLoginForm({
+        email: regForm.email,
+        password: '',
       })
-      login(res.token, {
-        userId:      res.userId,
-        email:       res.email,
-        displayName: res.displayName,
-        role:        res.role,
-      })
-      setSuccess(`Welcome, ${res.displayName}! Your account has been created.`)
-      setTimeout(() => navigate(redirectTo), 1500)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Registration failed. Please try again.')
     } finally {
@@ -121,16 +129,8 @@ export default function Login() {
   return (
     <div className="login-page">
       <div className="login-card">
-        {/* Header */}
         <div className="login-card__header">
           <Link to="/" className="login-card__logo">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="12" r="4.5" fill="currentColor" />
-              <path
-                d="M12 2V4.5M12 19.5V22M2 12H4.5M19.5 12H22M4.93 4.93L6.64 6.64M17.36 17.36L19.07 19.07M19.07 4.93L17.36 6.64M6.64 17.36L4.93 19.07"
-                stroke="currentColor" strokeWidth="1.75" strokeLinecap="round"
-              />
-            </svg>
             Luz De Vida
           </Link>
           <h1 className="login-card__title">
@@ -138,14 +138,14 @@ export default function Login() {
           </h1>
           <p className="login-card__subtitle">
             {tab === 'login'
-              ? 'Sign in to your supporter account'
+              ? 'Sign in to your account'
               : 'Join us and support our mission'}
           </p>
         </div>
 
-        {/* Tabs */}
         <div className="login-tabs" role="tablist">
           <button
+            type="button"
             role="tab"
             aria-selected={tab === 'login'}
             className={`login-tab${tab === 'login' ? ' is-active' : ''}`}
@@ -154,6 +154,7 @@ export default function Login() {
             Sign In
           </button>
           <button
+            type="button"
             role="tab"
             aria-selected={tab === 'register'}
             className={`login-tab${tab === 'register' ? ' is-active' : ''}`}
@@ -163,27 +164,18 @@ export default function Login() {
           </button>
         </div>
 
-        {/* Alerts */}
         {error && (
           <div className="login-alert login-alert--error" role="alert">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-              <path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
             {error}
           </div>
         )}
+
         {success && (
           <div className="login-alert login-alert--success" role="status">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-              <path d="M8 12l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
             {success}
           </div>
         )}
 
-        {/* Login Form */}
         {tab === 'login' && (
           <form className="login-form" onSubmit={handleLogin} noValidate>
             <div className="login-field">
@@ -199,6 +191,7 @@ export default function Login() {
                 required
               />
             </div>
+
             <div className="login-field">
               <label htmlFor="login-password" className="login-label">Password</label>
               <input
@@ -212,6 +205,16 @@ export default function Login() {
                 required
               />
             </div>
+
+            <label className="login-checkbox">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={e => setRememberMe(e.target.checked)}
+              />
+              Keep me signed in
+            </label>
+
             <button
               type="submit"
               className="btn btn-primary login-submit"
@@ -222,7 +225,6 @@ export default function Login() {
           </form>
         )}
 
-        {/* Register Form */}
         {tab === 'register' && (
           <form className="login-form" onSubmit={handleRegister} noValidate>
             <div className="login-row">
@@ -239,6 +241,7 @@ export default function Login() {
                   required
                 />
               </div>
+
               <div className="login-field">
                 <label htmlFor="reg-last" className="login-label">Last name</label>
                 <input
@@ -253,6 +256,7 @@ export default function Login() {
                 />
               </div>
             </div>
+
             <div className="login-field">
               <label htmlFor="reg-email" className="login-label">Email address</label>
               <input
@@ -266,6 +270,7 @@ export default function Login() {
                 required
               />
             </div>
+
             <div className="login-field">
               <label htmlFor="reg-password" className="login-label">Password</label>
               <input
@@ -279,6 +284,7 @@ export default function Login() {
                 required
               />
             </div>
+
             <div className="login-field">
               <label htmlFor="reg-confirm" className="login-label">Confirm password</label>
               <input
@@ -292,9 +298,11 @@ export default function Login() {
                 required
               />
             </div>
+
             <p className="login-hint">
               By creating an account you'll be added as a supporter and receive updates on our mission.
             </p>
+
             <button
               type="submit"
               className="btn btn-primary login-submit"
