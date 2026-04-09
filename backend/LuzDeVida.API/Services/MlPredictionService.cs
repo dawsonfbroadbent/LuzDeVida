@@ -41,7 +41,8 @@ public class OnnxModelHolder : IDisposable
         }
         catch (Exception ex)
         {
-            var msg = $"{ex.GetType().Name}: {ex.Message}";
+            var inner = ex.InnerException != null ? $" -> {ex.InnerException.GetType().Name}: {ex.InnerException.Message}" : "";
+            var msg = $"{ex.GetType().Name}: {ex.Message}{inner}";
             logger?.LogWarning("Failed to load ONNX model from {Path}: {Error}", path, msg);
             LoadErrors[Path.GetFileName(path)] = msg;
             return null;
