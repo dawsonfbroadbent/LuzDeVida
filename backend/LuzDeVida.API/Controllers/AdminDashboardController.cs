@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LuzDeVida.API.Data;
+using LuzDeVida.API.Models.Dtos;
+using Microsoft.Extensions.Configuration;
 
 namespace LuzDeVida.API.Controllers;
 
@@ -13,10 +15,12 @@ namespace LuzDeVida.API.Controllers;
 public class AdminDashboardController : ControllerBase
 {
     private readonly LuzDeVidaDbContext _context;
+    private readonly IConfiguration _configuration;
 
-    public AdminDashboardController(LuzDeVidaDbContext context)
+    public AdminDashboardController(LuzDeVidaDbContext context, IConfiguration configuration)
     {
         _context = context;
+        _configuration = configuration;
     }
 
     [HttpGet("metrics")]
@@ -330,6 +334,48 @@ public class AdminDashboardController : ControllerBase
                 avg_volunteer_hours_per_month = avgVolunteerHours
             };
 
+            // ========== GIRLS RE-INTEGRATION OKR ==========
+            // Get total residents (denominator)
+            var totalResidents = await _context.residents.CountAsync();
+
+            // Get reintegrated girls (numerator): reintegration_status = "Completed" AND length_of_stay < 2 years
+            // Load completed residents into memory, then parse length_of_stay (since SQL can't easily parse it)
+            var completedResidents = await _context.residents
+                .Where(r => r.reintegration_status == "Completed" && r.length_of_stay != null)
+                .ToListAsync();
+
+            var reintegratedGirls = completedResidents
+                .Where(r =>
+                {
+                    var lengthStr = r.length_of_stay;
+                    var spaceIndex = lengthStr.IndexOf(' ');
+                    if (spaceIndex > 0 && int.TryParse(lengthStr.Substring(0, spaceIndex), out int years))
+                    {
+                        return years < 2;
+                    }
+                    return false;
+                })
+                .Count();
+
+            var reintegrationPercent = totalResidents > 0 
+                ? (decimal)reintegratedGirls / totalResidents * 100 
+                : 0;
+
+            var reintegrationOKRStatus = reintegrationPercent >= 100 ? "On Track" : 
+                                        reintegrationPercent >= 75 ? "At Risk" : "Behind";
+            
+            var reintegrationStatusColor = reintegrationPercent >= 100 ? "var(--blue)" : 
+                                          reintegrationPercent >= 75 ? "var(--sand-dark)" : "var(--text-light)";
+
+            var reintegrationOKR = new ReintegrationOKRDto
+            {
+                total_girls_admitted_two_years = totalResidents,
+                girls_reintegrated = reintegratedGirls,
+                reintegration_percent = reintegrationPercent,
+                okr_status = reintegrationOKRStatus,
+                status_color = reintegrationStatusColor
+            };
+
             var metrics = new AdminDashboardMetrics
             {
                 active_residents_total = totalActiveResidents,
@@ -347,6 +393,7 @@ public class AdminDashboardController : ControllerBase
                 case_management_progress = caseManagementProgress,
                 intervention_plan_metrics = interventionPlanMetrics,
                 engagement_support = engagementSupport,
+                reintegration_okr = reintegrationOKR,
                 recommendations = GenerateRecommendations(caseManagementProgress, interventionPlanMetrics, engagementSupport),
                 timestamp = DateTime.UtcNow
             };
@@ -358,6 +405,7 @@ public class AdminDashboardController : ControllerBase
             return StatusCode(500, new { message = "Error retrieving dashboard metrics", error = ex.Message });
         }
     }
+
 
     private List<RecommendationDto> GenerateRecommendations(
         CaseManagementProgressDto caseManagement,
@@ -492,6 +540,7 @@ public class AdminDashboardMetrics
     public CaseManagementProgressDto case_management_progress { get; set; } = new();
     public InterventionPlanMetricsDto intervention_plan_metrics { get; set; } = new();
     public EngagementSupportDto engagement_support { get; set; } = new();
+    public ReintegrationOKRDto reintegration_okr { get; set; } = new();
     public List<RecommendationDto> recommendations { get; set; } = new();
     public DateTime timestamp { get; set; }
 }
@@ -584,5 +633,4 @@ public class RecommendationDto
     public string message { get; set; } = "";
     public string metric { get; set; } = "";
 }
-
 

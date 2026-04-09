@@ -64,6 +64,13 @@ interface AdminDashboardMetrics {
     donor_retention_rate: number;
     avg_volunteer_hours_per_month: number;
   };
+  reintegration_okr: {
+    total_girls_admitted_two_years: number;
+    girls_reintegrated: number;
+    reintegration_percent: number;
+    okr_status: string;
+    status_color: string;
+  };
   recommendations: Array<{
     id: string;
     severity: string;
@@ -97,7 +104,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ embedded = false }) => 
   const [metrics, setMetrics] = useState<AdminDashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const [showGirlsInCareTooltip, setShowGirlsInCareTooltip] = useState(false);
   const [expandedMetrics, setExpandedMetrics] = useState<Set<string>>(new Set());
   const [showThresholdGuide, setShowThresholdGuide] = useState(false);
   const [showCaseManagementGuide, setShowCaseManagementGuide] = useState(false);
@@ -176,41 +182,36 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ embedded = false }) => 
         <p className="subtitle">Command Center for Daily Operations</p>
       </div>
 
-      {/* Girls in Care OKR */}
-      <div
-        className="okr-card"
-        onMouseEnter={() => setShowGirlsInCareTooltip(true)}
-        onMouseLeave={() => setShowGirlsInCareTooltip(false)}
-      >
-        <div className="okr-content">
-          <p className="okr-label">GIRLS IN CARE</p>
-          <p className="okr-value">{metrics.active_residents_total}</p>
-          <div className="okr-progress-bar">
-            <div
-              className="okr-progress-fill"
-              style={{
-                width: `${Math.min((metrics.active_residents_total / 50) * 100, 100)}%`,
-                backgroundColor: '#4caf50',
-              }}
-            ></div>
-          </div>
-          <p className="okr-subtitle">Active residents across {metrics.safehouses_total} safehouses</p>
-        </div>
-
-        {showGirlsInCareTooltip && (
-          <div className="okr-tooltip">
-            <p className="tooltip-title">Distribution by Safehouse</p>
-            <div className="tooltip-breakdown">
-              {metrics.residents_by_safehouse.map((shell) => (
-                <div key={shell.safehouse_id} className="tooltip-item">
-                  <span className="tooltip-label">{shell.safehouse_name}</span>
-                  <span className="tooltip-value">{shell.active_resident_count}</span>
-                </div>
-              ))}
+      {/* Girls Reintegration OKR Card */}
+      <div className="okr-card okr-card-donations">
+        <div className="okr-card-header">
+          <div className="okr-content">
+            <p className="okr-label">GIRLS RE-INTEGRATED (2 YEARS)</p>
+            <p className="okr-value">
+              {metrics.reintegration_okr.girls_reintegrated} / {metrics.reintegration_okr.total_girls_admitted_two_years}
+            </p>
+            <div className="okr-progress-bar">
+              <div
+                className="okr-progress-fill"
+                style={{
+                  width: `${Math.min(metrics.reintegration_okr.reintegration_percent, 100)}%`,
+                  backgroundColor: metrics.reintegration_okr.status_color,
+                }}
+              ></div>
+              <span 
+                className="okr-progress-percent"
+                style={{
+                  left: `${Math.min(metrics.reintegration_okr.reintegration_percent, 100)}%`
+                }}
+              >
+                {metrics.reintegration_okr.reintegration_percent.toFixed(1)}%
+              </span>
             </div>
-            <p className="tooltip-note">Total active residents currently in our care</p>
+            <div className="okr-details">
+              <span className="okr-status">Status: {metrics.reintegration_okr.okr_status}</span>
+            </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Recommendations Section */}

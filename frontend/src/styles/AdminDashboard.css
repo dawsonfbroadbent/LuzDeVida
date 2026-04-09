@@ -43,7 +43,7 @@
   margin: 0;
 }
 
-/* OKR Card */
+/* OKR Card Base Styles */
 .okr-card {
   background:
     radial-gradient(circle at top left, rgba(148, 218, 223, 0.56), transparent 38%),
@@ -51,11 +51,10 @@
   color: var(--text-dark);
   padding: 2rem;
   border-radius: 22px;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
   box-shadow: 0 18px 40px rgba(23, 53, 59, 0.08);
   animation: slideIn 0.6s var(--ease);
   position: relative;
-  cursor: help;
   transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
   border: 1px solid rgba(23, 53, 59, 0.08);
 }
@@ -91,8 +90,11 @@
   height: 8px;
   background: rgba(45, 115, 124, 0.15);
   border-radius: 4px;
-  overflow: hidden;
+  overflow: visible;
   margin-bottom: 1.5rem;
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .okr-progress-fill {
@@ -100,6 +102,18 @@
   background: #4caf50;
   transition: width 0.5s var(--ease);
   border-radius: 4px;
+}
+
+.okr-progress-percent {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  white-space: nowrap;
+  transition: left 0.5s var(--ease);
 }
 
 .okr-subtitle {
@@ -111,84 +125,173 @@
   letter-spacing: 0.02em;
 }
 
-/* OKR Tooltip */
-.okr-tooltip {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--white);
-  color: var(--text-dark);
-  padding: 2rem;
-  border-radius: 18px;
-  box-shadow: 0 16px 48px rgba(23, 53, 59, 0.15);
-  z-index: 1000;
-  min-width: 380px;
-  animation: tooltipSlideIn 0.3s var(--ease);
-  border: 1px solid var(--cream-darker);
-  margin-top: 1.5rem;
+/* Donation OKR Card Variant */
+.okr-card-donations {
+  background:
+    radial-gradient(circle at top left, rgba(217, 199, 169, 0.32), transparent 38%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(252, 248, 242, 0.94));
 }
 
-@keyframes tooltipSlideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+.okr-card-donations .okr-label {
+  color: var(--sand-dark);
 }
 
-.tooltip-title {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: var(--teal-dark);
-  margin: 0 0 1.5rem 0;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.tooltip-breakdown {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--cream-darker);
-}
-
-.tooltip-item {
+.okr-card-header {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.tooltip-label {
-  font-family: var(--font-body);
-  font-weight: 600;
-  color: var(--text-light);
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+.okr-card-header .okr-content {
+  flex: 1;
 }
 
-.tooltip-value {
-  font-family: var(--font-display);
-  font-weight: 500;
-  color: var(--teal-dark);
-  font-size: 1.75rem;
-  line-height: 1;
+.okr-edit-button {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s var(--ease);
+  opacity: 0.7;
+  margin: -0.5rem -0.5rem 0 0;
 }
 
-.tooltip-note {
+.okr-edit-button:hover {
+  opacity: 1;
+  background: rgba(217, 199, 169, 0.2);
+}
+
+.okr-details {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: rgba(217, 199, 169, 0.1);
+  border-radius: 8px;
+}
+
+.okr-goal {
   font-family: var(--font-body);
   font-size: 0.9rem;
-  color: var(--text-light);
-  margin: 0;
-  font-style: italic;
-  text-align: center;
+  font-weight: 600;
+  color: var(--sand-dark);
+}
+
+.okr-status {
+  display: none;
+}
+
+.okr-status-on-track {
+  background: rgba(76, 175, 80, 0.15);
+  color: #2e7d32;
+}
+
+.okr-status-at-risk {
+  background: rgba(255, 152, 0, 0.15);
+  color: #e65100;
+}
+
+.okr-status-behind {
+  background: rgba(211, 47, 47, 0.15);
+  color: #b71c1c;
+}
+
+/* Edit Mode Styles */
+.okr-edit-mode {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(217, 199, 169, 0.3);
+}
+
+.okr-edit-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.okr-edit-content label {
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--sand-dark);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.okr-edit-content input {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--sand-light);
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  transition: all 0.2s var(--ease);
+}
+
+.okr-edit-content input:focus {
+  outline: none;
+  border-color: var(--sand-dark);
+  box-shadow: 0 0 0 3px rgba(217, 199, 169, 0.1);
+}
+
+.okr-edit-content input:disabled {
+  background: var(--cream);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.okr-edit-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.btn-save,
+.btn-cancel {
+  padding: 0.75rem 1.75rem;
+  border-radius: 3px;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+}
+
+.btn-save {
+  background: var(--sand-dark);
+  color: var(--white);
+}
+
+.btn-save:hover:not(:disabled) {
+  background: var(--text-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(217, 199, 169, 0.3);
+}
+
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background: var(--cream-darker);
+  color: var(--text-dark);
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background: var(--sand-light);
+  transform: translateY(-2px);
+}
+
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .error-message {
