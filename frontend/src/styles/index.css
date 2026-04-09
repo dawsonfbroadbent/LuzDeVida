@@ -594,6 +594,14 @@ button { cursor: pointer; font-family: var(--font-body); }
   transition: color 0.2s;
 }
 .footer__legal-link:hover { color: rgba(255,255,255,0.75); }
+.footer__legal-link--btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
 
 /* ============================================================
    PRIVACY POLICY
