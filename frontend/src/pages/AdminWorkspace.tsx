@@ -13,6 +13,7 @@ import ProcessRecording from './ProcessRecording'
 import DonorManagement from './DonorManagement'
 import ReportsAndAnalytics from './ReportsAndAnalytics'
 import { useAuth } from '../context/AuthContext'
+import SocialMediaPerformance from './SocialMediaPerformance'
 import '../styles/AdminWorkspace.css'
 
 function renderTabContent(tabId: AdminTabId) {
@@ -29,6 +30,8 @@ function renderTabContent(tabId: AdminTabId) {
       return <DonorManagement embedded />
     case 'reports':
       return <ReportsAndAnalytics embedded />
+    case 'social-media':
+      return <SocialMediaPerformance embedded />
     default:
       return <AdminDashboard embedded />
   }

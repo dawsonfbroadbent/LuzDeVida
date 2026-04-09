@@ -278,6 +278,7 @@ public class MlPredictionService
                 internal_code = metaList[i].code,
                 safehouse_name = metaList[i].sh,
                 risk_score = probas[i],
+                risk_tier = ResidentRiskTier(probas[i]),
             });
         }
 
@@ -518,4 +519,10 @@ public class MlPredictionService
     // =====================================================================
     private static string Tier(double score) =>
         score >= 0.6 ? "High" : score >= 0.3 ? "Medium" : "Low";
+
+    private static string ResidentRiskTier(double score) =>
+        score >= 0.90 ? "Critical"
+        : score >= 0.75 ? "High"
+        : score >= 0.50 ? "Moderate"
+        : "Low";
 }

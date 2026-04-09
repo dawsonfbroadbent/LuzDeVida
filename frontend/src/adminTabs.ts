@@ -5,6 +5,7 @@ export type AdminTabId =
   | 'process-recording'
   | 'donor-management'
   | 'reports'
+  | 'social-media'
 
 export interface AdminTabDefinition {
   id: AdminTabId
@@ -44,6 +45,11 @@ export const ADMIN_TABS: AdminTabDefinition[] = [
     id: 'reports',
     label: 'Reports & Analytics',
     description: 'Accomplishment reporting, donation trends, and outcome analytics.',
+  },
+  {
+    id: 'social-media',
+    label: 'Social Media',
+    description: 'Content performance, timing insights, and conversion optimization.',
   },
 ]
 
