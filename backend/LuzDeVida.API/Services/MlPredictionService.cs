@@ -11,22 +11,35 @@ namespace LuzDeVida.API.Services;
 /// </summary>
 public class OnnxModelHolder : IDisposable
 {
-    public InferenceSession DonorChurn { get; }
-    public InferenceSession ResidentRisk { get; }
-    public InferenceSession SocialMedia { get; }
+    public InferenceSession? DonorChurn { get; }
+    public InferenceSession? ResidentRisk { get; }
+    public InferenceSession? SocialMedia { get; }
 
-    public OnnxModelHolder(string modelsDir)
+    public OnnxModelHolder(string modelsDir, ILogger<OnnxModelHolder>? logger = null)
     {
-        DonorChurn   = new InferenceSession(Path.Combine(modelsDir, "donor_churn_model.onnx"));
-        ResidentRisk = new InferenceSession(Path.Combine(modelsDir, "resident_risk_model.onnx"));
-        SocialMedia  = new InferenceSession(Path.Combine(modelsDir, "social_media_model.onnx"));
+        DonorChurn   = TryLoad(Path.Combine(modelsDir, "donor_churn_model.onnx"), logger);
+        ResidentRisk = TryLoad(Path.Combine(modelsDir, "resident_risk_model.onnx"), logger);
+        SocialMedia  = TryLoad(Path.Combine(modelsDir, "social_media_model.onnx"), logger);
+    }
+
+    private static InferenceSession? TryLoad(string path, ILogger? logger)
+    {
+        try
+        {
+            return new InferenceSession(path);
+        }
+        catch (Exception ex)
+        {
+            logger?.LogWarning("Failed to load ONNX model from {Path}: {Message}", path, ex.Message);
+            return null;
+        }
     }
 
     public void Dispose()
     {
-        DonorChurn.Dispose();
-        ResidentRisk.Dispose();
-        SocialMedia.Dispose();
+        DonorChurn?.Dispose();
+        ResidentRisk?.Dispose();
+        SocialMedia?.Dispose();
     }
 }
 
@@ -158,6 +171,9 @@ public class MlPredictionService
         if (numericRows.Count == 0)
             return new DonorChurnResultDto { predictions = new(), generated_at = DateTime.UtcNow };
 
+        if (_models.DonorChurn is null)
+            throw new InvalidOperationException("Donor churn model is unavailable.");
+
         var probas = RunDonorChurnInference(numericRows, categoricalRows);
 
         var result = new DonorChurnResultDto { generated_at = DateTime.UtcNow };
@@ -246,6 +262,9 @@ public class MlPredictionService
         if (rows.Count == 0)
             return new ResidentRiskResultDto { predictions = new(), generated_at = DateTime.UtcNow };
 
+        if (_models.ResidentRisk is null)
+            throw new InvalidOperationException("Resident risk model is unavailable.");
+
         var probas = RunNumericInference(_models.ResidentRisk, rows);
 
         // Build predictions sorted by risk_score descending for ranking
@@ -309,6 +328,9 @@ public class MlPredictionService
         if (rows.Count == 0)
             return new SocialMediaResultDto { predictions = new(), generated_at = DateTime.UtcNow };
 
+        if (_models.SocialMedia is null)
+            throw new InvalidOperationException("Social media model is unavailable.");
+
         var probas = RunNumericInference(_models.SocialMedia, rows);
 
         var result = new SocialMediaResultDto { generated_at = DateTime.UtcNow };
@@ -332,6 +354,9 @@ public class MlPredictionService
     // =====================================================================
     public MlPredictionItem EvaluateSocialMediaPost(SocialMediaEvaluateRequest req)
     {
+        if (_models.SocialMedia is null)
+            throw new InvalidOperationException("Social media model is unavailable.");
+
         var row = EncodeSocialMediaFeaturesFromRequest(req);
         var probas = RunNumericInference(_models.SocialMedia,
             new List<Dictionary<string, float>> { row });
