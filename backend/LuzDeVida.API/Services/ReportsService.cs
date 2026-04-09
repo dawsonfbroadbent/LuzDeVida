@@ -81,7 +81,7 @@ public class ReportsService
         var aarIncidents       = await _context.incident_reports.CountAsync(i => i.incident_date.HasValue && i.incident_date >= yearStart && i.incident_date <= yearEnd);
         var aarIncidentsRes    = await _context.incident_reports.CountAsync(i => i.incident_date.HasValue && i.incident_date >= yearStart && i.incident_date <= yearEnd && i.resolved == true);
         var aarMonetaryTotal   = (await _context.donations.Where(d => d.donation_date.HasValue && d.donation_date >= yearStart && d.donation_date <= yearEnd && d.donation_type == "Monetary").SumAsync(d => d.amount)) ?? 0m;
-        var aarInKindTotal     = (await _context.donations.Where(d => d.donation_date.HasValue && d.donation_date >= yearStart && d.donation_date <= yearEnd && d.donation_type == "In-Kind").SumAsync(d => d.estimated_value)) ?? 0m;
+        var aarInKindTotal     = (await _context.donations.Where(d => d.donation_date.HasValue && d.donation_date >= yearStart && d.donation_date <= yearEnd).SumAsync(d => d.estimated_value)) ?? 0m;
 
         // ── Donation trend (24 months rolling) ──────────────────────────────
         var donationTrend = donationsRaw
@@ -96,7 +96,7 @@ public class ReportsService
                     month_key      = $"{g.Key.Year:D4}-{g.Key.Month:D2}",
                     monetary_total = g.Where(d => d.donation_type == "Monetary").Sum(d => d.amount ?? 0),
                     monetary_count = g.Count(d => d.donation_type == "Monetary"),
-                    in_kind_total  = g.Where(d => d.donation_type == "In-Kind").Sum(d => d.estimated_value ?? 0),
+                    in_kind_total  = g.Sum(d => d.estimated_value ?? 0),
                     in_kind_count  = g.Count(d => d.donation_type == "In-Kind"),
                 };
             })
@@ -107,7 +107,7 @@ public class ReportsService
         {
             total_monetary         = donationsYear.Where(d => d.donation_type == "Monetary").Sum(d => d.amount ?? 0),
             monetary_count         = donationsYear.Count(d => d.donation_type == "Monetary"),
-            total_in_kind_estimated = donationsYear.Where(d => d.donation_type == "In-Kind").Sum(d => d.estimated_value ?? 0),
+            total_in_kind_estimated = donationsYear.Sum(d => d.estimated_value ?? 0),
             in_kind_count          = donationsYear.Count(d => d.donation_type == "In-Kind"),
             unique_donor_count     = donationsYear.Select(d => d.supporter_id).Distinct().Count(),
             recurring_donor_count  = donationsYear.Where(d => d.is_recurring == true).Select(d => d.supporter_id).Distinct().Count(),

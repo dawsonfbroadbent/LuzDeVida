@@ -16,6 +16,7 @@ export interface SupporterListItem {
   status: string | null
   region: string | null
   totalGiven: number
+  inKindEstimatedValue: number
   lastDonationDate: string | null
   contributionTypes: string[]
 }

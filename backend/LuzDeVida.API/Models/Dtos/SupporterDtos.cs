@@ -18,6 +18,7 @@ public class SupporterListItemDto
     public string? Status { get; set; }
     public string? Region { get; set; }
     public decimal TotalGiven { get; set; }
+    public decimal InKindEstimatedValue { get; set; }
     public DateOnly? LastDonationDate { get; set; }
     public List<string> ContributionTypes { get; set; } = new();
 }

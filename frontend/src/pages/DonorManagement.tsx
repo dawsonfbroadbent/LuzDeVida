@@ -479,8 +479,9 @@ export default function DonorManagement({ embedded = false }: DonorManagementPro
                   Status <SortIcon col="status" filters={filters} />
                 </th>
                 <th className="dm-th-sortable" onClick={() => handleSort('total_given')}>
-                  Total Given <SortIcon col="total_given" filters={filters} />
+                  Total Monetary Given <SortIcon col="total_given" filters={filters} />
                 </th>
+                <th>Est. Value</th>
                 <th className="dm-th-sortable" onClick={() => handleSort('last_donation')}>
                   Last Donation <SortIcon col="last_donation" filters={filters} />
                 </th>
@@ -506,6 +507,7 @@ export default function DonorManagement({ embedded = false }: DonorManagementPro
                     </span>
                   </td>
                   <td className="dm-td-currency">{formatCurrency(s.totalGiven)}</td>
+                  <td className="dm-td-currency">{s.inKindEstimatedValue > 0 ? formatCurrency(s.inKindEstimatedValue) : '—'}</td>
                   <td>{formatDate(s.lastDonationDate)}</td>
                   <td>{s.region ?? '—'}</td>
                   <td>
