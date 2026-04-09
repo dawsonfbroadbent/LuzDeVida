@@ -1221,6 +1221,191 @@ button { cursor: pointer; font-family: var(--font-body); }
 }
 
 /* ============================================================
+   GET HELP PAGE
+   ============================================================ */
+.get-help-hero {
+  padding: calc(var(--nav-height) + 72px) 0 96px;
+  background:
+    radial-gradient(circle at top left, rgba(165, 225, 233, 0.38) 0%, transparent 36%),
+    linear-gradient(160deg, var(--cream-light) 0%, var(--blue-pale) 100%);
+}
+
+.get-help-hero__grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.get-help-hero__content {
+  max-width: 620px;
+}
+
+.get-help-hero__content h1 {
+  font-size: clamp(2.8rem, 6.5vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  margin-bottom: 24px;
+  animation: fade-up 0.9s var(--ease) 0.12s both;
+}
+
+.get-help-hero__content p {
+  font-size: clamp(1rem, 1.8vw, 1.16rem);
+  color: var(--text-mid);
+  max-width: 560px;
+  animation: fade-up 0.9s var(--ease) 0.24s both;
+}
+
+.get-help-hero__content a:not(.btn),
+.get-help-contact__copy a:not(.btn),
+.get-help-safety__inner a:not(.btn) {
+  color: var(--teal-dark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.get-help-hero__actions {
+  margin-top: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  animation: fade-up 0.9s var(--ease) 0.36s both;
+}
+
+.get-help-hero__image {
+  position: relative;
+  min-height: 520px;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 24px 48px rgba(31, 95, 105, 0.12);
+}
+
+.get-help-hero__image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 55%;
+}
+
+.get-help-commitment {
+  padding: 96px 0;
+  background: var(--cream);
+}
+
+.get-help-commitment__grid {
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.get-help-commitment__copy h2,
+.get-help-contact__copy h2,
+.get-help-safety__inner h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+
+.get-help-commitment__copy p {
+  margin-bottom: 18px;
+  font-size: 16px;
+}
+
+.get-help-highlights {
+  display: grid;
+  gap: 16px;
+}
+
+.get-help-highlight-card {
+  background: var(--white);
+  border: 1px solid var(--cream-darker);
+  border-radius: 6px;
+  padding: 32px;
+  box-shadow: 0 18px 40px rgba(31, 95, 105, 0.06);
+}
+
+.get-help-highlight-card h3 {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+}
+
+.get-help-highlight-card p {
+  font-size: 15px;
+  color: var(--text-mid);
+}
+
+.get-help-contact {
+  padding: 0 0 96px;
+  background: linear-gradient(180deg, var(--cream) 0%, var(--cream-dark) 100%);
+}
+
+.get-help-contact__card {
+  display: grid;
+  grid-template-columns: 1fr 0.92fr;
+  gap: 0;
+  background: var(--white);
+  border: 1px solid rgba(31, 95, 105, 0.08);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 24px 52px rgba(31, 95, 105, 0.1);
+}
+
+.get-help-contact__copy {
+  padding: 64px 56px;
+}
+
+.get-help-contact__copy p {
+  margin-bottom: 18px;
+  font-size: 16px;
+}
+
+.get-help-contact__copy .btn {
+  margin-top: 14px;
+}
+
+.get-help-contact__image {
+  min-height: 100%;
+  background: var(--blue-darker);
+}
+
+.get-help-contact__image img {
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.get-help-safety {
+  padding: 80px 0 104px;
+  background: var(--cream-dark);
+}
+
+.get-help-safety__inner {
+  max-width: 860px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 56px 64px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(31, 95, 105, 0.08);
+  border-radius: 6px;
+  box-shadow: 0 18px 40px rgba(31, 95, 105, 0.08);
+}
+
+.get-help-safety__inner p {
+  max-width: 680px;
+  margin: 0 auto;
+  font-size: 16px;
+}
+
+/* ============================================================
    DONATE PAGE
    ============================================================ */
 .donate-hero {
@@ -2136,6 +2321,19 @@ button { cursor: pointer; font-family: var(--font-body); }
   .donate-form-card { position: static; }
   .story-grid { grid-template-columns: 1fr; gap: 48px; }
   .story-pull-quote { position: static; }
+  .get-help-hero__grid,
+  .get-help-commitment__grid,
+  .get-help-contact__card {
+    grid-template-columns: 1fr;
+  }
+
+  .get-help-hero__image {
+    min-height: 420px;
+  }
+
+  .get-help-contact__image {
+    order: -1;
+  }
 
   .impact-kpi__grid { grid-template-columns: 1fr 1fr; }
   .impact-stewardship__inner { grid-template-columns: 1fr; gap: 56px; }
@@ -2164,6 +2362,7 @@ button { cursor: pointer; font-family: var(--font-body); }
   .cta-amounts { gap: 8px; }
 
   .about-hero { padding: calc(var(--nav-height) + 48px) 0 72px; }
+  .get-help-hero { padding: calc(var(--nav-height) + 48px) 0 72px; }
 
   .values-grid { grid-template-columns: 1fr; }
   .approach-steps { grid-template-columns: 1fr; }
@@ -2183,8 +2382,18 @@ button { cursor: pointer; font-family: var(--font-body); }
   .story-section,
   .values-section,
   .approach-section,
+  .get-help-commitment,
+  .get-help-contact,
+  .get-help-safety,
   .donate-main,
   .faq-section { padding: 72px 0; }
+
+  .get-help-hero__grid { gap: 32px; }
+  .get-help-hero__image { min-height: 320px; }
+  .get-help-highlight-card { padding: 28px 24px; }
+  .get-help-contact__copy { padding: 40px 28px; }
+  .get-help-contact__image img { min-height: 300px; }
+  .get-help-safety__inner { padding: 40px 32px; }
 
   .impact-hero { padding: calc(var(--nav-height) + 56px) 0 80px; }
   .impact-kpi__grid { grid-template-columns: 1fr 1fr; }

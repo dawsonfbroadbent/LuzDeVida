@@ -8,6 +8,7 @@ import Landing from './pages/Landing'
 import About from './pages/About'
 import Donate from './pages/Donate'
 import Impact from './pages/Impact'
+import GetHelp from './pages/GetHelp'
 import AdminWorkspace from './pages/AdminWorkspace'
 import Login from './pages/Login'
 import PrivacyPolicy from './pages/PrivacyPolicy'
@@ -24,6 +25,7 @@ export default function App() {
               <Route path="/about" element={<About />} />
               <Route path="/donate" element={<Donate />} />
               <Route path="/impact" element={<Impact />} />
+              <Route path="/get-help" element={<GetHelp />} />
               <Route path="/admin" element={<AdminWorkspace />} />
               <Route
                 path="/admin/dashboard"

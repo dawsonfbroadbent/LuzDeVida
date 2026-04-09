@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import lightbeach from '../assets/beachhearts.webp'
+import lightbeach from '../assets/SafehouseBanner.png'
 import handsTogether from '../assets/savingabuse.png'
 import { useScrollReveal } from '../hooks/useScrollReveal'
 import { fetchPublicImpact } from '../api/publicImpact'
