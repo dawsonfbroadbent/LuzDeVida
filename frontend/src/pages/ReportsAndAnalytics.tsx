@@ -248,8 +248,9 @@ export default function ReportsAndAnalytics({ embedded }: ReportsAndAnalyticsPro
           {generatedAt && <p className="reports__meta">Report generated {generatedAt}</p>}
         </div>
         <div className="reports__controls">
-          <span className="reports__controls-label">Year</span>
+          <label htmlFor="reports-year-select" className="reports__controls-label">Year</label>
           <select
+            id="reports-year-select"
             className="reports__year-select"
             value={selectedYear}
             onChange={e => setSelectedYear(Number(e.target.value))}
@@ -262,10 +263,12 @@ export default function ReportsAndAnalytics({ embedded }: ReportsAndAnalyticsPro
       </div>
 
       {/* Section nav */}
-      <nav className="reports__section-nav" aria-label="Report sections">
+      <nav className="reports__section-nav" role="tablist" aria-label="Report sections">
         {SECTION_LABELS.map(s => (
           <button
             key={s.id}
+            role="tab"
+            aria-selected={activeSection === s.id}
             className={`reports__section-btn${activeSection === s.id ? ' reports__section-btn--active' : ''}`}
             onClick={() => setActiveSection(s.id)}
           >
@@ -276,8 +279,8 @@ export default function ReportsAndAnalytics({ embedded }: ReportsAndAnalyticsPro
 
       {/* Loading */}
       {status === 'loading' && (
-        <div className="reports__loading">
-          <div className="reports__spinner" />
+        <div className="reports__loading" role="status" aria-live="polite">
+          <div className="reports__spinner" aria-hidden="true" />
           <span>Loading {selectedYear} data…</span>
         </div>
       )}
@@ -293,13 +296,13 @@ export default function ReportsAndAnalytics({ embedded }: ReportsAndAnalyticsPro
 
       {/* Content */}
       {status === 'success' && data && (
-        <>
+        <div role="tabpanel" aria-label={SECTION_LABELS.find(s => s.id === activeSection)?.label}>
           {activeSection === 'aar'           && <SectionAar data={data} year={selectedYear} />}
           {activeSection === 'donations'     && <SectionDonations data={data} />}
           {activeSection === 'outcomes'      && <SectionOutcomes data={data} year={selectedYear} />}
           {activeSection === 'safehouses'    && <SectionSafehouses data={data} year={selectedYear} />}
           {activeSection === 'reintegration' && <SectionReintegration data={data} year={selectedYear} />}
-        </>
+        </div>
       )}
     </div>
   )
@@ -537,11 +540,11 @@ function SectionDonations({ data }: { data: ReportsOverview }) {
           <table className="reports-table">
             <thead>
               <tr>
-                <th>Month</th>
-                <th style={{ textAlign: 'right' }}>Monetary Total (PHP)</th>
-                <th style={{ textAlign: 'right' }}>Monetary Count</th>
-                <th style={{ textAlign: 'right' }}>Est. Value (PHP)</th>
-                <th style={{ textAlign: 'right' }}>In-Kind Count</th>
+                <th scope="col">Month</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Monetary Total (PHP)</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Monetary Count</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Est. Value (PHP)</th>
+                <th scope="col" style={{ textAlign: 'right' }}>In-Kind Count</th>
               </tr>
             </thead>
             <tbody>
@@ -653,14 +656,14 @@ function SectionOutcomes({ data, year }: { data: ReportsOverview; year: number }
           <table className="reports-table">
             <thead>
               <tr>
-                <th>Quarter</th>
-                <th style={{ textAlign: 'right' }}>Active Residents</th>
-                <th style={{ textAlign: 'right' }}>Avg Ed. Progress</th>
-                <th style={{ textAlign: 'right' }}>Avg Attendance</th>
-                <th style={{ textAlign: 'right' }}>Avg Health Score</th>
-                <th style={{ textAlign: 'right' }}>Avg Nutrition</th>
-                <th style={{ textAlign: 'right' }}>Ed. Records</th>
-                <th style={{ textAlign: 'right' }}>Health Records</th>
+                <th scope="col">Quarter</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Active Residents</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Avg Ed. Progress</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Avg Attendance</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Avg Health Score</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Avg Nutrition</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Ed. Records</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Health Records</th>
               </tr>
             </thead>
             <tbody>
@@ -726,18 +729,18 @@ function SectionSafehouses({ data, year }: { data: ReportsOverview; year: number
           <table className="reports-table">
             <thead>
               <tr>
-                <th>Safehouse</th>
-                <th>Region</th>
-                <th style={{ textAlign: 'right' }}>Active</th>
-                <th style={{ textAlign: 'right' }}>Capacity</th>
-                <th style={{ textAlign: 'right' }}>Occupancy</th>
-                <th style={{ textAlign: 'right' }}>Avg Ed. %</th>
-                <th style={{ textAlign: 'right' }}>Avg Health</th>
-                <th style={{ textAlign: 'right' }}>Sessions</th>
-                <th style={{ textAlign: 'right' }}>Visits</th>
-                <th style={{ textAlign: 'right' }}>Incidents</th>
-                <th style={{ textAlign: 'right' }}>Plans Active</th>
-                <th style={{ textAlign: 'right' }}>Plans Done</th>
+                <th scope="col">Safehouse</th>
+                <th scope="col">Region</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Active</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Capacity</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Occupancy</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Avg Ed. %</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Avg Health</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Sessions</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Visits</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Incidents</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Plans Active</th>
+                <th scope="col" style={{ textAlign: 'right' }}>Plans Done</th>
               </tr>
             </thead>
             <tbody>
@@ -853,9 +856,9 @@ function SectionReintegration({ data, year }: { data: ReportsOverview; year: num
               <table className="reports-table">
                 <thead>
                   <tr>
-                    <th>Reintegration Type</th>
-                    <th style={{ textAlign: 'right' }}>Count</th>
-                    <th style={{ textAlign: 'right' }}>% of Closed Cases</th>
+                    <th scope="col">Reintegration Type</th>
+                    <th scope="col" style={{ textAlign: 'right' }}>Count</th>
+                    <th scope="col" style={{ textAlign: 'right' }}>% of Closed Cases</th>
                   </tr>
                 </thead>
                 <tbody>
