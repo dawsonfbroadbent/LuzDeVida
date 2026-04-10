@@ -111,7 +111,7 @@ export default function Login() {
     setLoading(true)
 
     try {
-      await registerUser(regForm.email, regForm.password)
+      await registerUser(regForm.email, regForm.password, regForm.firstName, regForm.lastName)
 
       setSuccess('Account created successfully. Please sign in.')
       setTab('login')

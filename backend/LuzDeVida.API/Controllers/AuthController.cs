@@ -1,10 +1,12 @@
 using System.Security.Claims;
 using LuzDeVida.API.Data;
+using LuzDeVida.API.Models;
 using LuzDeVida.API.Models.Dtos;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 
 namespace LuzDeVida.API.Controllers;
 
@@ -13,13 +15,14 @@ namespace LuzDeVida.API.Controllers;
 public class AuthController(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
-    IConfiguration configuration) : ControllerBase
+    IConfiguration configuration,
+    LuzDeVidaDbContext dbContext) : ControllerBase
 {
     private const string DefaultFrontendUrl = "http://localhost:3000";
     private const string DefaultExternalReturnPath = "/";
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] LoginDto request)
+    public async Task<IActionResult> Register([FromBody] RegisterDto request)
     {
         var user = new ApplicationUser
         {
@@ -36,6 +39,57 @@ public class AuthController(
                 .GroupBy(e => e.Code)
                 .ToDictionary(g => g.Key, g => g.Select(e => e.Description).ToArray());
             return ValidationProblem(new ValidationProblemDetails(errors));
+        }
+
+        await userManager.AddToRoleAsync(user, AuthRoles.Supporter);
+
+        try
+        {
+            var firstName = request.FirstName?.Trim() ?? "";
+            var lastName = request.LastName?.Trim() ?? "";
+            var displayName = string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName)
+                ? request.Email
+                : $"{firstName} {lastName}".Trim();
+
+            var maxSupporterId = await dbContext.supporters
+                .AsNoTracking()
+                .MaxAsync(s => (int?)s.supporter_id) ?? 0;
+
+            var newSupporter = new supporter
+            {
+                supporter_id = maxSupporterId + 1,
+                first_name = string.IsNullOrWhiteSpace(firstName) ? null : firstName,
+                last_name = string.IsNullOrWhiteSpace(lastName) ? null : lastName,
+                display_name = displayName,
+                email = request.Email.Trim().ToLower(),
+                supporter_type = "individual",
+                status = "active",
+                relationship_type = "supporter",
+                acquisition_channel = "self_registration",
+                created_at = DateTime.UtcNow,
+            };
+
+            dbContext.supporters.Add(newSupporter);
+            await dbContext.SaveChangesAsync();
+
+            var newAppUser = new app_user
+            {
+                email = request.Email.Trim().ToLower(),
+                password_hash = "IDENTITY_MANAGED",
+                role = "supporter",
+                supporter_id = newSupporter.supporter_id,
+                is_active = true,
+                created_at = DateTime.UtcNow,
+            };
+
+            dbContext.app_users.Add(newAppUser);
+            await dbContext.SaveChangesAsync();
+        }
+        catch
+        {
+            // Identity user was created but supporter/app_user failed — clean up
+            await userManager.DeleteAsync(user);
+            return StatusCode(500, new { title = "Registration failed. Please try again." });
         }
 
         return Ok();
