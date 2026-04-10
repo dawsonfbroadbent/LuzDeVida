@@ -31,6 +31,12 @@
   --text-light:    #6E8F95;
   --white:         #FFFFFF;
 
+  /* Semantic status — aligned with brand palette */
+  --danger:        #a93226;   /* muted warm red for errors and destructive actions */
+  --danger-pale:   #fbeaea;   /* light error background */
+  --danger-light:  #f1948a;   /* error border */
+  --danger-dark:   #7b241c;   /* dark red for text on pale error backgrounds */
+
   --font-display:  'Fraunces', Georgia, serif;
   --font-body:     'DM Sans', system-ui, sans-serif;
 
@@ -43,6 +49,20 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+/* Global focus ring — keyboard users only, no mouse interference */
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Form elements use border + shadow instead of outline */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
 }
 
 html { scroll-behavior: smooth; }

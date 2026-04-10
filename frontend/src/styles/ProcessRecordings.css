@@ -61,15 +61,15 @@
 }
 
 .error-alert {
-  background-color: #fee;
-  border: 1px solid #fcc;
-  color: #c33;
+  background-color: var(--danger-pale);
+  border: 1px solid var(--danger-light);
+  color: var(--danger-dark);
 }
 
 .success-alert {
-  background-color: #efe;
-  border: 1px solid #cfc;
-  color: #3c3;
+  background-color: var(--teal-pale);
+  border: 1px solid var(--teal-light);
+  color: var(--teal-dark);
 }
 
 .alert-close {
@@ -140,13 +140,13 @@
 }
 
 .selector-group select:hover {
-  border-color: var(--teal);
+  border-color: var(--blue);
 }
 
 .selector-group select:focus {
   outline: none;
-  border-color: var(--teal);
-  box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.08);
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(95, 187, 199, 0.2);
 }
 
 /* Action Buttons */
@@ -172,14 +172,14 @@
 }
 
 .process-recordings .btn-primary {
-  background-color: var(--teal);
-  color: white;
+  background-color: var(--blue);
+  color: var(--white);
 }
 
 .process-recordings .btn-primary:hover {
-  background-color: var(--teal-dark);
+  background-color: var(--blue-dark);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 128, 128, 0.2);
+  box-shadow: 0 4px 12px rgba(95, 187, 199, 0.25);
 }
 
 .process-recordings .btn-primary:disabled {
@@ -343,22 +343,22 @@
 }
 
 .btn-edit {
-  background-color: var(--teal);
-  color: white;
+  background-color: var(--blue);
+  color: var(--white);
 }
 
 .btn-edit:hover {
-  background-color: var(--teal-dark);
+  background-color: var(--blue-dark);
   transform: translateY(-2px);
 }
 
 .btn-delete {
-  background-color: #dc3545;
-  color: white;
+  background-color: var(--danger);
+  color: var(--white);
 }
 
 .btn-delete:hover {
-  background-color: #a02834;
+  background-color: var(--danger-dark);
   transform: translateY(-1px);
 }
 
@@ -471,15 +471,15 @@
 .form-group input:hover,
 .form-group select:hover,
 .form-group textarea:hover {
-  border-color: var(--teal);
+  border-color: var(--blue);
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: var(--teal);
-  box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.08);
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(95, 187, 199, 0.2);
 }
 
 .form-group textarea {
@@ -510,12 +510,12 @@
 }
 
 .modal-footer .btn-primary {
-  background-color: var(--teal);
-  color: white;
+  background-color: var(--blue);
+  color: var(--white);
 }
 
 .modal-footer .btn-primary:hover {
-  background-color: var(--teal-dark);
+  background-color: var(--blue-dark);
 }
 
 .modal-footer .btn-secondary {
@@ -529,8 +529,8 @@
 
 /* Delete Confirmation */
 .delete-confirm-box {
-  background: #fee;
-  border: 2px solid #fcc;
+  background: var(--danger-pale);
+  border: 1px solid var(--danger-light);
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -538,13 +538,13 @@
 
 .delete-confirm-box p {
   margin: 0 0 0.5rem 0;
-  color: #c33;
+  color: var(--danger-dark);
   font-weight: 500;
 }
 
 .delete-confirm-box p:last-child {
   margin: 0;
-  color: #999;
+  color: var(--text-light);
   font-size: 0.9rem;
 }
 
@@ -567,27 +567,27 @@
 }
 
 .btn-confirm-delete {
-  background-color: #f44336;
-  color: white;
+  background-color: var(--danger);
+  color: var(--white);
 }
 
 .btn-confirm-delete:hover {
-  background-color: #da190b;
+  background-color: var(--danger-dark);
 }
 
 .btn-confirm-cancel {
-  background-color: #ddd;
-  color: #333;
+  background-color: var(--cream-darker);
+  color: var(--text-dark);
 }
 
 .btn-confirm-cancel:hover {
-  background-color: #ccc;
+  background-color: var(--cream-dark);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .process-recordings {
-    padding: 1rem;
+    padding: calc(var(--nav-height) + 16px) 1rem 1.5rem;
   }
 
   .process-recordings-header h1 {
@@ -626,7 +626,7 @@
 
 @media (max-width: 480px) {
   .process-recordings {
-    padding: 0.75rem;
+    padding: calc(var(--nav-height) + 12px) 0.75rem 1rem;
   }
 
   .process-recordings-header h1 {

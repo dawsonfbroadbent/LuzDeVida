@@ -71,11 +71,11 @@
   transition: color 0.2s, border-color 0.2s;
 }
 .sm__section-btn:hover {
-  color: var(--teal-dark);
+  color: var(--blue-dark);
 }
 .sm__section-btn--active {
-  color: var(--teal-dark);
-  border-bottom-color: var(--teal);
+  color: var(--blue-darker);
+  border-bottom-color: var(--blue);
   font-weight: 600;
 }
 
@@ -91,7 +91,7 @@
 .sm__spinner {
   width: 36px; height: 36px;
   border: 3px solid var(--cream-darker);
-  border-top-color: var(--teal);
+  border-top-color: var(--blue);
   border-radius: 50%;
   animation: smSpin 0.8s linear infinite;
 }
@@ -105,8 +105,8 @@
 .sm__retry-btn {
   margin-top: 1rem;
   padding: 0.6rem 1.6rem;
-  background: var(--teal);
-  color: #fff;
+  background: var(--blue);
+  color: var(--white);
   border: none;
   border-radius: 8px;
   font-family: var(--font-body);
@@ -114,7 +114,7 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-.sm__retry-btn:hover { background: var(--teal-dark); }
+.sm__retry-btn:hover { background: var(--blue-dark); }
 
 /* ── Section panel ───────────────────────────────────────────────────────── */
 .sm-section-panel {
@@ -250,9 +250,9 @@
   background: var(--cream-dark);
 }
 .sm-content-nav__btn--active {
-  background: var(--teal);
-  color: #fff;
-  border-color: var(--teal);
+  background: var(--blue);
+  color: var(--white);
+  border-color: var(--blue);
   font-weight: 600;
 }
 
@@ -269,12 +269,13 @@
 }
 .sm-table th {
   text-align: left;
-  padding: 0.65rem 0.75rem;
-  font-size: 0.72rem;
+  padding: 0.9rem 0.75rem;
+  font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-light);
+  color: var(--text-mid);
+  background: var(--cream-dark);
   border-bottom: 2px solid var(--cream-darker);
   white-space: nowrap;
   cursor: default;
@@ -284,10 +285,10 @@
   user-select: none;
 }
 .sm-table th.sm-table__sortable:hover {
-  color: var(--teal-dark);
+  color: var(--blue-dark);
 }
 .sm-table td {
-  padding: 0.6rem 0.75rem;
+  padding: 0.9rem 0.75rem;
   border-bottom: 1px solid var(--cream-dark);
   color: var(--text-dark);
   white-space: nowrap;
@@ -315,9 +316,9 @@
   transition: all 0.2s;
 }
 .sm-table__toggle-btn--active {
-  background: var(--teal);
-  color: #fff;
-  border-color: var(--teal);
+  background: var(--blue);
+  color: var(--white);
+  border-color: var(--blue);
   font-weight: 600;
 }
 
@@ -340,7 +341,7 @@
 .sm-funnel__bar {
   height: 32px;
   border-radius: 6px;
-  background: var(--teal);
+  background: var(--blue);
   transition: width 0.6s var(--ease);
   min-width: 24px;
 }
@@ -438,9 +439,9 @@
 }
 .sm-predictor__select:focus,
 .sm-predictor__input:focus {
-  border-color: var(--teal);
+  border-color: var(--blue);
   outline: none;
-  box-shadow: 0 0 0 3px var(--teal-pale);
+  box-shadow: 0 0 0 3px rgba(95, 187, 199, 0.2);
 }
 .sm-predictor__checkbox-row {
   grid-column: 1 / -1;
@@ -464,8 +465,8 @@
 .sm-predictor__submit {
   grid-column: 1 / -1;
   padding: 0.7rem 2rem;
-  background: var(--teal);
-  color: #fff;
+  background: var(--blue);
+  color: var(--white);
   border: none;
   border-radius: 10px;
   font-family: var(--font-body);
@@ -475,7 +476,7 @@
   transition: background 0.2s;
   justify-self: start;
 }
-.sm-predictor__submit:hover { background: var(--teal-dark); }
+.sm-predictor__submit:hover { background: var(--blue-dark); }
 .sm-predictor__submit:disabled {
   background: var(--cream-darker);
   color: var(--text-light);
