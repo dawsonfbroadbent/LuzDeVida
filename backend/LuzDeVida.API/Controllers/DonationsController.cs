@@ -22,6 +22,38 @@ public class DonationsController : ControllerBase
         _userManager = userManager;
     }
 
+    [HttpGet("my-history")]
+    public async Task<IActionResult> GetMyDonations()
+    {
+        var identityUser = await _userManager.GetUserAsync(User);
+        if (identityUser?.Email == null)
+            return Unauthorized();
+
+        var appUser = await _context.app_users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.email.ToLower() == identityUser.Email.ToLower());
+
+        if (appUser?.supporter_id == null)
+            return Ok(Array.Empty<object>());
+
+        var donations = await _context.donations
+            .AsNoTracking()
+            .Where(d => d.supporter_id == appUser.supporter_id.Value)
+            .OrderByDescending(d => d.donation_date)
+            .Select(d => new
+            {
+                d.donation_id,
+                d.donation_date,
+                d.amount,
+                d.currency_code,
+                d.is_recurring,
+                d.donation_type
+            })
+            .ToListAsync();
+
+        return Ok(donations);
+    }
+
     [HttpPost]
     public async Task<IActionResult> CreateDonation([FromBody] CreateDonationDto dto)
     {

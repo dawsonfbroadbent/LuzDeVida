@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useScrollReveal } from '../hooks/useScrollReveal'
 import { useAuth } from '../context/AuthContext'
-import { createDonation } from '../api/DonationAPI'
+import { createDonation, fetchMyDonations, type DonationHistoryItem } from '../api/DonationAPI'
 
 /* ── Types ──────────────────────────────────────────────── */
 type Frequency = 'once' | 'monthly'
@@ -46,6 +46,13 @@ export default function Donate() {
   useScrollReveal()
 
   const { isAuthenticated } = useAuth()
+  const [donationHistory, setDonationHistory] = useState<DonationHistoryItem[]>([])
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchMyDonations().then(setDonationHistory)
+    }
+  }, [isAuthenticated])
 
   const [frequency, setFrequency] = useState<Frequency>('once')
   const [selectedAmount, setSelectedAmount] = useState<number | null>(50)
@@ -100,6 +107,7 @@ export default function Donate() {
         },
       )
       setSubmitted(true)
+      fetchMyDonations().then(setDonationHistory)
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
@@ -350,6 +358,69 @@ export default function Donate() {
                   </form>
                 )}
               </div>
+
+              {isAuthenticated && donationHistory.length > 0 && (
+                <div className="donate-history" style={{ marginTop: '24px' }}>
+                  <div style={{
+                    background: 'var(--blue-light, #eef4ff)',
+                    borderRadius: '10px',
+                    padding: '14px 18px',
+                    marginBottom: '16px',
+                    fontSize: '14px',
+                    lineHeight: 1.5,
+                    color: 'var(--text, #2d3748)',
+                  }}>
+                    <strong>Want to see where your money goes?</strong>{' '}
+                    Visit the <Link to="/impact" style={{ color: 'var(--blue)', fontWeight: 600 }}>Impact page</Link> to
+                    see how donations are allocated across our safehouses and programs.
+                  </div>
+
+                  <h4 style={{
+                    fontFamily: 'var(--font-body)',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color: 'var(--text-light)',
+                    marginBottom: '12px',
+                  }}>
+                    Your Donation History
+                  </h4>
+
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{
+                      width: '100%',
+                      borderCollapse: 'collapse',
+                      fontSize: '14px',
+                    }}>
+                      <thead>
+                        <tr style={{ borderBottom: '2px solid var(--border, #e2e8f0)' }}>
+                          <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: 'var(--text-light)' }}>Date</th>
+                          <th style={{ textAlign: 'right', padding: '8px 12px', fontWeight: 600, color: 'var(--text-light)' }}>Amount</th>
+                          <th style={{ textAlign: 'center', padding: '8px 12px', fontWeight: 600, color: 'var(--text-light)' }}>Type</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {donationHistory.map((d) => (
+                          <tr key={d.donation_id} style={{ borderBottom: '1px solid var(--border, #e2e8f0)' }}>
+                            <td style={{ padding: '10px 12px' }}>
+                              {d.donation_date
+                                ? new Date(d.donation_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                                : '—'}
+                            </td>
+                            <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>
+                              ${d.amount?.toFixed(2) ?? '0.00'}
+                            </td>
+                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                              {d.is_recurring ? 'Monthly' : 'One-time'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
