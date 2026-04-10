@@ -241,6 +241,9 @@ public class AuthController(
             {
                 return Redirect(BuildFrontendErrorUrl("Unable to create a local account for the external login."));
             }
+
+            await userManager.AddToRoleAsync(user, AuthRoles.Supporter);
+            await EnsureSupporterAndAppUser(email, info);
         }
 
         var addLoginResult = await userManager.AddLoginAsync(user, info);
@@ -259,6 +262,58 @@ public class AuthController(
     {
         await signInManager.SignOutAsync();
         return Ok(new { message = "Logout successful." });
+    }
+
+    private async Task EnsureSupporterAndAppUser(string email, ExternalLoginInfo? info = null)
+    {
+        var normalizedEmail = email.Trim().ToLower();
+
+        var existingAppUser = await dbContext.app_users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.email.ToLower() == normalizedEmail);
+
+        if (existingAppUser != null)
+            return;
+
+        var firstName = info?.Principal.FindFirstValue(ClaimTypes.GivenName) ?? "";
+        var lastName = info?.Principal.FindFirstValue(ClaimTypes.Surname) ?? "";
+        var displayName = string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName)
+            ? normalizedEmail
+            : $"{firstName} {lastName}".Trim();
+
+        var maxSupporterId = await dbContext.supporters
+            .AsNoTracking()
+            .MaxAsync(s => (int?)s.supporter_id) ?? 0;
+
+        var newSupporter = new supporter
+        {
+            supporter_id = maxSupporterId + 1,
+            first_name = string.IsNullOrWhiteSpace(firstName) ? null : firstName,
+            last_name = string.IsNullOrWhiteSpace(lastName) ? null : lastName,
+            display_name = displayName,
+            email = normalizedEmail,
+            supporter_type = "individual",
+            status = "active",
+            relationship_type = "supporter",
+            acquisition_channel = info != null ? "google" : "self_registration",
+            created_at = DateTime.UtcNow,
+        };
+
+        dbContext.supporters.Add(newSupporter);
+        await dbContext.SaveChangesAsync();
+
+        var newAppUser = new app_user
+        {
+            email = normalizedEmail,
+            password_hash = "IDENTITY_MANAGED",
+            role = "supporter",
+            supporter_id = newSupporter.supporter_id,
+            is_active = true,
+            created_at = DateTime.UtcNow,
+        };
+
+        dbContext.app_users.Add(newAppUser);
+        await dbContext.SaveChangesAsync();
     }
 
     private bool IsGoogleConfigured() =>
