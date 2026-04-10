@@ -1,315 +1,85 @@
 using LuzDeVida.API.Data;
 using LuzDeVida.API.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.ML.OnnxRuntime;
-using Microsoft.ML.OnnxRuntime.Tensors;
 
 namespace LuzDeVida.API.Services;
-
-/// <summary>
-/// Holds the three ONNX InferenceSessions (singleton, thread-safe).
-/// </summary>
-public class OnnxModelHolder : IDisposable
-{
-    public InferenceSession? DonorChurn { get; }
-    public InferenceSession? ResidentRisk { get; }
-    public InferenceSession? SocialMedia { get; }
-
-    public OnnxModelHolder(string modelsDir, ILogger<OnnxModelHolder>? logger = null)
-    {
-        ModelsDir = modelsDir;
-        DonorChurn   = TryLoad(Path.Combine(modelsDir, "donor_churn_model.onnx"), logger);
-        ResidentRisk = TryLoad(Path.Combine(modelsDir, "resident_risk_model.onnx"), logger);
-        SocialMedia  = TryLoad(Path.Combine(modelsDir, "social_media_model.onnx"), logger);
-    }
-
-    public string ModelsDir { get; }
-    public Dictionary<string, string> LoadErrors { get; } = new();
-
-    private InferenceSession? TryLoad(string path, ILogger? logger)
-    {
-        try
-        {
-            if (!File.Exists(path))
-            {
-                var msg = $"File not found: {path}";
-                logger?.LogWarning(msg);
-                LoadErrors[Path.GetFileName(path)] = msg;
-                return null;
-            }
-            return new InferenceSession(path);
-        }
-        catch (Exception ex)
-        {
-            var msg = $"{ex.GetType().Name}: {ex.Message}";
-            logger?.LogWarning("Failed to load ONNX model from {Path}: {Error}", path, msg);
-            LoadErrors[Path.GetFileName(path)] = msg;
-            return null;
-        }
-    }
-
-    public void Dispose()
-    {
-        DonorChurn?.Dispose();
-        ResidentRisk?.Dispose();
-        SocialMedia?.Dispose();
-    }
-}
 
 public class MlPredictionService
 {
     private readonly LuzDeVidaDbContext _db;
-    private readonly OnnxModelHolder _models;
     private readonly ILogger<MlPredictionService> _logger;
 
     public MlPredictionService(
         LuzDeVidaDbContext db,
-        OnnxModelHolder models,
         ILogger<MlPredictionService> logger)
     {
         _db = db;
-        _models = models;
         _logger = logger;
     }
 
     // =====================================================================
-    //  DONOR CHURN
+    //  DONOR CHURN — reads pre-computed predictions from DB
     // =====================================================================
     public async Task<DonorChurnResultDto> PredictDonorChurnAsync()
     {
-        var supporters = await _db.supporters
-            .Where(s => s.status == "active")
+        var rows = await _db.ml_donor_churn_predictions
+            .OrderByDescending(p => p.churn_risk_score)
             .ToListAsync();
 
-        var donations = await _db.donations.ToListAsync();
-        var allocations = await _db.donation_allocations.ToListAsync();
-        var socialPosts = await _db.social_media_posts.ToListAsync();
+        if (rows.Count == 0)
+            throw new InvalidOperationException(
+                "No donor churn predictions found. Run the Python retraining script to generate predictions.");
 
-        var numericRows = new List<Dictionary<string, float>>();
-        var categoricalRows = new List<Dictionary<string, string>>();
-        var metaList = new List<(int id, string? name, string? email)>();
-
-        foreach (var s in supporters)
+        return new DonorChurnResultDto
         {
-            var sDonations = donations
-                .Where(d => d.supporter_id == s.supporter_id)
-                .OrderBy(d => d.donation_date)
-                .ToList();
-
-            if (sDonations.Count == 0) continue;
-
-            // avg_days_between_donations
-            float avgDaysBetween = 0;
-            var dates = sDonations
-                .Where(d => d.donation_date.HasValue)
-                .Select(d => d.donation_date!.Value.ToDateTime(TimeOnly.MinValue))
-                .OrderBy(d => d).ToList();
-            if (dates.Count > 1)
+            generated_at = rows[0].scored_at,
+            predictions = rows.Select(r => new DonorChurnPredictionDto
             {
-                var gaps = new List<double>();
-                for (int i = 1; i < dates.Count; i++)
-                    gaps.Add((dates[i] - dates[i - 1]).TotalDays);
-                avgDaysBetween = (float)gaps.Average();
-            }
-
-            var monetary = sDonations.Where(d => d.donation_type == "monetary").ToList();
-            float avgAmount = monetary.Count > 0
-                ? (float)monetary.Average(d => d.amount ?? 0) : 0;
-
-            int numCampaigns = sDonations
-                .Where(d => !string.IsNullOrEmpty(d.campaign_name))
-                .Select(d => d.campaign_name).Distinct().Count();
-            int numChannels = sDonations
-                .Select(d => d.channel_source).Distinct().Count();
-
-            var donationIds = sDonations.Select(d => d.donation_id).ToHashSet();
-            var sAllocations = allocations
-                .Where(a => donationIds.Contains(a.donation_id)).ToList();
-            int numProgramAreas = sAllocations
-                .Select(a => a.program_area).Distinct().Count();
-
-            var inkind = sDonations.Where(d => d.donation_type == "in-kind").ToList();
-
-            var referralPostIds = sDonations
-                .Where(d => d.referral_post_id.HasValue)
-                .Select(d => d.referral_post_id!.Value).ToList();
-            float avgRefEngagement = 0;
-            if (referralPostIds.Count > 0)
-            {
-                var refPosts = socialPosts
-                    .Where(p => referralPostIds.Contains(p.post_id)).ToList();
-                if (refPosts.Count > 0)
-                    avgRefEngagement = (float)refPosts
-                        .Average(p => p.engagement_rate ?? 0);
-            }
-
-            string preferredChannel = sDonations
-                .Where(d => !string.IsNullOrEmpty(d.channel_source))
-                .GroupBy(d => d.channel_source)
-                .OrderByDescending(g => g.Count())
-                .Select(g => g.Key!).FirstOrDefault() ?? "unknown";
-
-            string preferredProgramArea = sAllocations
-                .Where(a => !string.IsNullOrEmpty(a.program_area))
-                .GroupBy(a => a.program_area)
-                .OrderByDescending(g => g.Count())
-                .Select(g => g.Key!).FirstOrDefault() ?? "unknown";
-
-            numericRows.Add(new Dictionary<string, float>
-            {
-                ["avg_days_between_donations"] = avgDaysBetween,
-                ["avg_donation_amount"] = avgAmount,
-                ["num_campaigns"] = numCampaigns,
-                ["num_channels"] = numChannels,
-                ["num_program_areas"] = numProgramAreas,
-                ["inkind_donation_count"] = inkind.Count,
-                ["has_inkind"] = inkind.Count > 0 ? 1f : 0f,
-                ["num_social_referrals"] = referralPostIds.Count,
-                ["avg_referral_post_engagement"] = avgRefEngagement,
-            });
-
-            categoricalRows.Add(new Dictionary<string, string>
-            {
-                ["supporter_type"] = s.supporter_type ?? "unknown",
-                ["acquisition_channel"] = s.acquisition_channel ?? "unknown",
-                ["region"] = s.region ?? "unknown",
-                ["relationship_type"] = s.relationship_type ?? "unknown",
-                ["preferred_channel"] = preferredChannel,
-                ["preferred_program_area"] = preferredProgramArea,
-            });
-
-            metaList.Add((s.supporter_id, s.display_name, s.email));
-        }
-
-        if (numericRows.Count == 0)
-            return new DonorChurnResultDto { predictions = new(), generated_at = DateTime.UtcNow };
-
-        if (_models.DonorChurn is null)
-            throw new InvalidOperationException("Donor churn model is unavailable.");
-
-        var probas = RunDonorChurnInference(numericRows, categoricalRows);
-
-        var result = new DonorChurnResultDto { generated_at = DateTime.UtcNow };
-        for (int i = 0; i < probas.Count; i++)
-        {
-            result.predictions.Add(new DonorChurnPredictionDto
-            {
-                supporter_id = metaList[i].id,
-                display_name = metaList[i].name,
-                email = metaList[i].email,
-                churn_risk_score = probas[i],
-                risk_tier = Tier(probas[i]),
-            });
-        }
-        return result;
+                supporter_id = r.supporter_id,
+                display_name = r.display_name,
+                email = r.email,
+                churn_risk_score = r.churn_risk_score,
+                risk_tier = r.risk_tier,
+            }).ToList(),
+        };
     }
 
     // =====================================================================
-    //  RESIDENT RISK
+    //  RESIDENT RISK — reads pre-computed predictions from DB
     // =====================================================================
     public async Task<ResidentRiskResultDto> PredictResidentRiskAsync()
     {
-        var residents = await _db.residents
-            .Where(r => r.case_status == "active")
-            .Include(r => r.safehouse)
+        var rows = await _db.ml_resident_risk_predictions
+            .OrderByDescending(p => p.risk_score)
             .ToListAsync();
 
-        var healthRecords = await _db.health_wellbeing_records.ToListAsync();
-        var incidents = await _db.incident_reports.ToListAsync();
-        var recordings = await _db.process_recordings.ToListAsync();
-
-        var rows = new List<Dictionary<string, float>>();
-        var metaList = new List<(int id, string? ccn, string? code, string? sh)>();
-
-        foreach (var r in residents)
-        {
-            var rHealth = healthRecords.Where(h => h.resident_id == r.resident_id).ToList();
-            var rIncidents = incidents.Where(i => i.resident_id == r.resident_id).ToList();
-            var rRecordings = recordings.Where(rec => rec.resident_id == r.resident_id).ToList();
-
-            float healthMean = rHealth.Count > 0
-                ? (float)rHealth.Average(h => h.general_health_score ?? 0) : 0;
-            float nutritionMean = rHealth.Count > 0
-                ? (float)rHealth.Average(h => h.nutrition_score ?? 0) : 0;
-            float sleepMean = rHealth.Count > 0
-                ? (float)rHealth.Average(h => h.sleep_score ?? 0) : 0;
-            float bmiLatest = rHealth.Count > 0
-                ? (float)(rHealth.OrderByDescending(h => h.record_date).First().bmi ?? 0) : 0;
-            float medicalProp = rHealth.Count > 0
-                ? rHealth.Count(h => h.medical_checkup_done == true) / (float)rHealth.Count : 0;
-            float dentalProp = rHealth.Count > 0
-                ? rHealth.Count(h => h.dental_checkup_done == true) / (float)rHealth.Count : 0;
-            float psychProp = rHealth.Count > 0
-                ? rHealth.Count(h => h.psychological_checkup_done == true) / (float)rHealth.Count : 0;
-
-            float incidentResolutionRate = rIncidents.Count > 0
-                ? rIncidents.Count(i => i.resolved == true) / (float)rIncidents.Count : 0;
-
-            float sessionDurationMean = rRecordings.Count > 0
-                ? (float)rRecordings.Average(rec => rec.session_duration_minutes ?? 0) : 0;
-
-            float lengthOfStayMonths = r.date_of_admission.HasValue
-                ? (float)(DateOnly.FromDateTime(DateTime.UtcNow).DayNumber - r.date_of_admission.Value.DayNumber) / 30.44f
-                : 0;
-
-            rows.Add(new Dictionary<string, float>
-            {
-                ["family_informal_settler"] = (r.family_informal_settler == true) ? 1f : 0f,
-                ["capacity_girls"] = r.safehouse?.capacity_girls ?? 0,
-                ["length_of_stay_months"] = lengthOfStayMonths,
-                ["general_health_score_mean"] = healthMean,
-                ["nutrition_score_mean"] = nutritionMean,
-                ["sleep_quality_score_mean"] = sleepMean,
-                ["bmi_latest"] = bmiLatest,
-                ["medical_checkup_done_prop"] = medicalProp,
-                ["dental_checkup_done_prop"] = dentalProp,
-                ["psychological_checkup_done_prop"] = psychProp,
-                ["incident_resolution_rate"] = incidentResolutionRate,
-                ["session_duration_mean"] = sessionDurationMean,
-            });
-
-            metaList.Add((r.resident_id, r.case_control_no, r.internal_code,
-                          r.safehouse?.name));
-        }
-
         if (rows.Count == 0)
-            return new ResidentRiskResultDto { predictions = new(), generated_at = DateTime.UtcNow };
+            throw new InvalidOperationException(
+                "No resident risk predictions found. Run the Python retraining script to generate predictions.");
 
-        if (_models.ResidentRisk is null)
-            throw new InvalidOperationException("Resident risk model is unavailable.");
-
-        var probas = RunNumericInference(_models.ResidentRisk, rows);
-
-        // Build predictions sorted by risk_score descending for ranking
-        var predictions = new List<ResidentRiskPredictionDto>();
-        for (int i = 0; i < probas.Count; i++)
+        // Compute ranks (global + per-safehouse)
+        var predictions = rows.Select(r => new ResidentRiskPredictionDto
         {
-            predictions.Add(new ResidentRiskPredictionDto
-            {
-                resident_id = metaList[i].id,
-                case_control_no = metaList[i].ccn,
-                internal_code = metaList[i].code,
-                safehouse_name = metaList[i].sh,
-                risk_score = probas[i],
-                risk_tier = ResidentRiskTier(probas[i]),
-            });
+            resident_id = r.resident_id,
+            case_control_no = r.case_control_no,
+            internal_code = r.internal_code,
+            safehouse_name = r.safehouse_name,
+            risk_score = r.risk_score,
+            risk_tier = r.risk_tier,
+        }).ToList();
+
+        int total = predictions.Count;
+        for (int i = 0; i < total; i++)
+        {
+            predictions[i].rank_global = i + 1;
+            predictions[i].total_residents = total;
         }
 
-        // Global rank (1 = highest risk)
-        var sorted = predictions.OrderByDescending(p => p.risk_score).ToList();
-        int totalResidents = sorted.Count;
-        for (int r = 0; r < sorted.Count; r++)
-        {
-            sorted[r].rank_global = r + 1;
-            sorted[r].total_residents = totalResidents;
-        }
-
-        // Per-safehouse rank
-        foreach (var group in sorted.GroupBy(p => p.safehouse_name))
+        foreach (var group in predictions.GroupBy(p => p.safehouse_name))
         {
             int safehouseTotal = group.Count();
             int rank = 1;
-            foreach (var p in group.OrderByDescending(p => p.risk_score))
+            foreach (var p in group)
             {
                 p.rank_in_safehouse = rank++;
                 p.total_in_safehouse = safehouseTotal;
@@ -318,224 +88,73 @@ public class MlPredictionService
 
         return new ResidentRiskResultDto
         {
-            predictions = sorted,
-            generated_at = DateTime.UtcNow,
+            predictions = predictions,
+            generated_at = rows[0].scored_at,
         };
     }
 
     // =====================================================================
-    //  SOCIAL MEDIA -- batch (all posts)
+    //  SOCIAL MEDIA — batch: reads pre-computed predictions from DB
     // =====================================================================
     public async Task<SocialMediaResultDto> PredictSocialMediaAsync()
     {
-        var posts = await _db.social_media_posts.ToListAsync();
-
-        var rows = new List<Dictionary<string, float>>();
-        var metaList = new List<(int id, string? platform, string? postType, string? topic)>();
-
-        foreach (var p in posts)
-        {
-            rows.Add(EncodeSocialMediaFeatures(p));
-            metaList.Add((p.post_id, p.platform, p.post_type, p.content_topic));
-        }
+        var rows = await _db.ml_social_media_predictions
+            .OrderByDescending(p => p.conversion_probability)
+            .ToListAsync();
 
         if (rows.Count == 0)
-            return new SocialMediaResultDto { predictions = new(), generated_at = DateTime.UtcNow };
+            throw new InvalidOperationException(
+                "No social media predictions found. Run the Python retraining script to generate predictions.");
 
-        if (_models.SocialMedia is null)
-            throw new InvalidOperationException("Social media model is unavailable.");
-
-        var probas = RunNumericInference(_models.SocialMedia, rows);
-
-        var result = new SocialMediaResultDto { generated_at = DateTime.UtcNow };
-        for (int i = 0; i < probas.Count; i++)
+        return new SocialMediaResultDto
         {
-            result.predictions.Add(new SocialMediaPredictionDto
+            generated_at = rows[0].scored_at,
+            predictions = rows.Select(r => new SocialMediaPredictionDto
             {
-                post_id = metaList[i].id,
-                platform = metaList[i].platform,
-                post_type = metaList[i].postType,
-                content_topic = metaList[i].topic,
-                conversion_probability = probas[i],
-                conversion_tier = Tier(probas[i]),
-            });
-        }
-        return result;
+                post_id = r.post_id,
+                platform = r.platform,
+                post_type = r.post_type,
+                content_topic = r.content_topic,
+                conversion_probability = r.conversion_probability,
+                conversion_tier = r.conversion_tier,
+            }).ToList(),
+        };
     }
 
     // =====================================================================
-    //  SOCIAL MEDIA -- evaluate a single hypothetical post
+    //  SOCIAL MEDIA — evaluate a single hypothetical post (real-time)
     // =====================================================================
     public MlPredictionItem EvaluateSocialMediaPost(SocialMediaEvaluateRequest req)
     {
-        if (_models.SocialMedia is null)
-            throw new InvalidOperationException("Social media model is unavailable.");
+        // Feature order must match the scaler/tree training order exactly
+        var features = new float[]
+        {
+            req.post_hour,
+            req.caption_length,
+            req.features_resident_story ? 1f : 0f,
+            req.is_boosted ? 1f : 0f,
+            req.in_campaign ? 1f : 0f,
+            req.platform == "LinkedIn" ? 1f : 0f,
+            req.post_type == "EducationalContent" ? 1f : 0f,
+            req.post_type == "EventPromotion" ? 1f : 0f,
+            req.post_type == "ImpactStory" ? 1f : 0f,
+            req.post_type == "ThankYou" ? 1f : 0f,
+            req.media_type == "Reel" ? 1f : 0f,
+            req.media_type == "Text" ? 1f : 0f,
+            req.sentiment_tone == "Emotional" ? 1f : 0f,
+            req.sentiment_tone == "Informative" ? 1f : 0f,
+            (req.call_to_action_type == "None" || !req.has_call_to_action) ? 1f : 0f,
+        };
 
-        var row = EncodeSocialMediaFeaturesFromRequest(req);
-        var probas = RunNumericInference(_models.SocialMedia,
-            new List<Dictionary<string, float>> { row });
+        var prob = Math.Round(NativeTreeModels.PredictSocialMedia(features), 4);
 
         return new MlPredictionItem
         {
-            score = probas[0],
-            tier = Tier(probas[0]),
+            score = prob,
+            tier = Tier(prob),
         };
     }
 
-    // =====================================================================
-    //  ONNX Inference Helpers
-    // =====================================================================
-
-    /// <summary>
-    /// Run donor churn inference with mixed float + string inputs.
-    /// Each column is a separate named input of shape [N, 1].
-    /// </summary>
-    private List<double> RunDonorChurnInference(
-        List<Dictionary<string, float>> numericRows,
-        List<Dictionary<string, string>> categoricalRows)
-    {
-        int n = numericRows.Count;
-        var inputs = new List<NamedOnnxValue>();
-
-        // Numeric columns
-        foreach (var col in numericRows[0].Keys)
-        {
-            var data = new float[n];
-            for (int i = 0; i < n; i++)
-                data[i] = numericRows[i][col];
-            var tensor = new DenseTensor<float>(data, new[] { n, 1 });
-            inputs.Add(NamedOnnxValue.CreateFromTensor(col, tensor));
-        }
-
-        // Categorical columns (string tensors)
-        foreach (var col in categoricalRows[0].Keys)
-        {
-            var data = new string[n];
-            for (int i = 0; i < n; i++)
-                data[i] = categoricalRows[i][col];
-            var tensor = new DenseTensor<string>(data, new[] { n, 1 });
-            inputs.Add(NamedOnnxValue.CreateFromTensor(col, tensor));
-        }
-
-        return ExtractProbabilities(_models.DonorChurn, inputs);
-    }
-
-    /// <summary>
-    /// Run inference for all-numeric models (resident risk, social media).
-    /// Each column is a separate named input of shape [N, 1].
-    /// </summary>
-    private static List<double> RunNumericInference(
-        InferenceSession session,
-        List<Dictionary<string, float>> rows)
-    {
-        int n = rows.Count;
-        var inputs = new List<NamedOnnxValue>();
-
-        foreach (var col in rows[0].Keys)
-        {
-            var data = new float[n];
-            for (int i = 0; i < n; i++)
-                data[i] = rows[i][col];
-            var tensor = new DenseTensor<float>(data, new[] { n, 1 });
-            inputs.Add(NamedOnnxValue.CreateFromTensor(col, tensor));
-        }
-
-        return ExtractProbabilities(session, inputs);
-    }
-
-    /// <summary>
-    /// Runs the ONNX session and extracts class-1 probabilities from
-    /// the probabilities output tensor (shape [N, 2]).
-    /// </summary>
-    private static List<double> ExtractProbabilities(
-        InferenceSession session, List<NamedOnnxValue> inputs)
-    {
-        using var results = session.Run(inputs);
-
-        // With zipmap=False, "probabilities" is a float tensor of shape [N, 2]
-        var probOutput = results.First(r => r.Name == "probabilities");
-        var tensor = probOutput.AsTensor<float>();
-
-        var probas = new List<double>();
-        int n = tensor.Dimensions[0];
-        for (int i = 0; i < n; i++)
-        {
-            // Column 1 = probability of class 1
-            probas.Add(Math.Round(tensor[i, 1], 4));
-        }
-        return probas;
-    }
-
-    // =====================================================================
-    //  Social Media One-Hot Encoding
-    // =====================================================================
-
-    /// <summary>
-    /// The social media model expects pre-encoded one-hot features.
-    /// This replicates the pd.get_dummies(drop_first=True) encoding.
-    /// </summary>
-    private static Dictionary<string, float> EncodeSocialMediaFeatures(
-        LuzDeVida.API.Models.social_media_post p)
-    {
-        return new Dictionary<string, float>
-        {
-            ["post_hour"] = p.post_hour ?? 12,
-            ["caption_length"] = p.caption_length ?? 0,
-            ["features_resident_story"] = (p.features_resident_story == true) ? 1f : 0f,
-            ["is_boosted"] = (p.is_boosted == true) ? 1f : 0f,
-            ["in_campaign"] = !string.IsNullOrEmpty(p.campaign_name) ? 1f : 0f,
-            // One-hot: platform (reference = Facebook)
-            ["platform_LinkedIn"] = (p.platform == "LinkedIn") ? 1f : 0f,
-            // One-hot: post_type (reference = FundraisingAppeal)
-            ["post_type_EducationalContent"] = (p.post_type == "EducationalContent") ? 1f : 0f,
-            ["post_type_EventPromotion"] = (p.post_type == "EventPromotion") ? 1f : 0f,
-            ["post_type_ImpactStory"] = (p.post_type == "ImpactStory") ? 1f : 0f,
-            ["post_type_ThankYou"] = (p.post_type == "ThankYou") ? 1f : 0f,
-            // One-hot: media_type (reference = Photo)
-            ["media_type_Reel"] = (p.media_type == "Reel") ? 1f : 0f,
-            ["media_type_Text"] = (p.media_type == "Text") ? 1f : 0f,
-            // One-hot: sentiment_tone (reference = Celebratory)
-            ["sentiment_tone_Emotional"] = (p.sentiment_tone == "Emotional") ? 1f : 0f,
-            ["sentiment_tone_Informative"] = (p.sentiment_tone == "Informative") ? 1f : 0f,
-            // One-hot: call_to_action_type (reference = DonateNow)
-            ["call_to_action_type_None"] = (p.call_to_action_type == "None"
-                || !p.has_call_to_action.GetValueOrDefault()) ? 1f : 0f,
-        };
-    }
-
-    private static Dictionary<string, float> EncodeSocialMediaFeaturesFromRequest(
-        SocialMediaEvaluateRequest r)
-    {
-        return new Dictionary<string, float>
-        {
-            ["post_hour"] = r.post_hour,
-            ["caption_length"] = r.caption_length,
-            ["features_resident_story"] = r.features_resident_story ? 1f : 0f,
-            ["is_boosted"] = r.is_boosted ? 1f : 0f,
-            ["in_campaign"] = r.in_campaign ? 1f : 0f,
-            ["platform_LinkedIn"] = (r.platform == "LinkedIn") ? 1f : 0f,
-            ["post_type_EducationalContent"] = (r.post_type == "EducationalContent") ? 1f : 0f,
-            ["post_type_EventPromotion"] = (r.post_type == "EventPromotion") ? 1f : 0f,
-            ["post_type_ImpactStory"] = (r.post_type == "ImpactStory") ? 1f : 0f,
-            ["post_type_ThankYou"] = (r.post_type == "ThankYou") ? 1f : 0f,
-            ["media_type_Reel"] = (r.media_type == "Reel") ? 1f : 0f,
-            ["media_type_Text"] = (r.media_type == "Text") ? 1f : 0f,
-            ["sentiment_tone_Emotional"] = (r.sentiment_tone == "Emotional") ? 1f : 0f,
-            ["sentiment_tone_Informative"] = (r.sentiment_tone == "Informative") ? 1f : 0f,
-            ["call_to_action_type_None"] = (r.call_to_action_type == "None"
-                || !r.has_call_to_action) ? 1f : 0f,
-        };
-    }
-
-    // =====================================================================
-    //  Tier Helper
-    // =====================================================================
     private static string Tier(double score) =>
         score >= 0.6 ? "High" : score >= 0.3 ? "Medium" : "Low";
-
-    private static string ResidentRiskTier(double score) =>
-        score >= 0.90 ? "Critical"
-        : score >= 0.75 ? "High"
-        : score >= 0.50 ? "Moderate"
-        : "Low";
 }

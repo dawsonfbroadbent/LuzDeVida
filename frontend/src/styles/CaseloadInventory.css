@@ -381,6 +381,32 @@
   color: #1565c0;
 }
 
+/* ====== ML RISK TIER BADGES ====== */
+.badge-risk-critical {
+  background: #fde8e8;
+  color: #c0392b;
+}
+
+.badge-risk-high {
+  background: #fef3e2;
+  color: #d35400;
+}
+
+.badge-risk-moderate {
+  background: #fef9e7;
+  color: #f39c12;
+}
+
+.badge-risk-low {
+  background: #e8f8f5;
+  color: #27ae60;
+}
+
+.risk-score {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
 /* ====== DELETE CONFIRMATION ====== */
 .delete-confirm-row {
   background: #fff5f5;

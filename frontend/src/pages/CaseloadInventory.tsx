@@ -6,6 +6,10 @@ import {
   deleteResident,
   type resident,
 } from '../api/ResidentsAPI'
+import {
+  fetchResidentRiskPredictions,
+  type ResidentRiskPrediction,
+} from '../api/MlPredictionsAPI'
 import '../styles/CaseloadInventory.css'
 
 type ResidentFormData = Omit<resident, 'resident_id' | 'created_at'>
@@ -30,6 +34,7 @@ export default function CaseloadInventory({ embedded = false }: CaseloadInventor
   const [safehouseFilter, setSafehouseFilter] = useState('All')
   const [caseCategoryFilter, setCaseCategoryFilter] = useState('All')
   const [expandedRow, setExpandedRow] = useState<number | null>(null)
+  const [riskMap, setRiskMap] = useState<Map<number, ResidentRiskPrediction>>(new Map())
   const [currentPage, setCurrentPage] = useState(1)
   const [formData, setFormData] = useState<ResidentFormData>({
     case_control_no: null,
@@ -86,6 +91,7 @@ export default function CaseloadInventory({ embedded = false }: CaseloadInventor
   // ===== EFFECTS =====
   useEffect(() => {
     loadResidents()
+    loadRiskPredictions()
   }, [])
 
   useEffect(() => {
@@ -131,6 +137,17 @@ export default function CaseloadInventory({ embedded = false }: CaseloadInventor
       setError('Failed to load caseload inventory. Please try again.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadRiskPredictions = async () => {
+    try {
+      const predictions = await fetchResidentRiskPredictions()
+      const map = new Map<number, ResidentRiskPrediction>()
+      for (const p of predictions) map.set(p.resident_id, p)
+      setRiskMap(map)
+    } catch {
+      console.warn('Could not load resident risk predictions')
     }
   }
 
@@ -471,6 +488,8 @@ export default function CaseloadInventory({ embedded = false }: CaseloadInventor
                     <th>Case Status</th>
                     <th>Admission Date</th>
                     <th>Reintegration Status</th>
+                    <th>Risk Score</th>
+                    <th>Risk Tier</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -498,6 +517,18 @@ export default function CaseloadInventory({ embedded = false }: CaseloadInventor
                         </td>
                         <td>{resident.date_of_admission || 'N/A'}</td>
                         <td>{resident.reintegration_status || 'Not Started'}</td>
+                        <td className="risk-score">
+                          {riskMap.get(resident.resident_id)?.risk_score != null
+                            ? (riskMap.get(resident.resident_id)!.risk_score * 100).toFixed(1) + '%'
+                            : '—'}
+                        </td>
+                        <td>
+                          {riskMap.get(resident.resident_id) ? (
+                            <span className={`badge badge-risk-${riskMap.get(resident.resident_id)!.risk_tier.toLowerCase()}`}>
+                              {riskMap.get(resident.resident_id)!.risk_tier}
+                            </span>
+                          ) : '—'}
+                        </td>
                         <td className="action-cell" onClick={(e) => e.stopPropagation()}>
                           <button onClick={() => openEditModal(resident)} className="btn-small btn-edit">
                             Edit
@@ -510,7 +541,7 @@ export default function CaseloadInventory({ embedded = false }: CaseloadInventor
 
                       {expandedRow === resident.resident_id && (
                         <tr className="expanded-details">
-                          <td colSpan={8}>
+                          <td colSpan={10}>
                             <div className="details-grid">
                               <div className="detail-section">
                                 <h4>Demographics</h4>
@@ -664,7 +695,7 @@ export default function CaseloadInventory({ embedded = false }: CaseloadInventor
 
                       {showDeleteConfirm === resident.resident_id && (
                         <tr className="delete-confirm-row">
-                          <td colSpan={8}>
+                          <td colSpan={10}>
                             <div className="delete-confirm-box">
                               <p>
                                 Are you sure you want to delete <strong>{resident.case_control_no || 'N/A'}</strong>?

@@ -28,9 +28,20 @@ builder.Services.AddDbContext<LuzDeVidaDbContext>(options =>
 builder.Services.AddDbContext<AuthIdentityDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
-    .AddRoles<IdentityRole>()
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<AuthIdentityDbContext>();
+
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+{
+    builder.Services.AddAuthentication()
+        .AddGoogle(options =>
+        {
+            options.ClientId = googleClientId;
+            options.ClientSecret = googleClientSecret;
+        });
+}
 
 builder.Services.AddAuthorization(options =>
 {
@@ -39,6 +50,8 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
+    options.SignIn.RequireConfirmedAccount = false;
+    options.SignIn.RequireConfirmedEmail = false;
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
@@ -82,10 +95,7 @@ builder.Services.AddScoped<PublicImpactService>();
 builder.Services.AddScoped<ReportsService>();
 builder.Services.AddScoped<SocialMediaAnalyticsService>();
 
-// ONNX ML models -- loaded once, shared across requests
-var onnxModelsDir = Path.Combine(AppContext.BaseDirectory, "OnnxModels");
-builder.Services.AddSingleton(sp =>
-    new OnnxModelHolder(onnxModelsDir, sp.GetRequiredService<ILogger<OnnxModelHolder>>()));
+// ML predictions — pure C# tree models, no ONNX runtime needed
 builder.Services.AddScoped<MlPredictionService>();
 
 var app = builder.Build();
@@ -121,5 +131,4 @@ app.UseExceptionHandler(errApp => errApp.Run(async ctx =>
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.MapGroup("/api/auth").MapIdentityApi<ApplicationUser>();
 app.Run();

@@ -358,6 +358,31 @@
   color: var(--blue-darker);
 }
 
+/* ── Churn risk badges ─────────────────────────────────── */
+.dm-badge--churn {
+  font-weight: 600;
+}
+
+.dm-badge--churn-high {
+  background: #fde8e8;
+  color: #c0392b;
+}
+
+.dm-badge--churn-medium {
+  background: #fef3e2;
+  color: #d35400;
+}
+
+.dm-badge--churn-low {
+  background: #e8f8f5;
+  color: #27ae60;
+}
+
+.dm-td-risk {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
 /* ── Contribution pills ─────────────────────────────────── */
 .dm-pills {
   display: flex;

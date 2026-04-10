@@ -167,24 +167,21 @@ interface GaugeProps {
 
 function ConversionGauge({ score, tier }: GaugeProps) {
   const R = 80, cx = 100, cy = 95, strokeW = 14
-  const sweepAngle = Math.PI * Math.max(0, Math.min(score, 1))
-
-  const bgD = `M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`
-  const fillEnd = sweepAngle
-  const fillX = cx + R * Math.cos(Math.PI - fillEnd)
-  const fillY = cy - R * Math.sin(fillEnd)
-  const largeArc = fillEnd > Math.PI / 2 ? 1 : 0
-  const fillD = `M ${cx - R} ${cy} A ${R} ${R} 0 ${largeArc} 1 ${fillX} ${fillY}`
+  const arcD = `M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`
+  const totalLen = Math.PI * R
+  const clampedScore = Math.max(0, Math.min(score, 1))
+  const fillLen = totalLen * clampedScore
+  const gap = totalLen - fillLen
 
   const tierColor = tier === 'High' ? 'var(--sm-high)' : tier === 'Medium' ? 'var(--sm-medium)' : 'var(--sm-low)'
 
   return (
     <div className="sm-gauge">
       <svg viewBox="0 0 200 110" width="200" height="110">
-        <path d={bgD} fill="none" stroke="var(--cream-darker)" strokeWidth={strokeW}
+        <path d={arcD} fill="none" stroke="var(--cream-darker)" strokeWidth={strokeW}
           strokeLinecap="round" />
-        <path d={fillD} fill="none" stroke={tierColor} strokeWidth={strokeW}
-          strokeLinecap="round" />
+        <path d={arcD} fill="none" stroke={tierColor} strokeWidth={strokeW}
+          strokeLinecap="round" strokeDasharray={`${fillLen} ${gap}`} />
       </svg>
       <span className="sm-gauge__score">{(score * 100).toFixed(0)}%</span>
     </div>
