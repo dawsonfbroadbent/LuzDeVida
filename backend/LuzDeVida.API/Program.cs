@@ -124,7 +124,7 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    await AuthIdentityGenerator.GenerateDefaultIdentityAsync(scope.ServiceProvider, app.Configuration);
+    await AuthIdentityGenerator.GenerateDefaultIdentityAsync(scope.ServiceProvider);
 }
 
 if (app.Environment.IsDevelopment())
