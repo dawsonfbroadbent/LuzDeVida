@@ -604,9 +604,6 @@ export default function CaseloadInventory({ embedded = false }: CaseloadInventor
                           <button onClick={() => openEditModal(resident)} className="btn-small btn-edit">
                             Edit
                           </button>
-                          <button onClick={() => setShowDeleteConfirm(resident.resident_id)} className="btn-small btn-delete">
-                            Delete
-                          </button>
                         </td>
                       </tr>
 
@@ -795,34 +792,6 @@ export default function CaseloadInventory({ embedded = false }: CaseloadInventor
           </>
         )}
       </div>
-
-      {showDeleteConfirm !== null && (
-        <div className="modal-overlay" onClick={() => setShowDeleteConfirm(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Delete Resident Record</h2>
-              <button onClick={() => setShowDeleteConfirm(null)} className="modal-close">×</button>
-            </div>
-            <div className="resident-form">
-              <div className="delete-confirm-box">
-                <p>Warning: This action cannot be undone</p>
-                <p>
-                  Are you sure you want to delete resident{' '}
-                  <strong>{residents.find(r => r.resident_id === showDeleteConfirm)?.case_control_no || 'N/A'}</strong>?
-                </p>
-              </div>
-              <div className="confirm-actions">
-                <button onClick={() => setShowDeleteConfirm(null)} className="btn-confirm-cancel">
-                  Cancel
-                </button>
-                <button onClick={() => handleDelete(showDeleteConfirm)} className="btn-confirm-delete">
-                  Delete Resident
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showModal && (
         <div className="modal-overlay" onClick={closeModal}>
