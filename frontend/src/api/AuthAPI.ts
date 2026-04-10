@@ -49,11 +49,13 @@ export async function getAuthSession(): Promise<AuthSession> {
 export async function registerUser(
   email: string,
   password: string,
+  firstName?: string,
+  lastName?: string,
 ): Promise<void> {
   const response = await fetch(apiUrl('/api/auth/register'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, firstName, lastName }),
     credentials: 'include',
   });
 
