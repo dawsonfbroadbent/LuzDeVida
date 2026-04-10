@@ -11,6 +11,10 @@ import {
   type SupporterDetail,
   type CreateSupporterPayload,
 } from '../api/SupporterAPI'
+import {
+  fetchDonorChurnPredictions,
+  type DonorChurnPrediction,
+} from '../api/MlPredictionsAPI'
 import '../styles/DonorManagement.css'
 
 type ModalMode = 'view' | 'create' | 'edit'
@@ -131,6 +135,7 @@ export default function DonorManagement({ embedded = false }: DonorManagementPro
   const [editingSupporterId, setEditingSupporterId] = useState<number | null>(null)
   const [formData, setFormData] = useState<CreateSupporterPayload>({ ...EMPTY_FORM })
   const [formError, setFormError] = useState<string | null>(null)
+  const [churnMap, setChurnMap] = useState<Map<number, DonorChurnPrediction>>(new Map())
 
   // ── Derived ───────────────────────────────────────────────
   const effectivePageSize = filters.pageSize >= 9999 ? Math.max(totalCount, 1) : filters.pageSize
@@ -151,6 +156,7 @@ export default function DonorManagement({ embedded = false }: DonorManagementPro
   useEffect(() => {
     loadStats()
     loadSupporterTypes()
+    loadChurnPredictions()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -174,6 +180,15 @@ export default function DonorManagement({ embedded = false }: DonorManagementPro
   async function loadSupporterTypes() {
     try {
       setSupporterTypes(await fetchSupporterTypes())
+    } catch { /* non-critical */ }
+  }
+
+  async function loadChurnPredictions() {
+    try {
+      const predictions = await fetchDonorChurnPredictions()
+      const map = new Map<number, DonorChurnPrediction>()
+      for (const p of predictions) map.set(p.supporter_id, p)
+      setChurnMap(map)
     } catch { /* non-critical */ }
   }
 
@@ -477,6 +492,8 @@ export default function DonorManagement({ embedded = false }: DonorManagementPro
                 <th className="dm-th-sortable" onClick={() => handleSort('region')}>
                   Region <SortIcon col="region" filters={filters} />
                 </th>
+                <th>Churn Risk</th>
+                <th>Risk Tier</th>
                 <th>Contributions</th>
                 <th>Actions</th>
               </tr>
@@ -499,6 +516,18 @@ export default function DonorManagement({ embedded = false }: DonorManagementPro
                   <td className="dm-td-currency">{s.inKindEstimatedValue > 0 ? formatCurrency(s.inKindEstimatedValue) : '—'}</td>
                   <td>{formatDate(s.lastDonationDate)}</td>
                   <td>{s.region ?? '—'}</td>
+                  <td className="dm-td-risk">
+                    {churnMap.get(s.supporterId)?.churn_risk_score != null
+                      ? (churnMap.get(s.supporterId)!.churn_risk_score * 100).toFixed(1) + '%'
+                      : '—'}
+                  </td>
+                  <td>
+                    {churnMap.get(s.supporterId) ? (
+                      <span className={`dm-badge dm-badge--churn dm-badge--churn-${churnMap.get(s.supporterId)!.risk_tier.toLowerCase()}`}>
+                        {churnMap.get(s.supporterId)!.risk_tier}
+                      </span>
+                    ) : '—'}
+                  </td>
                   <td>
                     <div className="dm-pills">
                       {s.contributionTypes.map((ct) => (
