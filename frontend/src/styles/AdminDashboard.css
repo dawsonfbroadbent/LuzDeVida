@@ -208,8 +208,7 @@
   margin: 0 0 1.5rem 0;
 }
 
-.retry-btn,
-.refresh-btn {
+.retry-btn {
   background: var(--teal);
   color: var(--white);
   border: none;
@@ -224,8 +223,7 @@
   transition: all 0.25s var(--ease);
 }
 
-.retry-btn:hover,
-.refresh-btn:hover {
+.retry-btn:hover {
   background: var(--teal-dark);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(76, 168, 178, 0.25);
@@ -582,28 +580,6 @@
   padding: 2rem;
   font-family: var(--font-body);
   font-style: italic;
-}
-
-/* Refresh Info */
-.refresh-info {
-  text-align: center;
-  margin-top: 2.5rem;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(234, 245, 246, 0.88));
-  border-radius: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2rem;
-  border: 1px solid rgba(23, 53, 59, 0.08);
-  flex-wrap: wrap;
-}
-
-.refresh-info p {
-  margin: 0;
-  color: var(--text-light);
-  font-family: var(--font-body);
-  font-size: 0.95rem;
 }
 
 /* Animations */
