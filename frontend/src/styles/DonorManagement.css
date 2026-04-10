@@ -238,7 +238,7 @@
   background: var(--white);
   border: 1px solid var(--cream-darker);
   border-radius: 18px;
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .dm-loading,
