@@ -130,8 +130,12 @@
 }
 
 .home-visitations__button--danger {
-  background: #b64040;
+  background: var(--danger);
   color: var(--white);
+}
+
+.home-visitations__button--danger:hover:not(:disabled) {
+  background: var(--danger-dark);
 }
 
 .home-visitations__alert {
@@ -146,15 +150,15 @@
 }
 
 .home-visitations__alert--error {
-  background: #fff2f2;
-  border-color: #f4c4c4;
-  color: #8f1d1d;
+  background: var(--danger-pale);
+  border-color: var(--danger-light);
+  color: var(--danger-dark);
 }
 
 .home-visitations__alert--success {
-  background: #eef9f3;
-  border-color: #b8e4cb;
-  color: #176340;
+  background: var(--teal-pale);
+  border-color: var(--teal-light);
+  color: var(--teal-dark);
 }
 
 .home-visitations__alert-close {
@@ -203,8 +207,8 @@
 .home-visitations select:focus,
 .home-visitations textarea:focus {
   outline: none;
-  border-color: var(--teal);
-  box-shadow: 0 0 0 4px rgba(76, 168, 178, 0.12);
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(95, 187, 199, 0.22);
 }
 
 .home-visitations input[type='checkbox'] {
@@ -233,11 +237,12 @@
 
 .home-visitations__table thead th {
   background: var(--cream-dark);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-light);
+  color: var(--text-mid);
+  border-bottom: 2px solid var(--cream-darker);
 }
 
 .home-visitations__table tbody tr {

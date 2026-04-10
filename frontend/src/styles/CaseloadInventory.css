@@ -64,16 +64,16 @@
 }
 
 .error-alert {
-  background: #fee;
-  border: 1px solid #fcc;
-  color: #c33;
+  background: var(--danger-pale);
+  border: 1px solid var(--danger-light);
+  color: var(--danger-dark);
   font-weight: 500;
 }
 
 .success-alert {
-  background: #efe;
-  border: 1px solid #cfc;
-  color: #3c3;
+  background: var(--teal-pale);
+  border: 1px solid var(--teal-light);
+  color: var(--teal-dark);
   font-weight: 500;
 }
 
@@ -102,11 +102,11 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--blue-dark), var(--teal-dark));
-  color: white;
+  background: var(--blue);
+  color: var(--white);
   border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 999px;
+  border-radius: 4px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -117,9 +117,9 @@
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--blue-darker), var(--teal-dark));
+  background: var(--blue-dark);
   transform: translateY(-2px);
-  box-shadow: 0 10px 26px rgba(31, 95, 105, 0.24);
+  box-shadow: 0 10px 26px rgba(95, 187, 199, 0.3);
 }
 
 .btn-primary:active {
@@ -163,8 +163,8 @@
 
 .search-input:focus {
   outline: none;
-  border-color: var(--teal);
-  box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.08);
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(95, 187, 199, 0.2);
 }
 
 .filter-row {
@@ -197,13 +197,13 @@
 }
 
 .filter-group select:hover {
-  border-color: var(--teal);
+  border-color: var(--blue);
 }
 
 .filter-group select:focus {
   outline: none;
-  border-color: var(--teal);
-  box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.08);
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(95, 187, 199, 0.2);
 }
 
 /* ====== RESULTS INFO ====== */
@@ -238,10 +238,14 @@
 }
 
 .caseload-table th {
-  padding: 1rem;
+  padding: 0.9rem 1rem;
   text-align: left;
-  font-weight: 600;
-  color: var(--text-dark);
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
 }
 
 .resident-row {
@@ -255,8 +259,9 @@
 }
 
 .caseload-table td {
-  padding: 1rem;
+  padding: 0.9rem 1rem;
   color: var(--text-dark);
+  border-bottom: 1px solid var(--cream-dark);
 }
 
 .expand-icon {
@@ -357,18 +362,18 @@
 }
 
 .badge-active {
-  background: #d4edda;
-  color: #155724;
+  background: var(--teal-pale);
+  color: var(--teal-dark);
 }
 
 .badge-closed {
-  background: #f8d7da;
-  color: #721c24;
+  background: var(--danger-pale);
+  color: var(--danger-dark);
 }
 
 .badge-inactive {
-  background: #e7e7e7;
-  color: #666;
+  background: var(--cream-darker);
+  color: var(--text-mid);
 }
 
 .badge-subcategory {
@@ -377,8 +382,8 @@
 }
 
 .badge-family {
-  background: #e3f2fd;
-  color: #1565c0;
+  background: var(--blue-pale);
+  color: var(--blue-darker);
 }
 
 /* ====== ML RISK TIER BADGES ====== */
@@ -418,11 +423,11 @@
 }
 
 .delete-confirm-box {
-  background: white;
-  border: 1px solid #e74c3c;
+  background: var(--danger-pale);
+  border: 1px solid var(--danger-light);
   border-radius: 6px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(169, 50, 38, 0.06);
 }
 
 .delete-confirm-box p {
@@ -432,7 +437,7 @@
 }
 
 .delete-confirm-box p strong {
-  color: #e74c3c;
+  color: var(--danger);
   font-weight: 600;
 }
 
@@ -458,23 +463,24 @@
 }
 
 .btn-confirm-delete {
-  background: #e74c3c;
-  color: white;
+  background: var(--danger);
+  color: var(--white);
 }
 
 .btn-confirm-delete:hover {
-  background: #c0392b;
-  box-shadow: 0 2px 6px rgba(231, 76, 60, 0.3);
+  background: var(--danger-dark);
+  box-shadow: 0 2px 6px rgba(169, 50, 38, 0.3);
 }
 
 .btn-confirm-cancel {
-  background: #ecf0f1;
+  background: var(--cream-darker);
   color: var(--text-dark);
-  border: 1px solid #bdc3c7;
+  border: 1px solid var(--cream-darker);
 }
 
 .btn-confirm-cancel:hover {
-  background: #d5dbdb;
+  background: var(--cream-dark);
+  border-color: var(--cream-dark);
 }
 
 /* ====== SMALL BUTTONS ====== */
@@ -539,9 +545,9 @@
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background: var(--teal);
-  border-color: var(--teal);
-  color: white;
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--white);
   transform: translateY(-1px);
 }
 
@@ -558,7 +564,7 @@
 
 .current-page {
   font-weight: 700;
-  color: var(--teal);
+  color: var(--blue-dark);
 }
 
 .total-pages {
@@ -576,18 +582,18 @@
 }
 
 .status-active {
-  background: #d4edda;
-  color: #155724;
+  background: var(--teal-pale);
+  color: var(--teal-dark);
 }
 
 .status-inactive {
-  background: #f8d7da;
-  color: #721c24;
+  background: var(--danger-pale);
+  color: var(--danger-dark);
 }
 
 .status-pending {
-  background: #fff3cd;
-  color: #856404;
+  background: var(--sand-pale);
+  color: var(--sand-dark);
 }
 
 /* ====== MODAL ====== */
@@ -764,8 +770,8 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: var(--teal);
-  box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.08);
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(95, 187, 199, 0.2);
 }
 
 .form-group textarea {
@@ -793,39 +799,39 @@
 }
 
 .btn-add {
-  background: var(--teal);
-  color: white;
+  background: var(--blue);
+  color: var(--white);
 }
 
 .btn-add:hover {
-  background: var(--teal-dark);
+  background: var(--blue-dark);
 }
 
 .btn-edit {
-  background: #28a745;
-  color: white;
+  background: var(--blue);
+  color: var(--white);
 }
 
 .btn-edit:hover {
-  background: #1e7e34;
+  background: var(--blue-dark);
 }
 
 .btn-delete {
-  background: #dc3545;
-  color: white;
+  background: var(--danger);
+  color: var(--white);
 }
 
 .btn-delete:hover {
-  background: #a02834;
+  background: var(--danger-dark);
 }
 
 .btn-view {
-  background: #17a2b8;
-  color: white;
+  background: var(--teal);
+  color: var(--white);
 }
 
 .btn-view:hover {
-  background: #117a8b;
+  background: var(--teal-dark);
 }
 
 .btn-cancel {
@@ -839,12 +845,12 @@
 }
 
 .btn-save {
-  background: var(--teal);
-  color: white;
+  background: var(--blue);
+  color: var(--white);
 }
 
 .btn-save:hover {
-  background: var(--teal-dark);
+  background: var(--blue-dark);
 }
 
 /* ====== LOADING & EMPTY ====== */
@@ -994,13 +1000,13 @@
 }
 
 .checkbox-group label:hover {
-  background: rgba(0, 128, 128, 0.06);
+  background: rgba(95, 187, 199, 0.08);
 }
 
 .checkbox-group input[type='checkbox'] {
   width: 18px;
   height: 18px;
-  accent-color: var(--teal);
+  accent-color: var(--blue);
   cursor: pointer;
   flex-shrink: 0;
 }
