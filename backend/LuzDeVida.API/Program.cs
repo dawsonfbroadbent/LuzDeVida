@@ -1,6 +1,8 @@
 using LuzDeVida.API.Data;
 using LuzDeVida.API.Infrastructure;
 using LuzDeVida.API.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -60,10 +62,12 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequiredUniqueChars = 1;
 });
 
+// Application session cookie — must be SameSite=None so the frontend on a separate
+// Azure domain can include it in cross-origin fetch calls with credentials: 'include'.
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.ExpireTimeSpan = TimeSpan.FromDays(7);
     options.SlidingExpiration = true;
@@ -78,6 +82,24 @@ builder.Services.ConfigureApplicationCookie(options =>
         context.Response.StatusCode = StatusCodes.Status403Forbidden;
         return Task.CompletedTask;
     };
+});
+
+// External auth cookie (used transiently during the Google OAuth callback round-trip).
+builder.Services.Configure<CookieAuthenticationOptions>(
+    IdentityConstants.ExternalScheme, options =>
+    {
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.None;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    });
+
+// Trust Azure App Service's load-balancer headers so the app sees HTTPS as the
+// scheme even though the LB terminates TLS before forwarding to the backend.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
 });
 
 builder.Services.AddCors(options =>
@@ -115,6 +137,8 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
 }
+
+app.UseForwardedHeaders();
 
 app.UseSecurityHeaders();
 

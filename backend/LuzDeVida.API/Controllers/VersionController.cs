@@ -11,7 +11,7 @@ namespace LuzDeVida.API.Controllers
         {
             return Ok(new
             {
-                version = "2026-04-09-backend-v8",
+                version = "2026-04-09-backend-v9",
                 environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
                 machine = Environment.MachineName
             });
