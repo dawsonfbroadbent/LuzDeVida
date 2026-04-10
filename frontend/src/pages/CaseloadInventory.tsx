@@ -3,7 +3,6 @@ import {
   fetchResidents,
   createResident,
   updateResident,
-  deleteResident,
   type resident,
 } from '../api/ResidentsAPI'
 import {
@@ -28,7 +27,6 @@ export default function CaseloadInventory({ embedded = false }: CaseloadInventor
   const [showModal, setShowModal] = useState(false)
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
   const [editingResidentId, setEditingResidentId] = useState<number | null>(null)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [caseStatusFilter, setCaseStatusFilter] = useState('All')
   const [safehouseFilter, setSafehouseFilter] = useState('All')
@@ -328,20 +326,6 @@ export default function CaseloadInventory({ embedded = false }: CaseloadInventor
       setTimeout(() => setSuccessMessage(null), 3000)
     } catch (err) {
       setError(`Failed to ${modalMode} resident. Please try again.`)
-      console.error(err)
-    }
-  }
-
-  const handleDelete = async (residentId: number) => {
-    try {
-      setError(null)
-      await deleteResident(residentId)
-      setSuccessMessage('Resident deleted successfully!')
-      setShowDeleteConfirm(null)
-      await loadResidents()
-      setTimeout(() => setSuccessMessage(null), 3000)
-    } catch (err) {
-      setError('Failed to delete resident. Please try again.')
       console.error(err)
     }
   }
