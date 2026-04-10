@@ -723,12 +723,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ embedded = false }) => 
           )}
         </div>
       )}
-
-      {/* Refresh Section */}
-      <div className="refresh-info">
-        <p>Last updated: {formatDate(metrics.timestamp)}</p>
-        <button onClick={loadDashboardMetrics} className="refresh-btn">Refresh Data</button>
-      </div>
     </div>
   );
 };
