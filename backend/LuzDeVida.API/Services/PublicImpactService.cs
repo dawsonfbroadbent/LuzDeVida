@@ -39,6 +39,9 @@ public class PublicImpactService
             .Where(m => m.month_start != null)
             .ToListAsync();
 
+        // Pull all residents for active case calculation
+        var allResidents = await _context.residents.ToListAsync();
+
         if (allMetrics.Count == 0)
         {
             return new PublicImpactDto(
@@ -66,14 +69,14 @@ public class PublicImpactService
             var qNext = qStart.AddMonths(3);
             var rows = allMetrics.Where(m => m.month_start >= qStart && m.month_start < qNext).ToList();
 
-            // Active residents: average of monthly org-wide totals (it's a snapshot, not a cumulative)
-            var monthlyResidentTotals = rows
-                .GroupBy(r => r.month_start)
-                .Select(g => g.Sum(r => r.active_residents ?? 0))
-                .ToList();
-            var activeResidents = monthlyResidentTotals.Count > 0
-                ? (int)Math.Round(monthlyResidentTotals.Average())
-                : 0;
+            // Active residents: Count residents with case_status="Active" during this quarter
+            // (admitted by end of quarter, and not closed before start of quarter)
+            var activeResidents = allResidents.Count(r => 
+                r.case_status == "Active" &&
+                r.date_enrolled != null &&
+                r.date_enrolled <= qNext.AddDays(-1) &&
+                (r.date_closed == null || r.date_closed >= qStart)
+            );
 
             // Care counts: sum across all months and safehouses in the quarter
             var counseling = rows.Sum(r => r.process_recording_count ?? 0);
