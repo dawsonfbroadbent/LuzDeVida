@@ -1,4 +1,50 @@
 .admin-workspace {
+  --blue: #536c7d;
+  --blue-dark: #344e60;
+  --blue-darker: #203442;
+  --blue-light: #bac8d1;
+  --blue-pale: #eef3f6;
+
+  --sand: #8b6a45;
+  --sand-dark: #634a2d;
+  --sand-light: #dcc8ad;
+  --sand-pale: #f7f0e7;
+
+  --teal: #6a7a69;
+  --teal-dark: #465847;
+  --teal-light: #bcc7be;
+  --teal-pale: #f1f5f1;
+
+  --cream: #f6f3ee;
+  --cream-light: #fbfaf8;
+  --cream-dark: #efe7dd;
+  --cream-darker: #d8cdbd;
+  --cream-lighter: #f4eee6;
+
+  --text-dark: #17262f;
+  --text-mid: #354b56;
+  --text-light: #5d6f79;
+
+  --success: #356347;
+  --success-pale: #edf5ef;
+  --success-light: #bfd4c5;
+  --success-dark: #234231;
+
+  --focus-ring: rgba(52, 78, 96, 0.16);
+  --admin-shadow-sm: 0 12px 28px rgba(23, 38, 47, 0.06);
+  --admin-shadow-md: 0 18px 40px rgba(23, 38, 47, 0.08);
+  --admin-shadow-lg: 0 26px 64px rgba(23, 38, 47, 0.12);
+  --admin-border-soft: rgba(23, 38, 47, 0.08);
+  --admin-border-strong: rgba(23, 38, 47, 0.14);
+  --admin-accent: var(--blue-dark);
+  --admin-accent-hover: var(--blue-darker);
+  --admin-accent-soft: var(--blue-pale);
+  --admin-warm-soft: var(--sand-pale);
+  --sm-converted: #b85b46;
+  --sm-not-converted: #7a6d5c;
+  --sm-high: var(--success);
+  --sm-medium: var(--sand-dark);
+  --sm-low: #b1453a;
   max-width: 1360px;
   margin: 0 auto;
   padding: calc(var(--nav-height) + 36px) 32px 72px;
@@ -7,12 +53,13 @@
 .admin-workspace__hero {
   position: relative;
   padding: 36px 40px;
-  border: 1px solid rgba(23, 53, 59, 0.08);
+  border: 1px solid var(--admin-border-strong);
   border-radius: 28px;
   background:
-    radial-gradient(circle at top left, rgba(148, 218, 223, 0.48), transparent 42%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(234, 245, 246, 0.92));
-  box-shadow: 0 24px 60px rgba(23, 53, 59, 0.08);
+    radial-gradient(circle at top left, rgba(220, 200, 173, 0.32), transparent 42%),
+    radial-gradient(circle at top right, rgba(186, 200, 209, 0.28), transparent 38%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(246, 243, 238, 0.96));
+  box-shadow: var(--admin-shadow-lg);
   overflow: hidden;
 }
 
@@ -23,7 +70,7 @@
   width: 240px;
   height: 240px;
   border-radius: 999px;
-  background: rgba(209, 194, 152, 0.14);
+  background: rgba(139, 106, 69, 0.1);
   filter: blur(12px);
 }
 
@@ -38,14 +85,14 @@
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--teal-dark);
+  color: var(--blue-dark);
 }
 
 .admin-workspace__eyebrow::before {
   content: '';
   width: 32px;
   height: 1px;
-  background: var(--teal);
+  background: var(--sand);
 }
 
 .admin-workspace__hero-row {
@@ -73,8 +120,9 @@
   padding: 22px 24px;
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(45, 115, 124, 0.12);
+  border: 1px solid rgba(52, 78, 96, 0.14);
   backdrop-filter: blur(8px);
+  box-shadow: var(--admin-shadow-sm);
 }
 
 .admin-workspace__context-card strong {
@@ -117,9 +165,9 @@
   min-height: 112px;
   padding: 20px 18px;
   border-radius: 20px;
-  border: 1px solid rgba(23, 53, 59, 0.09);
+  border: 1px solid var(--admin-border-soft);
   background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 14px 30px rgba(23, 53, 59, 0.04);
+  box-shadow: var(--admin-shadow-sm);
   transition:
     transform 0.22s var(--ease),
     box-shadow 0.22s var(--ease),
@@ -129,14 +177,14 @@
 
 .admin-workspace__tab:hover {
   transform: translateY(-2px);
-  border-color: rgba(45, 115, 124, 0.2);
-  box-shadow: 0 18px 34px rgba(23, 53, 59, 0.07);
+  border-color: rgba(52, 78, 96, 0.22);
+  box-shadow: var(--admin-shadow-md);
 }
 
 .admin-workspace__tab.is-active {
-  background: linear-gradient(135deg, rgba(31, 95, 105, 0.94), rgba(45, 115, 124, 0.92));
+  background: linear-gradient(135deg, rgba(52, 78, 96, 0.96), rgba(32, 52, 66, 0.96));
   border-color: transparent;
-  box-shadow: 0 24px 40px rgba(31, 95, 105, 0.2);
+  box-shadow: 0 22px 42px rgba(32, 52, 66, 0.22);
 }
 
 .admin-workspace__tab-label {

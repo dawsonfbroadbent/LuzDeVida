@@ -15,6 +15,7 @@ import ReportsAndAnalytics from './ReportsAndAnalytics'
 import { useAuth } from '../context/AuthContext'
 import SocialMediaPerformance from './SocialMediaPerformance'
 import '../styles/AdminWorkspace.css'
+import '../styles/AdminDataSurfaces.css'
 
 function renderTabContent(tabId: AdminTabId) {
   switch (tabId) {

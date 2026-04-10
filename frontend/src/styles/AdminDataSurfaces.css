@@ -1,0 +1,405 @@
+.admin-workspace__content :is(
+  .filters-section,
+  .resident-selector,
+  .dm-filters,
+  .dm-table-section,
+  .table-section,
+  .reports-section-panel,
+  .sm-section-panel,
+  .home-visitations__panel,
+  .home-visitations__form,
+  .home-visitations__table-card
+) {
+  border-color: var(--admin-border-strong);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(251, 250, 248, 0.98));
+  box-shadow: var(--admin-shadow-md);
+}
+
+.admin-workspace__content :is(
+  .search-input,
+  .dm-search,
+  .dm-filter-select,
+  .dm-page-size select,
+  .dm-form-group input,
+  .dm-form-group select,
+  .selector-group select,
+  .filter-group select,
+  .search-input,
+  .home-visitations input:not([type='checkbox']),
+  .home-visitations select,
+  .home-visitations textarea,
+  .sm-predictor__select,
+  .sm-predictor__input
+):focus {
+  border-color: var(--blue-dark);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.admin-workspace__content :is(
+  .error-alert,
+  .home-visitations__alert--error
+) {
+  border-radius: 16px;
+}
+
+.admin-workspace__content :is(
+  .success-alert,
+  .home-visitations__alert--success,
+  .dm-alert--success
+) {
+  background: var(--success-pale);
+  border-color: var(--success-light);
+  color: var(--success-dark);
+}
+
+.admin-workspace__content :is(
+  .table-section,
+  .dm-table-section,
+  .reports-table-wrap,
+  .sm-table-wrap,
+  .home-visitations__table-card
+) {
+  border-radius: 20px;
+}
+
+.admin-workspace__content :is(
+  .caseload-table,
+  .dm-table,
+  .reports-table,
+  .sm-table,
+  .home-visitations__table
+) {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+}
+
+.admin-workspace__content :is(
+  .caseload-table,
+  .dm-table,
+  .reports-table,
+  .sm-table,
+  .home-visitations__table
+) thead th {
+  padding: 0.95rem 1rem;
+  background: var(--cream-dark);
+  color: var(--text-mid);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--admin-border-strong);
+}
+
+.admin-workspace__content :is(
+  .caseload-table,
+  .dm-table,
+  .reports-table,
+  .sm-table,
+  .home-visitations__table
+) td {
+  padding: 0.95rem 1rem;
+  color: var(--text-dark);
+  background: rgba(255, 255, 255, 0.98);
+  border-bottom: 1px solid var(--cream-darker);
+}
+
+.admin-workspace__content :is(
+  .caseload-table,
+  .dm-table,
+  .reports-table,
+  .sm-table,
+  .home-visitations__table
+) tbody tr:hover td {
+  background: var(--cream-light);
+}
+
+.admin-workspace__content :is(
+  .caseload-table,
+  .dm-table,
+  .reports-table,
+  .sm-table,
+  .home-visitations__table
+) tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-workspace__content :is(
+  .dm-th-sortable,
+  .sm-table th.sm-table__sortable
+) {
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.admin-workspace__content :is(
+  .dm-th-sortable:hover,
+  .sm-table th.sm-table__sortable:hover
+) {
+  background: var(--blue-pale);
+  color: var(--blue-dark);
+}
+
+.admin-workspace__content .reports-table__td--best {
+  background: var(--admin-warm-soft) !important;
+  color: var(--sand-dark) !important;
+  font-weight: 700;
+}
+
+.admin-workspace__content .sm-table tr.sm-table__converted td {
+  background: rgba(177, 69, 58, 0.06);
+}
+
+.admin-workspace__content :is(
+  .reports__section-nav,
+  .sm__section-nav
+) {
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.admin-workspace__content :is(
+  .reports__section-btn,
+  .sm__section-btn,
+  .sm-content-nav__btn,
+  .sm-table__toggle-btn,
+  .home-visitations__toggle-btn,
+  .dm-page-btn,
+  .pagination-btn,
+  .btn-outline-blue,
+  .btn-secondary,
+  .home-visitations__button--secondary,
+  .dm-btn-view
+) {
+  min-height: 40px;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--admin-border-strong);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--text-dark);
+  font-weight: 700;
+  position: static;
+  bottom: auto;
+  margin-bottom: 0;
+  box-shadow: none;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.admin-workspace__content :is(
+  .reports__section-btn:hover,
+  .sm__section-btn:hover,
+  .sm-content-nav__btn:hover,
+  .sm-table__toggle-btn:hover,
+  .home-visitations__toggle-btn:hover,
+  .dm-page-btn:hover:not(:disabled),
+  .pagination-btn:hover:not(:disabled),
+  .btn-outline-blue:hover,
+  .btn-secondary:hover,
+  .home-visitations__button--secondary:hover,
+  .dm-btn-view:hover
+) {
+  background: var(--blue-pale);
+  border-color: rgba(52, 78, 96, 0.24);
+  color: var(--blue-dark);
+  transform: translateY(-1px);
+}
+
+.admin-workspace__content :is(
+  .reports__section-btn--active,
+  .sm__section-btn--active,
+  .sm-content-nav__btn--active,
+  .sm-table__toggle-btn--active,
+  .home-visitations__toggle-btn.is-active,
+  .dm-page-num--active
+) {
+  background: var(--admin-accent);
+  border-color: var(--admin-accent);
+  color: var(--white);
+  box-shadow: 0 10px 22px rgba(32, 52, 66, 0.16);
+}
+
+.admin-workspace__content :is(
+  .btn-primary,
+  .reports__retry-btn,
+  .sm__retry-btn,
+  .home-visitations__button--primary,
+  .process-recordings .btn-primary,
+  .dm-btn-edit,
+  .btn-edit
+) {
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--admin-accent);
+  color: var(--white);
+  box-shadow: 0 10px 24px rgba(32, 52, 66, 0.14);
+}
+
+.admin-workspace__content :is(
+  .btn-primary:hover,
+  .reports__retry-btn:hover,
+  .sm__retry-btn:hover,
+  .home-visitations__button--primary:hover:not(:disabled),
+  .process-recordings .btn-primary:hover,
+  .dm-btn-edit:hover,
+  .btn-edit:hover
+) {
+  background: var(--admin-accent-hover);
+  color: var(--white);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(32, 52, 66, 0.18);
+}
+
+.admin-workspace__content :is(
+  .btn-delete,
+  .btn-confirm-delete,
+  .home-visitations__button--danger
+) {
+  border-radius: 999px;
+  box-shadow: none;
+}
+
+.admin-workspace__content :is(
+  .btn-confirm-cancel
+) {
+  border: 1px solid var(--admin-border-strong);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--text-dark);
+}
+
+.admin-workspace__content :is(
+  .btn-small,
+  .dm-btn-view,
+  .dm-btn-edit,
+  .btn-confirm-delete,
+  .btn-confirm-cancel
+) {
+  min-height: 36px;
+  padding: 0.55rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.admin-workspace__content .home-visitations__toggle {
+  padding: 6px;
+  background: var(--cream-dark);
+  border: 1px solid var(--admin-border-soft);
+}
+
+.admin-workspace__content .reports-stat-card,
+.admin-workspace__content .reports-aar-card,
+.admin-workspace__content .reports-pillar,
+.admin-workspace__content .dm-stat-card,
+.admin-workspace__content .sm-scorecard,
+.admin-workspace__content .sm-compare__col {
+  border-color: var(--admin-border-strong);
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.admin-workspace__content .reports-pillar {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(246, 243, 238, 0.98));
+  border-top-width: 5px;
+}
+
+.admin-workspace__content .reports-aar-note {
+  background: var(--admin-warm-soft);
+  border-color: rgba(99, 74, 45, 0.16);
+  color: var(--text-mid);
+}
+
+.admin-workspace__content .reports-stat-card--accent .reports-stat-card__value,
+.admin-workspace__content .sm-scorecard__followers {
+  color: var(--blue-dark);
+}
+
+.admin-workspace__content .sm-explanation {
+  background: var(--cream-light);
+  border-left-color: var(--sand);
+  color: var(--text-dark);
+}
+
+.admin-workspace__content .sm-funnel__bar {
+  background: linear-gradient(135deg, var(--blue-dark), var(--sand-dark));
+}
+
+.admin-workspace__content .dm-badge--status-active,
+.admin-workspace__content .dm-pill--time,
+.admin-workspace__content .badge-active,
+.admin-workspace__content .status-active,
+.admin-workspace__content .badge-subcategory {
+  background: var(--success-pale);
+  color: var(--success-dark);
+}
+
+.admin-workspace__content .dm-badge--type,
+.admin-workspace__content .dm-pill--monetary,
+.admin-workspace__content .dm-pill--skills,
+.admin-workspace__content .badge-family {
+  background: var(--blue-pale);
+  color: var(--blue-dark);
+}
+
+.admin-workspace__content :is(
+  .reports__subtitle,
+  .reports__meta,
+  .reports-section-panel__subtitle,
+  .reports-stat-card__label,
+  .reports-aar-card__label,
+  .dm-subtitle,
+  .dm-filter-summary,
+  .dm-page-info,
+  .sm__subtitle,
+  .sm__meta,
+  .sm-explanation,
+  .sm-scorecard__followers-label,
+  .sm-scorecard__stat-label,
+  .home-visitations__header .subtitle,
+  .caseload-header .subtitle,
+  .process-recordings-header .subtitle
+) {
+  color: var(--text-mid);
+}
+
+@media (max-width: 768px) {
+  .admin-workspace__content :is(
+    .caseload-table,
+    .dm-table,
+    .reports-table,
+    .sm-table,
+    .home-visitations__table
+  ) {
+    min-width: 560px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-workspace__content :is(
+    .reports__section-btn,
+    .sm__section-btn,
+    .sm-content-nav__btn,
+    .sm-table__toggle-btn,
+    .home-visitations__toggle-btn,
+    .dm-page-btn,
+    .pagination-btn,
+    .btn-outline-blue,
+    .btn-secondary,
+    .home-visitations__button--secondary,
+    .dm-btn-view,
+    .btn-primary,
+    .reports__retry-btn,
+    .sm__retry-btn,
+    .home-visitations__button--primary,
+    .process-recordings .btn-primary,
+    .dm-btn-edit,
+    .btn-edit
+  ) {
+    min-height: 44px;
+  }
+}
