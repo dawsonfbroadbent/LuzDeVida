@@ -764,26 +764,6 @@ export default function CaseloadInventory({ embedded = false }: CaseloadInventor
                         </tr>
                       )}
 
-                      {showDeleteConfirm === resident.resident_id && (
-                        <tr className="delete-confirm-row">
-                          <td colSpan={10}>
-                            <div className="delete-confirm-box">
-                              <p>
-                                Are you sure you want to delete <strong>{resident.case_control_no || 'N/A'}</strong>?
-                              </p>
-                              <p style={{ fontSize: '0.9rem', color: '#999' }}>This action cannot be undone.</p>
-                              <div className="confirm-actions">
-                                <button onClick={() => handleDelete(resident.resident_id)} className="btn-confirm-delete">
-                                  Yes, Delete
-                                </button>
-                                <button onClick={() => setShowDeleteConfirm(null)} className="btn-confirm-cancel">
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
                     </React.Fragment>
                   ))}
                 </tbody>
@@ -815,6 +795,34 @@ export default function CaseloadInventory({ embedded = false }: CaseloadInventor
           </>
         )}
       </div>
+
+      {showDeleteConfirm !== null && (
+        <div className="modal-overlay" onClick={() => setShowDeleteConfirm(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Delete Resident Record</h2>
+              <button onClick={() => setShowDeleteConfirm(null)} className="modal-close">×</button>
+            </div>
+            <div className="resident-form">
+              <div className="delete-confirm-box">
+                <p>Warning: This action cannot be undone</p>
+                <p>
+                  Are you sure you want to delete resident{' '}
+                  <strong>{residents.find(r => r.resident_id === showDeleteConfirm)?.case_control_no || 'N/A'}</strong>?
+                </p>
+              </div>
+              <div className="confirm-actions">
+                <button onClick={() => setShowDeleteConfirm(null)} className="btn-confirm-cancel">
+                  Cancel
+                </button>
+                <button onClick={() => handleDelete(showDeleteConfirm)} className="btn-confirm-delete">
+                  Delete Resident
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showModal && (
         <div className="modal-overlay" onClick={closeModal}>

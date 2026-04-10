@@ -860,36 +860,6 @@ export default function HomeVisitations({
                                   </div>
                                 </div>
 
-                                {showDeleteVisitConfirm === visit.visitation_id && (
-                                  <div style={deleteConfirmStyle}>
-                                    <p style={{ marginTop: 0 }}>
-                                      Are you sure you want to delete this home visitation?
-                                    </p>
-                                    <div style={actionButtonRowStyle}>
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          handleDeleteVisit(visit.visitation_id)
-                                        }
-                                        className="home-visitations__button home-visitations__button--danger"
-                                        disabled={deletingVisitId === visit.visitation_id}
-                                      >
-                                        {deletingVisitId === visit.visitation_id
-                                          ? 'Deleting...'
-                                          : 'Yes, Delete'}
-                                      </button>
-
-                                      <button
-                                        type="button"
-                                        onClick={() => setShowDeleteVisitConfirm(null)}
-                                        className="home-visitations__button home-visitations__button--secondary"
-                                        disabled={deletingVisitId === visit.visitation_id}
-                                      >
-                                        Cancel
-                                      </button>
-                                    </div>
-                                  </div>
-                                )}
                               </div>
                             </td>
                           </tr>
@@ -1015,35 +985,6 @@ export default function HomeVisitations({
                                     </div>
                                   </div>
 
-                                  {showDeletePlanConfirm === plan.plan_id && (
-                                    <div style={deleteConfirmStyle}>
-                                      <p style={{ marginTop: 0 }}>
-                                        Are you sure you want to delete this case conference
-                                        record?
-                                      </p>
-                                      <div style={actionButtonRowStyle}>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleDeletePlan(plan.plan_id)}
-                                          className="home-visitations__button home-visitations__button--danger"
-                                          disabled={deletingPlanId === plan.plan_id}
-                                        >
-                                          {deletingPlanId === plan.plan_id
-                                            ? 'Deleting...'
-                                            : 'Yes, Delete'}
-                                        </button>
-
-                                        <button
-                                          type="button"
-                                          onClick={() => setShowDeletePlanConfirm(null)}
-                                          className="home-visitations__button home-visitations__button--secondary"
-                                          disabled={deletingPlanId === plan.plan_id}
-                                        >
-                                          Cancel
-                                        </button>
-                                      </div>
-                                    </div>
-                                  )}
                                 </div>
                               </td>
                             </tr>
@@ -1166,35 +1107,6 @@ export default function HomeVisitations({
                                     </div>
                                   </div>
 
-                                  {showDeletePlanConfirm === plan.plan_id && (
-                                    <div style={deleteConfirmStyle}>
-                                      <p style={{ marginTop: 0 }}>
-                                        Are you sure you want to delete this case conference
-                                        record?
-                                      </p>
-                                      <div style={actionButtonRowStyle}>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleDeletePlan(plan.plan_id)}
-                                          className="home-visitations__button home-visitations__button--danger"
-                                          disabled={deletingPlanId === plan.plan_id}
-                                        >
-                                          {deletingPlanId === plan.plan_id
-                                            ? 'Deleting...'
-                                            : 'Yes, Delete'}
-                                        </button>
-
-                                        <button
-                                          type="button"
-                                          onClick={() => setShowDeletePlanConfirm(null)}
-                                          className="home-visitations__button home-visitations__button--secondary"
-                                          disabled={deletingPlanId === plan.plan_id}
-                                        >
-                                          Cancel
-                                        </button>
-                                      </div>
-                                    </div>
-                                  )}
                                 </div>
                               </td>
                             </tr>
@@ -1455,6 +1367,76 @@ export default function HomeVisitations({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showDeleteVisitConfirm !== null && (
+        <div style={modalOverlayStyle} onClick={() => setShowDeleteVisitConfirm(null)}>
+          <div style={{ ...modalContentStyle, maxWidth: '520px' }} onClick={(e) => e.stopPropagation()}>
+            <div style={modalHeaderStyle}>
+              <h2 style={{ margin: 0 }}>Delete Home Visitation</h2>
+              <button type="button" style={modalCloseStyle} onClick={() => setShowDeleteVisitConfirm(null)}>×</button>
+            </div>
+            <div style={{ padding: '24px' }}>
+              <div style={{ background: '#fff6f6', border: '1px solid #efc4c4', borderRadius: 12, padding: 16, marginBottom: 20 }}>
+                <p style={{ margin: '0 0 8px', fontWeight: 600 }}>Warning: This action cannot be undone</p>
+                <p style={{ margin: 0 }}>Are you sure you want to delete this home visitation record?</p>
+              </div>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteVisitConfirm(null)}
+                  className="home-visitations__button home-visitations__button--secondary"
+                  disabled={deletingVisitId === showDeleteVisitConfirm}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteVisit(showDeleteVisitConfirm)}
+                  className="home-visitations__button home-visitations__button--danger"
+                  disabled={deletingVisitId === showDeleteVisitConfirm}
+                >
+                  {deletingVisitId === showDeleteVisitConfirm ? 'Deleting...' : 'Delete Visitation'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeletePlanConfirm !== null && (
+        <div style={modalOverlayStyle} onClick={() => setShowDeletePlanConfirm(null)}>
+          <div style={{ ...modalContentStyle, maxWidth: '520px' }} onClick={(e) => e.stopPropagation()}>
+            <div style={modalHeaderStyle}>
+              <h2 style={{ margin: 0 }}>Delete Case Conference Record</h2>
+              <button type="button" style={modalCloseStyle} onClick={() => setShowDeletePlanConfirm(null)}>×</button>
+            </div>
+            <div style={{ padding: '24px' }}>
+              <div style={{ background: '#fff6f6', border: '1px solid #efc4c4', borderRadius: 12, padding: 16, marginBottom: 20 }}>
+                <p style={{ margin: '0 0 8px', fontWeight: 600 }}>Warning: This action cannot be undone</p>
+                <p style={{ margin: 0 }}>Are you sure you want to delete this case conference record?</p>
+              </div>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowDeletePlanConfirm(null)}
+                  className="home-visitations__button home-visitations__button--secondary"
+                  disabled={deletingPlanId === showDeletePlanConfirm}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeletePlan(showDeletePlanConfirm)}
+                  className="home-visitations__button home-visitations__button--danger"
+                  disabled={deletingPlanId === showDeletePlanConfirm}
+                >
+                  {deletingPlanId === showDeletePlanConfirm ? 'Deleting...' : 'Delete Record'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
