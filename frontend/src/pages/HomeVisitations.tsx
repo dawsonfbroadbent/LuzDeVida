@@ -307,14 +307,6 @@ export default function HomeVisitations({
     gridColumn: '1 / -1',
   }
 
-  const deleteConfirmStyle: React.CSSProperties = {
-    marginTop: 10,
-    padding: 14,
-    border: '1px solid #efc4c4',
-    borderRadius: 16,
-    background: '#fff6f6',
-  }
-
   const loadResidents = async () => {
     setLoading(true)
     setError(null)
