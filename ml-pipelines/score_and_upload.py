@@ -183,7 +183,9 @@ def score_resident_risk(conn):
         admission = pd.to_datetime(r.get("date_of_admission"), errors="coerce")
         los_months = 0.0
         if pd.notna(admission):
-            los_months = (datetime.now(timezone.utc) - admission).days / 30.44
+            if admission.tzinfo is not None:
+                admission = admission.tz_localize(None)
+            los_months = (datetime.now() - admission).days / 30.44
 
         rows.append({
             "resident_id": rid,
