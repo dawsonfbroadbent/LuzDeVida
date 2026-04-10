@@ -28,8 +28,7 @@ builder.Services.AddDbContext<LuzDeVidaDbContext>(options =>
 builder.Services.AddDbContext<AuthIdentityDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
-    .AddRoles<IdentityRole>()
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<AuthIdentityDbContext>();
 
 var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
@@ -51,6 +50,8 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
+    options.SignIn.RequireConfirmedAccount = false;
+    options.SignIn.RequireConfirmedEmail = false;
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
@@ -130,5 +131,4 @@ app.UseExceptionHandler(errApp => errApp.Run(async ctx =>
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.MapGroup("/api/auth").MapIdentityApi<ApplicationUser>();
 app.Run();

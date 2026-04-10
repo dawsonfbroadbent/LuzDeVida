@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using LuzDeVida.API.Data;
+using LuzDeVida.API.Models.Dtos;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,45 @@ public class AuthController(
 {
     private const string DefaultFrontendUrl = "http://localhost:3000";
     private const string DefaultExternalReturnPath = "/";
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] LoginDto request)
+    {
+        var user = new ApplicationUser
+        {
+            UserName = request.Email,
+            Email = request.Email,
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(user, request.Password);
+
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors
+                .GroupBy(e => e.Code)
+                .ToDictionary(g => g.Key, g => g.Select(e => e.Description).ToArray());
+            return ValidationProblem(new ValidationProblemDetails(errors));
+        }
+
+        return Ok();
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(
+        [FromBody] LoginDto request,
+        [FromQuery] bool? useCookies,
+        [FromQuery] bool? useSessionCookies)
+    {
+        var isPersistent = useCookies == true && useSessionCookies != true;
+        var result = await signInManager.PasswordSignInAsync(
+            request.Email, request.Password, isPersistent, lockoutOnFailure: false);
+
+        if (!result.Succeeded)
+            return Problem("Invalid email or password.", statusCode: StatusCodes.Status401Unauthorized);
+
+        return Ok();
+    }
 
     [HttpGet("me")]
     public async Task<IActionResult> GetCurrentSession()
