@@ -550,47 +550,47 @@ export default function DonorManagement({ embedded = false }: DonorManagementPro
             </tbody>
           </table>
         )}
-
-        {/* Pagination */}
-        {!loading && totalCount > 0 && (
-          <div className="dm-pagination">
-            <div className="dm-page-size">
-              <label htmlFor="dm-page-size-select">Per page</label>
-              <select
-                id="dm-page-size-select"
-                value={filters.pageSize}
-                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-              >
-                {PAGE_SIZE_OPTIONS.map((n) => (
-                  <option key={n} value={n}>{n === 9999 ? 'All' : n}</option>
-                ))}
-              </select>
-            </div>
-
-            {totalPages > 1 && (
-              <div className="dm-page-controls">
-                <button className="dm-page-btn dm-page-btn--arrow" onClick={() => goToPage(1)} disabled={filters.page === 1} title="First">«</button>
-                <button className="dm-page-btn dm-page-btn--arrow" onClick={() => goToPage(filters.page - 1)} disabled={filters.page === 1} title="Previous">‹</button>
-                {pageNums.map((p, i) =>
-                  p === '...'
-                    ? <span key={`e${i}`} className="dm-page-ellipsis">…</span>
-                    : <button
-                        key={p}
-                        className={`dm-page-btn dm-page-num${p === filters.page ? ' dm-page-num--active' : ''}`}
-                        onClick={() => goToPage(p as number)}
-                      >{p}</button>
-                )}
-                <button className="dm-page-btn dm-page-btn--arrow" onClick={() => goToPage(filters.page + 1)} disabled={filters.page === totalPages} title="Next">›</button>
-                <button className="dm-page-btn dm-page-btn--arrow" onClick={() => goToPage(totalPages)} disabled={filters.page === totalPages} title="Last">»</button>
-              </div>
-            )}
-
-            <span className="dm-page-info">
-              {totalCount === 0 ? '0 results' : `${rangeStart}–${rangeEnd} of ${totalCount}`}
-            </span>
-          </div>
-        )}
       </div>
+
+      {/* Pagination */}
+      {!loading && totalCount > 0 && (
+        <div className="dm-pagination">
+          <div className="dm-page-size">
+            <label htmlFor="dm-page-size-select">Per page</label>
+            <select
+              id="dm-page-size-select"
+              value={filters.pageSize}
+              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+            >
+              {PAGE_SIZE_OPTIONS.map((n) => (
+                <option key={n} value={n}>{n === 9999 ? 'All' : n}</option>
+              ))}
+            </select>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="dm-page-controls">
+              <button className="dm-page-btn dm-page-btn--arrow" onClick={() => goToPage(1)} disabled={filters.page === 1} title="First">«</button>
+              <button className="dm-page-btn dm-page-btn--arrow" onClick={() => goToPage(filters.page - 1)} disabled={filters.page === 1} title="Previous">‹</button>
+              {pageNums.map((p, i) =>
+                p === '...'
+                  ? <span key={`e${i}`} className="dm-page-ellipsis">…</span>
+                  : <button
+                      key={p}
+                      className={`dm-page-btn dm-page-num${p === filters.page ? ' dm-page-num--active' : ''}`}
+                      onClick={() => goToPage(p as number)}
+                    >{p}</button>
+              )}
+              <button className="dm-page-btn dm-page-btn--arrow" onClick={() => goToPage(filters.page + 1)} disabled={filters.page === totalPages} title="Next">›</button>
+              <button className="dm-page-btn dm-page-btn--arrow" onClick={() => goToPage(totalPages)} disabled={filters.page === totalPages} title="Last">»</button>
+            </div>
+          )}
+
+          <span className="dm-page-info">
+            {totalCount === 0 ? '0 results' : `${rangeStart}–${rangeEnd} of ${totalCount}`}
+          </span>
+        </div>
+      )}
 
       {/* Modal */}
       {showModal && (
